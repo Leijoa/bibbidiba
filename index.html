@@ -241,13 +241,13 @@
 
     const ENEMY_DB = [
       { name: '史萊姆', hp: 800, turns: 3 },
-      { name: '哥布林小隊', hp: 2500, turns: 3 },
-      { name: '巨石傀儡', hp: 10000, turns: 4 },
-      { name: '深淵魔龍', hp: 50000, turns: 4 },
-      { name: '創世神 (最終Boss)', hp: 200000, turns: 5 },
+      { name: '哥布林小隊', hp: 2000, turns: 3 },
+      { name: '巨石傀儡', hp: 6000, turns: 4 },
+      { name: '深淵魔龍', hp: 15000, turns: 4 },
+      { name: '創世神 (最終Boss)', hp: 40000, turns: 5 },
     ];
 
-    let player = { hp: 3, gold: 0, relics: [], maxRolls: 2 };
+    let player = { hp: 5, gold: 0, relics: [], maxRolls: 2 };
     let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0 };
     let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i })), rollsLeft: 0, scoreResult: null };
     let shopItems = [];
@@ -278,7 +278,7 @@
 
     function initGame() {
       player.relics = []; 
-      player.gold = 10;
+      player.gold = 20;
       loadStage(0);
     }
 
@@ -312,7 +312,7 @@
 
     function updateHeaderUI() {
       el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
-      el.playerHp.innerText = `${player.hp} / 3`;
+      el.playerHp.innerText = `${player.hp} / 5`;
       el.playerGold.innerText = player.gold;
     }
 
@@ -641,7 +641,7 @@
     }
 
     function enemyDefeated() {
-      let earn = 15 + (stage.turnsLeft * 5) + (player.relics.includes('coin') ? 5 : 0);
+      let earn = 20 + (stage.turnsLeft * 10) + (player.relics.includes('coin') ? 5 : 0);
       player.gold += earn;
       alert(`🎉 擊敗了 ${ENEMY_DB[stage.level].name}！獲得 ${earn} 金幣！`);
       openShop();
