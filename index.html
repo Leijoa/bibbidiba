@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>比比丟八-BIBBIDIBA (完整遊玩版)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #0f172a;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+    .dice-btn { transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, border-color 0.2s; }
+    .dice-btn:active { transform: scale(0.9); }
+    .pulse-border { animation: pulseBorder 0.6s infinite alternate; }
+    @keyframes pulseBorder {
+      0% { border-color: #475569; color: #64748b; }
+      100% { border-color: #cbd5e1; color: #f8fafc; }
+    }
+    .damage-text { animation: floatUp 1s ease-out forwards; }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-40px) scale(1); }
+    }
+    .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+    /* 讓滾動條好看一點 */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  </style>
+</head>
+<body class="p-2 md:p-4 h-screen flex flex-col">
+
+  <!-- 頂部資訊列 -->
+  <header class="flex justify-between items-end mb-4 border-b border-slate-700 pb-2 shrink-0">
+    <div>
+      <h1 class="text-2xl font-black text-amber-400 flex items-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        BIBBIDIBA
+      </h1>
+      <div class="text-sm text-slate-400 font-bold" id="stage-info">關卡 1-1</div>
+    </div>
+    <div class="flex gap-4 text-right">
+      <div>
+        <div class="text-xs text-slate-400 uppercase">HP</div>
+        <div class="font-bold text-red-400" id="player-hp">3 / 3</div>
+      </div>
+      <div>
+        <div class="text-xs text-slate-400 uppercase">金幣</div>
+        <div class="font-bold text-yellow-400" id="player-gold">0</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主要內容區：分為戰鬥/商店/結算 -->
+  <main class="flex-grow flex flex-col lg:flex-row gap-4 overflow-hidden relative" id="main-container">
+    
+    <!-- === 左側/上方：戰鬥區域 === -->
+    <div id="battle-area" class="flex-1 flex flex-col gap-4 overflow-y-auto">
+      
+      <!-- 敵人與目標 -->
+      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shrink-0 relative overflow-hidden">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="text-lg font-bold text-red-300 flex items-center gap-2" id="enemy-name">
+            ⚔️ 史萊姆
+          </h2>
+          <span class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300" id="turns-left">剩餘 3 回合</span>
+        </div>
+        
+        <!-- 血條 -->
+        <div class="w-full bg-slate-900 rounded-full h-6 relative border border-slate-700 overflow-hidden">
+          <div id="enemy-hp-bar" class="bg-red-600 h-6 rounded-full transition-all duration-500 ease-out" style="width: 100%"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md" id="enemy-hp-text">
+            1000 / 1000
+          </div>
+        </div>
+        
+        <!-- 傷害浮動字體容器 -->
+        <div id="damage-container" class="absolute inset-0 pointer-events-none flex items-center justify-center"></div>
+      </div>
+
+      <!-- 骰子盤面 -->
+      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shrink-0">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-base font-bold text-slate-200">盤面 (8d8)</h2>
+          <span id="rolls-left-badge" class="bg-slate-700 px-3 py-1 rounded-full text-xs font-bold text-amber-300">
+            剩餘重骰：2
+          </span>
+        </div>
+
+        <div id="dice-container" class="grid grid-cols-4 gap-2 mb-4">
+          <!-- 骰子 -->
+        </div>
+
+        <!-- 按鈕控制區 -->
+        <div id="controls-container" class="flex gap-2 h-14">
+          <!-- 按鈕 -->
+        </div>
+      </div>
+
+      <!-- 已持有遺物區 -->
+      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex-grow overflow-y-auto min-h-[150px]">
+        <h2 class="text-sm font-bold text-slate-400 mb-2">已持有遺物背包</h2>
+        <div id="inventory-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <!-- 持有遺物 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- === 右側/下方：即時結算面板 === -->
+    <div id="score-area" class="w-full lg:w-80 bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col shrink-0 overflow-y-auto">
+      <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">即時結算引擎</h2>
+      <div id="score-display" class="flex-grow flex flex-col text-sm">
+        <!-- 分數顯示 -->
+      </div>
+    </div>
+
+    <!-- === 商店疊層 (預設隱藏) === -->
+    <div id="shop-overlay" class="absolute inset-0 bg-slate-900/95 backdrop-blur-sm z-50 hidden flex-col p-6 overflow-y-auto">
+      <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+        <h1 class="text-3xl font-black text-yellow-400">💰 雲雲商店</h1>
+        <div class="text-xl font-bold text-yellow-400 bg-slate-800 px-4 py-2 rounded-lg border border-yellow-700">
+          持有的金幣: <span id="shop-gold">0</span>
+        </div>
+      </div>
+      
+      <p class="text-slate-300 mb-4">選擇購買遺物來強化你的流派，或者進入下一關。</p>
+      
+      <div id="shop-items" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <!-- 商店商品 -->
+      </div>
+      
+      <div class="flex gap-4 mt-auto">
+        <button onclick="rerollShop()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-colors">
+          刷新商店 (5 金幣)
+        </button>
+        <button onclick="nextStage()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl transition-colors text-lg">
+          離開並前往下一關 ➡️
+        </button>
+      </div>
+    </div>
+
+    <!-- === Game Over / 勝利 疊層 (預設隱藏) === -->
+    <div id="end-overlay" class="absolute inset-0 bg-red-950/95 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center">
+      <h1 id="end-title" class="text-5xl font-black text-red-500 mb-4 shake">GAME OVER</h1>
+      <p id="end-desc" class="text-xl text-slate-300 mb-8">你未能擊敗敵人，旅程到此為止。</p>
+      <button onclick="location.reload()" class="bg-slate-200 hover:bg-white text-slate-900 font-black py-4 px-12 rounded-full transition-transform hover:scale-105 text-xl">
+        重新開始遊戲
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    // --- 企劃資料庫 ---
+    const RELIC_DB = [
+      { id: 'b1', name: '【大一】', desc: '1 的計算點數 x3', price: 10 },
+      { id: 'b2', name: '【大二】', desc: '2 的計算點數 x3', price: 10 },
+      { id: 'b8', name: '【大八】', desc: '8 的計算點數 x3', price: 20 },
+      { id: 'small', name: '【小小】', desc: '1,2,3 的計算點數 x2', price: 15 },
+      { id: 'big', name: '【大大】', desc: '6,7,8 的計算點數 x2', price: 15 },
+      { id: 'mid', name: '【中堅】', desc: '4,5 的計算點數 x2.5', price: 12 },
+      { id: 'odd', name: '【奇數】', desc: '奇數點數 x1.6', price: 18 },
+      { id: 'even', name: '【偶數】', desc: '偶數點數 x1.6', price: 18 },
+      { id: 'pansy', name: '【潘絲絲的祝福】', desc: '場上有 8 時總傷害 x2', price: 30 },
+      { id: 'blue', name: '【青發的加護】', desc: '大滿貫倍率從 x15 變 x30', price: 25 },
+      { id: 'order', name: '【絕對秩序】', desc: '同數系與順序系倍率相加後再相乘', price: 40 },
+      { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +5', price: 20 },
+      { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +1', price: 35 },
+    ];
+
+    const ENEMY_DB = [
+      { name: '史萊姆', hp: 800, turns: 3 },
+      { name: '哥布林小隊', hp: 2500, turns: 3 },
+      { name: '巨石傀儡', hp: 10000, turns: 4 },
+      { name: '深淵魔龍', hp: 50000, turns: 4 },
+      { name: '創世神 (最終Boss)', hp: 200000, turns: 5 },
+    ];
+
+    // --- 遊戲全域狀態 ---
+    let player = {
+      hp: 3,
+      gold: 0,
+      relics: [], // 存放 relic id
+      maxRolls: 2
+    };
+
+    let stage = {
+      level: 0, // 對應 ENEMY_DB index
+      enemyMaxHp: 0,
+      enemyHp: 0,
+      turnsLeft: 0
+    };
+
+    let battle = {
+      state: 'IDLE', // IDLE, ROLLING, SCORED
+      dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i })),
+      rollsLeft: 0,
+      scoreResult: null
+    };
+
+    let shopItems = [];
+
+    // --- DOM Elements ---
+    const el = {
+      stageInfo: document.getElementById('stage-info'),
+      playerHp: document.getElementById('player-hp'),
+      playerGold: document.getElementById('player-gold'),
+      enemyName: document.getElementById('enemy-name'),
+      enemyHpBar: document.getElementById('enemy-hp-bar'),
+      enemyHpText: document.getElementById('enemy-hp-text'),
+      turnsLeft: document.getElementById('turns-left'),
+      diceContainer: document.getElementById('dice-container'),
+      controlsContainer: document.getElementById('controls-container'),
+      rollsBadge: document.getElementById('rolls-left-badge'),
+      inventoryGrid: document.getElementById('inventory-grid'),
+      scoreDisplay: document.getElementById('score-display'),
+      battleArea: document.getElementById('battle-area'),
+      
+      shopOverlay: document.getElementById('shop-overlay'),
+      shopGold: document.getElementById('shop-gold'),
+      shopItemsContainer: document.getElementById('shop-items'),
+      
+      endOverlay: document.getElementById('end-overlay'),
+      endTitle: document.getElementById('end-title'),
+      endDesc: document.getElementById('end-desc'),
+      damageContainer: document.getElementById('damage-container')
+    };
+
+    // --- 初始化與流程控制 ---
+    function initGame() {
+      // 給予初始遺物(測試用，或者讓玩家空手起家)
+      player.relics = []; 
+      player.gold = 10;
+      loadStage(0);
+    }
+
+    function loadStage(levelIndex) {
+      if (levelIndex >= ENEMY_DB.length) {
+        gameWin();
+        return;
+      }
+      stage.level = levelIndex;
+      let enemyTemplate = ENEMY_DB[levelIndex];
+      stage.enemyMaxHp = enemyTemplate.hp;
+      stage.enemyHp = enemyTemplate.hp;
+      stage.turnsLeft = enemyTemplate.turns;
+      
+      el.shopOverlay.classList.add('hidden');
+      updateHeaderUI();
+      updateEnemyUI();
+      startTurn();
+    }
+
+    function startTurn() {
+      if (stage.turnsLeft <= 0) {
+        gameOver("回合耗盡，未能擊敗敵人！");
+        return;
+      }
+      
+      battle.state = 'IDLE';
+      // 計算最大重骰次數 (預設2 + 遺物加成)
+      player.maxRolls = 2 + player.relics.filter(id => id === 'refresh').length;
+      battle.rollsLeft = player.maxRolls;
+      battle.dice = battle.dice.map((d, i) => ({ val: 1, locked: false, id: i }));
+      battle.scoreResult = null;
+      
+      renderAll();
+      executeRoll(true); // 自動首擲
+    }
+
+    // --- 畫面渲染 ---
+    function updateHeaderUI() {
+      el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
+      el.playerHp.innerText = `${player.hp} / 3`;
+      el.playerGold.innerText = player.gold;
+    }
+
+    function updateEnemyUI() {
+      el.enemyName.innerText = `⚔️ ${ENEMY_DB[stage.level].name}`;
+      el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 回合`;
+      let pct = Math.max(0, (stage.enemyHp / stage.enemyMaxHp) * 100);
+      el.enemyHpBar.style.width = `${pct}%`;
+      el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
+    }
+
+    function renderInventory() {
+      if (player.relics.length === 0) {
+        el.inventoryGrid.innerHTML = `<div class="col-span-full text-xs text-slate-500">背包空空如也</div>`;
+        return;
+      }
+      el.inventoryGrid.innerHTML = player.relics.map(id => {
+        let r = RELIC_DB.find(x => x.id === id);
+        return `
+          <div class="bg-slate-700/50 p-2 rounded border border-slate-600">
+            <div class="text-[10px] font-bold text-amber-400">${r.name}</div>
+            <div class="text-[9px] text-slate-400 leading-tight">${r.desc}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderDice() {
+      el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
+        let baseClass = "relative flex flex-col items-center justify-center h-16 sm:h-20 rounded-xl text-3xl font-black select-none ";
+        let styleClass = "";
+        
+        if (battle.state === 'IDLE') {
+           styleClass = "opacity-50 bg-slate-800 border-2 border-slate-700 text-slate-600";
+        } else {
+           styleClass = "cursor-pointer dice-btn ";
+           if (battle.state === 'ROLLING' && !d.locked) {
+             styleClass += "bg-slate-800 border-dashed border-2 text-slate-500 pulse-border";
+           } else if (d.locked) {
+             styleClass += "bg-emerald-950 border-2 border-emerald-500 text-emerald-400";
+           } else {
+             styleClass += "bg-slate-700 border-2 border-slate-500 text-white hover:bg-slate-600";
+           }
+        }
+
+        let lockIcon = d.locked ? `
+          <div class="absolute -top-1 -right-1 bg-emerald-500 rounded-full p-0.5 shadow">
+            <svg class="w-3 h-3 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
+          </div>
+        ` : '';
+
+        let valDisplay = (battle.state === 'IDLE') ? '-' : (battle.state === 'ROLLING' && !d.locked ? '?' : d.val);
+
+        return `
+          <div onclick="toggleLock(${idx})" class="${baseClass} ${styleClass}">
+            ${valDisplay}
+            ${lockIcon}
+          </div>
+        `;
+      }).join('');
+      
+      el.rollsBadge.innerText = `剩餘重骰：${battle.rollsLeft}`;
+    }
+
+    function renderControls() {
+      if (battle.state === 'IDLE') {
+        el.controlsContainer.innerHTML = ``; // 自動擲骰不顯示按鈕
+      } else {
+        let isRolling = battle.state === 'ROLLING';
+        let rollDisabled = (battle.rollsLeft <= 0 || isRolling) ? "disabled opacity-50 cursor-not-allowed" : "hover:bg-blue-500";
+        let scoreDisabled = isRolling ? "disabled opacity-50 cursor-not-allowed" : "hover:bg-red-500";
+        
+        el.controlsContainer.innerHTML = `
+          <button onclick="executeRoll(false)" ${rollDisabled} class="flex-1 bg-blue-600 text-white font-bold rounded-xl transition-colors text-sm">
+            重骰 (-1 次)
+          </button>
+          <button onclick="fireAttack()" ${scoreDisabled} class="flex-1 bg-red-600 text-white font-bold rounded-xl transition-colors text-sm flex items-center justify-center gap-1">
+            🗡️ 發動攻擊
+          </button>
+        `;
+      }
+    }
+
+    function renderScore() {
+      if (!battle.scoreResult) {
+        el.scoreDisplay.innerHTML = `<div class="text-slate-500 text-center mt-10">預覽區</div>`;
+        return;
+      }
+      let res = battle.scoreResult;
+      let notesHtml = res.globalNotes.map(n => `<div class="text-xs text-amber-400 bg-amber-900/30 p-1 rounded mb-1">${n}</div>`).join('');
+      
+      el.scoreDisplay.innerHTML = `
+        <div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-700 mb-2">
+          <span class="text-slate-400">底盤點數</span>
+          <span class="text-xl font-bold text-white">${res.totalBase.toFixed(1)}</span>
+        </div>
+        
+        <div class="space-y-1 mb-2">
+          <div class="flex justify-between bg-slate-700/50 p-2 rounded">
+            <div class="text-blue-300 text-xs">A:${res.tagA.name}</div>
+            <div class="font-bold text-blue-400">x${res.tagA.multi.toFixed(1)}</div>
+          </div>
+          <div class="flex justify-between bg-slate-700/50 p-2 rounded">
+            <div class="text-pink-300 text-xs">B:${res.tagB.name}</div>
+            <div class="font-bold text-pink-400">x${res.tagB.multi.toFixed(1)}</div>
+          </div>
+        </div>
+        
+        <div class="mb-2">${notesHtml}</div>
+        
+        <div class="mt-auto border-t border-slate-700 pt-2">
+          <div class="flex justify-between items-end mb-1">
+            <span class="text-slate-400 text-xs">總乘區</span>
+            <span class="text-lg font-bold text-amber-500">x${res.finalMultiplier.toFixed(2)}</span>
+          </div>
+          <div class="bg-red-950 border border-red-800 p-3 rounded-lg text-center relative overflow-hidden">
+             ${battle.state === 'SCORED' ? '<div class="absolute inset-0 bg-red-500/20 animate-pulse"></div>' : ''}
+             <div class="text-[10px] text-red-300 mb-1 relative z-10">預估造成傷害</div>
+             <div class="text-3xl font-black text-white relative z-10 drop-shadow-md">
+               ${Math.floor(res.finalScore).toLocaleString()}
+             </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      updateHeaderUI();
+      renderInventory();
+      renderDice();
+      renderControls();
+      renderScore();
+    }
+
+    // --- 互動與邏輯 ---
+    function toggleLock(idx) {
+      if (battle.state !== 'SCORED' && battle.state !== 'ROLLING') {
+        battle.dice[idx].locked = !battle.dice[idx].locked;
+        renderDice();
+      }
+    }
+
+    function executeRoll(isInitial = false) {
+      if (!isInitial && battle.rollsLeft <= 0) return;
+      if (battle.state === 'ROLLING') return;
+
+      if (!isInitial) battle.rollsLeft--;
+      battle.state = 'ROLLING';
+      renderControls();
+
+      let intervals = 0;
+      let timer = setInterval(() => {
+        battle.dice = battle.dice.map(d => d.locked ? d : { ...d, val: Math.floor(Math.random() * 8) + 1 });
+        intervals++;
+        renderDice();
+        
+        if (intervals >= 10) {
+          clearInterval(timer);
+          battle.dice.sort((a, b) => a.val - b.val);
+          calculateEngine();
+          battle.state = 'SCORED'; // 借用狀態來表示停止滾動，等待玩家攻擊
+          renderAll();
+        }
+      }, 40);
+    }
+
+    // --- 核心計算 (包含遺物邏輯) ---
+    function calculateEngine() {
+      let counts = new Array(9).fill(0);
+      battle.dice.forEach(d => counts[d.val]++);
+
+      // 1. 基底
+      let totalBase = 0;
+      battle.dice.forEach(d => {
+         let multi = 1;
+         let v = d.val;
+         if (v === 1 && player.relics.includes('b1')) multi *= 3;
+         if (v === 2 && player.relics.includes('b2')) multi *= 3;
+         if (v === 8 && player.relics.includes('b8')) multi *= 3;
+         if ([1,2,3].includes(v) && player.relics.includes('small')) multi *= 2;
+         if ([6,7,8].includes(v) && player.relics.includes('big')) multi *= 2;
+         if ([4,5].includes(v) && player.relics.includes('mid')) multi *= 2.5;
+         if (v % 2 !== 0 && player.relics.includes('odd')) multi *= 1.6;
+         if (v % 2 === 0 && player.relics.includes('even')) multi *= 1.6;
+
+         totalBase += (v * multi);
+      });
+
+      // 2. A 群組
+      let maxFreq = Math.max(...counts);
+      let tagA = { name: '保底', multi: 1.0 };
+      if (maxFreq === 8) tagA = { name: '八重奏', multi: 20.0 };
+      else if (maxFreq === 7) tagA = { name: '七同', multi: 15.0 };
+      else if (maxFreq === 6) tagA = { name: '六同', multi: 10.0 };
+      else if (maxFreq === 5) tagA = { name: '五同', multi: 6.0 };
+      else if (maxFreq === 4) tagA = { name: '四同', multi: 4.0 };
+      else if (maxFreq === 3) tagA = { name: '三同', multi: 2.0 };
+      else if (maxFreq === 2) tagA = { name: '對子', multi: 1.2 };
+
+      // 3. B 群組
+      function extract(targetLengths) {
+        let currentLengths = [...targetLengths].sort((a,b)=>b-a);
+        function search(c, idx) {
+          if(idx === currentLengths.length) return true;
+          let len = currentLengths[idx];
+          for(let start=1; start<=8-len+1; start++){
+            let valid = true;
+            for(let i=0; i<len; i++) if(c[start+i]<1) valid=false;
+            if(valid){
+              let nextC = [...c];
+              for(let i=0; i<len; i++) nextC[start+i]--;
+              if(search(nextC, idx+1)) return true;
+            }
+          }
+          return false;
+        }
+        return search(counts, 0);
+      }
+      function getMaxSeqs() {
+        let maxF = 0;
+        function search(c, found) {
+          maxF = Math.max(maxF, found);
+          for(let len=2; len<=8; len++){
+            for(let start=1; start<=8-len+1; start++){
+              let valid = true;
+              for(let i=0; i<len; i++) if(c[start+i]<1) valid=false;
+              if(valid){
+                let nextC = [...c];
+                for(let i=0; i<len; i++) nextC[start+i]--;
+                search(nextC, found+1);
+              }
+            }
+          }
+        }
+        search(counts, 0);
+        return maxF;
+      }
+
+      let tagB = { name: '無順序', multi: 1.0 };
+      if (counts.slice(1,9).every(c => c>=1)) {
+        tagB = { name: '大滿貫', multi: player.relics.includes('blue') ? 30.0 : 15.0 };
+      }
+      else if (getMaxSeqs() >= 3) tagB = { name: '三龍會', multi: 10.0 };
+      else if (extract([4,4])) tagB = { name: '雙順', multi: 8.0 };
+      else if (extract([5])) tagB = { name: '五連順', multi: 3.0 };
+      else if (extract([3,3])) tagB = { name: '雙三連', multi: 2.5 };
+      else if (extract([4])) tagB = { name: '四連順', multi: 1.5 };
+
+      // 4. 絕對秩序遺物邏輯
+      let AB_Multiplier = 0;
+      if (player.relics.includes('order')) {
+        // (A+B) * (A*B 的某些變化，這裡簡化為加法後乘法)
+        // 企劃意圖：打破互斥。這裡實作為 A倍率 + B倍率，再乘上基礎
+        AB_Multiplier = tagA.multi + tagB.multi; 
+      } else {
+        AB_Multiplier = tagA.multi * tagB.multi;
+      }
+
+      // 5. 全域
+      let globalMulti = 1.0;
+      let globalNotes = [];
+      
+      if (player.relics.includes('order')) globalNotes.push('【絕對秩序】發動 (A+B)');
+      if (player.relics.includes('pansy') && counts[8] > 0) {
+        globalMulti *= 2.0;
+        globalNotes.push('【潘絲絲】 x2.0');
+      }
+
+      let rerollMulti = 1.0 + (battle.rollsLeft * 0.5); 
+      if (battle.rollsLeft > 0) {
+        globalMulti *= rerollMulti;
+        globalNotes.push(`貪婪資源 x${rerollMulti.toFixed(1)}`);
+      }
+
+      let finalMultiplier = AB_Multiplier * globalMulti;
+      let finalScore = totalBase * finalMultiplier;
+
+      battle.scoreResult = {
+        totalBase, tagA, tagB, globalMulti, globalNotes, finalMultiplier, finalScore
+      };
+    }
+
+    // --- 戰鬥演出與結算 ---
+    function fireAttack() {
+      if (!battle.scoreResult || battle.state === 'ROLLING') return;
+      
+      let dmg = Math.floor(battle.scoreResult.finalScore);
+      
+      // 動畫：扣血與傷害數字
+      stage.enemyHp -= dmg;
+      el.battleArea.classList.add('shake');
+      setTimeout(() => el.battleArea.classList.remove('shake'), 500);
+
+      let dmgEl = document.createElement('div');
+      dmgEl.className = 'damage-text text-5xl font-black text-red-500 drop-shadow-[0_0_10px_rgba(255,0,0,0.8)] z-10';
+      dmgEl.innerText = `-${dmg}`;
+      el.damageContainer.appendChild(dmgEl);
+      setTimeout(() => dmgEl.remove(), 1000);
+
+      updateEnemyUI();
+
+      // 回合結算
+      setTimeout(() => {
+        if (stage.enemyHp <= 0) {
+          enemyDefeated();
+        } else {
+          stage.turnsLeft--;
+          if (stage.turnsLeft <= 0) {
+            gameOver("回合耗盡，未能擊敗敵人！");
+          } else {
+            // 進入下一回合
+            startTurn();
+          }
+        }
+      }, 1000);
+    }
+
+    function enemyDefeated() {
+      // 給予獎勵
+      let baseGold = 15;
+      let surplusTurnsBonus = stage.turnsLeft * 5; // 提早打完給額外錢
+      let coinRelicBonus = player.relics.includes('coin') ? 5 : 0;
+      let earn = baseGold + surplusTurnsBonus + coinRelicBonus;
+      player.gold += earn;
+      
+      alert(`🎉 擊敗了 ${ENEMY_DB[stage.level].name}！獲得 ${earn} 金幣！`);
+      
+      openShop();
+    }
+
+    // --- 商店系統 ---
+    function openShop() {
+      el.shopOverlay.classList.remove('hidden');
+      el.shopOverlay.classList.add('flex');
+      updateShopGold();
+      rerollShop(true);
+    }
+
+    function updateShopGold() {
+      el.shopGold.innerText = player.gold;
+      updateHeaderUI();
+    }
+
+    function rerollShop(isFree = false) {
+      if (!isFree) {
+        if (player.gold < 5) return alert("金幣不足以刷新商店！");
+        player.gold -= 5;
+        updateShopGold();
+      }
+
+      // 隨機挑出 3 個遺物，不包含已擁有的
+      let available = RELIC_DB.filter(r => !player.relics.includes(r.id));
+      let shuffled = available.sort(() => 0.5 - Math.random());
+      shopItems = shuffled.slice(0, 3);
+      
+      renderShopItems();
+    }
+
+    function renderShopItems() {
+      el.shopItemsContainer.innerHTML = shopItems.map((r, idx) => {
+        let canAfford = player.gold >= r.price;
+        let btnClass = canAfford 
+          ? "bg-yellow-600 hover:bg-yellow-500 text-white" 
+          : "bg-slate-700 text-slate-500 cursor-not-allowed";
+          
+        return `
+          <div class="bg-slate-800 p-4 rounded-xl border border-slate-600 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-amber-400 mb-1">${r.name}</h3>
+              <p class="text-sm text-slate-300 mb-4 h-10">${r.desc}</p>
+            </div>
+            <button onclick="buyItem(${idx})" class="w-full font-bold py-2 rounded-lg transition-colors ${btnClass}" ${!canAfford ? 'disabled' : ''}>
+              💰 ${r.price} 金幣購買
+            </button>
+          </div>
+        `;
+      }).join('');
+      
+      if(shopItems.length === 0) {
+        el.shopItemsContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 py-8">商店已經被你買空了！</div>`;
+      }
+    }
+
+    function buyItem(idx) {
+      let r = shopItems[idx];
+      if (player.gold >= r.price) {
+        player.gold -= r.price;
+        player.relics.push(r.id);
+        shopItems.splice(idx, 1); // 從架上移除
+        updateShopGold();
+        renderShopItems();
+        renderInventory();
+      }
+    }
+
+    function nextStage() {
+      loadStage(stage.level + 1);
+    }
+
+    // --- 遊戲結束狀態 ---
+    function gameOver(reason) {
+      el.endOverlay.classList.remove('hidden');
+      el.endOverlay.classList.add('flex');
+      el.endTitle.innerText = "GAME OVER";
+      el.endTitle.className = "text-5xl font-black text-red-500 mb-4 shake";
+      el.endDesc.innerText = reason;
+    }
+
+    function gameWin() {
+      el.endOverlay.classList.remove('hidden');
+      el.endOverlay.classList.add('flex');
+      el.endTitle.innerText = "🎉 遊戲通關 🎉";
+      el.endTitle.className = "text-5xl font-black text-amber-400 mb-4";
+      el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
+    }
+
+    // --- 啟動 ---
+    initGame();
+
+  </script>
+</body>
+</html>
