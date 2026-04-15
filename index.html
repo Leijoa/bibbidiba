@@ -3,27 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>比比丟八-BIBBIDIBA (V2.4 Web版)</title>
+  <title>比比丟八-BIBBIDIBA (V3.0 重構版)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="p-2 md:p-4 h-[100dvh] flex flex-col relative overflow-hidden">
+<body class="p-2 md:p-4 h-[100dvh] flex flex-col relative overflow-hidden bg-slate-950">
 
-  <div id="title-screen" class="absolute inset-0 bg-slate-900 z-[60] flex flex-col items-center justify-center p-6 text-center">
-    <div class="mb-8 pop-anim">
-      <h1 class="text-5xl md:text-7xl font-black text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)] tracking-tighter">BIBBIDIBA</h1>
-      <h2 class="text-xl md:text-2xl font-bold text-slate-300 mt-2">比比丟八</h2>
+  <div id="title-screen" class="absolute inset-0 bg-slate-950 z-[60] flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+    <div class="mb-6 pop-anim">
+      <h1 class="text-6xl md:text-8xl font-black text-amber-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)] tracking-tighter">BIBBIDIBA</h1>
+      <h2 class="text-2xl md:text-3xl font-bold text-slate-300 mt-2">比比丟八</h2>
     </div>
-    <div class="flex flex-col gap-4 w-full max-w-xs">
-      <button id="btn-continue" class="hidden bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(37,99,235,0.5)]">
+    
+    <p class="text-base text-slate-400 mb-8 max-w-sm px-4 leading-relaxed font-bold">
+      擲八顆骰子湊牌型疊加倍率！每回合重骰兩次，在限制回合內打倒敵人賺金幣買遺物強化流派，挑戰連過五關！
+    </p>
+
+    <div class="flex flex-col gap-5 w-full max-w-xs">
+      <button id="btn-continue" class="hidden bg-blue-600 hover:bg-blue-500 text-white font-black py-5 px-8 rounded-2xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(37,99,235,0.4)] text-lg">
         繼續旅程
       </button>
-      <button id="btn-new-game" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(217,119,6,0.5)]">
+      <button id="btn-new-game" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-5 px-8 rounded-2xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(217,119,6,0.4)] text-lg">
         開始新遊戲
       </button>
     </div>
-    <div class="absolute bottom-4 text-slate-500 text-xs font-bold">V2.4 Web Edition</div>
+    <div class="absolute bottom-4 text-slate-600 text-sm font-bold">V3.0 UI 重構版</div>
   </div>
 
   <div id="hit-flash" class="fixed inset-0 pointer-events-none z-40 hidden"></div>
@@ -31,100 +36,111 @@
   <header class="flex justify-between items-end mb-2 md:mb-4 border-b border-slate-700 pb-2 shrink-0 px-1">
     <div class="flex items-end gap-2 md:gap-4">
       <div>
-        <h1 class="text-xl md:text-2xl font-black text-amber-400 flex items-center gap-1 md:gap-2 tracking-tight">
-          <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <h1 class="text-2xl md:text-3xl font-black text-amber-400 flex items-center gap-1 md:gap-2 tracking-tight">
           BIBBIDIBA
         </h1>
-        <div class="text-xs md:text-sm text-slate-400 font-bold" id="stage-info">關卡 1-1</div>
+        <div class="text-sm md:text-base text-slate-400 font-bold" id="stage-info">關卡 1-1</div>
       </div>
     </div>
-    <div class="flex gap-3 md:gap-4 text-right items-center">
-      <button id="btn-rules" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] md:text-xs font-bold py-1.5 px-2 md:px-3 rounded shadow transition-colors flex items-center gap-1 active:scale-95">
+    <div class="flex gap-4 text-right items-center">
+      <button id="btn-rules" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg shadow transition-colors active:scale-95">
         📖 <span class="hidden sm:inline">牌型表</span>
       </button>
       <div>
-        <div class="text-[10px] md:text-xs text-slate-400 uppercase leading-none">HP</div>
-        <div class="font-bold text-red-400 text-sm md:text-base leading-none mt-1" id="player-hp">3/3</div>
+        <div class="text-xs md:text-sm text-slate-400 uppercase leading-none font-bold">HP</div>
+        <div class="font-bold text-red-400 text-base md:text-lg leading-none mt-1" id="player-hp">3/3</div>
       </div>
       <div>
-        <div class="text-[10px] md:text-xs text-slate-400 uppercase leading-none">金幣</div>
-        <div class="font-bold text-yellow-400 text-sm md:text-base leading-none mt-1" id="player-gold">0</div>
+        <div class="text-xs md:text-sm text-slate-400 uppercase leading-none font-bold">金幣</div>
+        <div class="font-bold text-yellow-400 text-base md:text-lg leading-none mt-1" id="player-gold">0</div>
       </div>
     </div>
   </header>
 
   <div id="rules-modal" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
-    <div class="bg-slate-800 border border-slate-600 rounded-xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl">
-      <div class="p-3 md:p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900 rounded-t-xl shrink-0">
-        <h2 class="text-lg md:text-xl font-bold text-amber-400 flex items-center gap-2">📖 全牌型倍率表</h2>
-        <button id="btn-close-rules" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+    <div class="bg-slate-800 border-2 border-slate-600 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900 shrink-0">
+        <h2 class="text-xl md:text-2xl font-black text-amber-400 flex items-center gap-2">📖 全牌型倍率表</h2>
+        <button id="btn-close-rules" class="text-slate-400 hover:text-white text-4xl leading-none">&times;</button>
       </div>
-      <div class="p-3 md:p-4 overflow-y-auto flex-grow text-xs md:text-sm" id="rules-content">
+      <div class="p-4 overflow-y-auto flex-grow text-sm md:text-base" id="rules-content">
         </div>
     </div>
   </div>
 
   <main class="flex-grow flex flex-col lg:flex-row gap-2 md:gap-4 overflow-hidden relative" id="main-container">
     <div id="battle-area" class="flex-1 flex flex-col gap-2 md:gap-4 overflow-y-auto pb-4 lg:pb-0">
-      <div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 shrink-0 relative overflow-hidden shadow-lg">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-base md:text-lg font-bold text-red-300 flex items-center gap-2" id="enemy-name">⚔️ 史萊姆</h2>
-          <span class="text-[10px] md:text-xs bg-slate-700 px-2 py-1 rounded text-slate-300 font-bold" id="turns-left">剩餘 3 回合</span>
+      
+      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shrink-0 relative overflow-hidden shadow-lg">
+        <div class="flex justify-between items-center mb-2.5">
+          <h2 class="text-lg md:text-xl font-bold text-red-300 flex items-center gap-2" id="enemy-name">⚔️ 史萊姆</h2>
+          <span class="text-xs md:text-sm bg-slate-700 px-3 py-1 rounded-full text-slate-300 font-bold" id="turns-left">剩餘 3 回合</span>
         </div>
-        <div class="w-full bg-slate-900 rounded-full h-5 md:h-6 relative border border-slate-700 overflow-hidden">
-          <div id="enemy-hp-bar" class="bg-red-600 h-full rounded-full transition-all duration-300 ease-out" style="width: 100%"></div>
-          <div class="absolute inset-0 flex items-center justify-center text-[10px] md:text-xs font-black text-white drop-shadow-md" id="enemy-hp-text">1000 / 1000</div>
+        <div class="w-full bg-slate-900 rounded-full h-6 md:h-7 relative border border-slate-700 overflow-hidden">
+          <div id="enemy-hp-bar" class="bg-gradient-to-r from-red-700 to-red-500 h-full rounded-full transition-all duration-300 ease-out" style="width: 100%"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-xs md:text-sm font-black text-white drop-shadow-md" id="enemy-hp-text">1000 / 1000</div>
         </div>
         <div id="damage-container" class="absolute inset-0 pointer-events-none flex items-center justify-center z-10 overflow-visible"></div>
       </div>
 
-      <div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 shrink-0 shadow-lg flex flex-col">
+      <div id="final-damage-preview" class="bg-gradient-to-br from-red-950 to-slate-900 border-2 border-red-700 p-4 md:p-5 rounded-xl text-center shadow-2xl relative overflow-hidden">
+          <div class="absolute inset-0 bg-red-500/5 animate-pulse"></div>
+          <div class="text-sm text-red-300 mb-1.5 relative z-10 font-bold">預估造成傷害</div>
+          <div class="text-4xl md:text-5xl lg:text-6xl font-black text-white relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.7)] tracking-tighter" id="final-score-value">
+              0
+          </div>
+      </div>
+
+      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shrink-0 shadow-lg flex flex-col relative">
         <div class="flex justify-between items-center mb-3 md:mb-4 px-1">
-          <h2 class="text-sm md:text-base font-bold text-slate-200">盤面 (8d8)</h2>
-          <span id="rolls-left-badge" class="bg-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-amber-300 transition-colors">剩餘重骰：2</span>
+          <h2 class="text-lg md:text-xl font-bold text-slate-200">盤面</h2>
+          <span id="rolls-left-badge" class="bg-slate-700 px-3 py-1 rounded-full text-xs md:text-sm font-bold text-amber-300 transition-colors">剩餘重骰：2</span>
         </div>
         <div class="flex flex-row gap-2 md:gap-4 items-stretch justify-between">
           <div id="dice-container" class="grid grid-cols-4 gap-x-2 gap-y-3 md:gap-x-6 md:gap-y-6 flex-grow px-1 md:px-4 py-2"></div>
-          <div id="controls-container" class="flex flex-col gap-2 w-16 md:w-28 shrink-0 justify-center"></div>
+          <div id="controls-container" class="flex flex-col gap-2.5 w-16 md:w-32 shrink-0 justify-center"></div>
         </div>
       </div>
 
-      <div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 flex-grow overflow-y-auto min-h-[100px] md:min-h-[150px] shadow-inner">
-        <h2 class="text-xs md:text-sm font-bold text-slate-400 mb-2">已持有遺物 (依稀有度排序)</h2>
-        <div id="inventory-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+      <div id="inventory-container-old" class="hidden"></div>
+    </div>
+
+    <div id="score-area" class="w-full lg:w-96 bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col shrink-0 overflow-y-auto shadow-xl relative z-20">
+      <div class="flex justify-between items-center mb-3 md:mb-4 border-b border-slate-700 pb-2">
+        <h2 class="text-lg md:text-xl font-black text-slate-100">牌型結算 (A/B/C/D)</h2>
+        </div>
+      
+      <div id="score-display" class="space-y-2"></div>
+
+      <div id="owned-relics-area" class="mt-4 border-t border-slate-700 pt-4 flex-grow overflow-y-auto">
+          <h2 class="text-base md:text-lg font-bold text-slate-400 mb-3">已持有遺物 (依稀有度排序)</h2>
+          <div id="inventory-grid" class="grid grid-cols-2 gap-2.5">
+              </div>
       </div>
     </div>
 
-    <div id="score-area" class="w-full lg:w-80 bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 flex flex-col shrink-0 overflow-y-auto shadow-xl relative z-20">
-      <div class="flex justify-between items-center mb-2 md:mb-4 border-b border-slate-700 pb-2">
-        <h2 class="text-sm md:text-xl font-bold">即時結算引擎</h2>
-        <span class="text-[9px] md:text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded">點擊牌型可預覽發動來源</span>
-      </div>
-      <div id="score-display" class="flex-grow flex flex-col text-xs md:text-sm"></div>
-    </div>
-
-    <div id="shop-overlay" class="absolute inset-0 bg-slate-900/95 backdrop-blur-md z-50 hidden flex-col p-4 md:p-6 overflow-y-auto">
+    <div id="shop-overlay" class="absolute inset-0 bg-slate-950/98 backdrop-blur-md z-50 hidden flex-col p-4 md:p-6 overflow-y-auto">
       <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-        <h1 class="text-2xl md:text-3xl font-black text-yellow-400">💰 雲雲商店</h1>
-        <div class="text-sm md:text-xl font-bold text-yellow-400 bg-slate-800 px-3 py-1.5 md:px-4 md:py-2 rounded-lg border border-yellow-700">
+        <h1 class="text-3xl md:text-4xl font-black text-yellow-400 tracking-tight">💰 雲雲商店</h1>
+        <div class="text-lg md:text-2xl font-bold text-yellow-400 bg-slate-800 px-4 py-2 rounded-xl border border-yellow-700">
           金幣: <span id="shop-gold">0</span>
         </div>
       </div>
-      <p class="text-xs md:text-sm text-slate-300 mb-4">選擇購買遺物來強化你的流派，或者進入下一關。</p>
-      <div id="shop-items" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6"></div>
-      <div class="flex flex-col sm:flex-row gap-3 mt-auto">
-        <button id="shop-reroll-btn" class="w-full sm:w-auto flex-1 text-white font-bold py-3 md:py-4 rounded-xl transition-colors active:scale-95 text-sm md:text-base border-2 border-transparent">刷新商店</button>
-        <button id="btn-next-stage" class="w-full sm:w-auto flex-[2] bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 md:py-4 rounded-xl transition-colors text-sm md:text-lg active:scale-95 shadow-lg shadow-amber-900/50">離開並前往下一關 ➡️</button>
+      <p class="text-base text-slate-300 mb-6 font-bold">選擇購買遺物來強化你的流派，或者進入下一關。</p>
+      <div id="shop-items" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8"></div>
+      <div class="flex flex-col sm:flex-row gap-4 mt-auto">
+        <button id="shop-reroll-btn" class="w-full sm:w-auto flex-1 text-white font-bold py-4 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4">刷新商店</button>
+        <button id="btn-next-stage" class="w-full sm:w-auto flex-[2] bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-xl transition-colors text-lg md:text-xl active:scale-95 shadow-lg shadow-amber-900/50">離開並前往下一關 ➡️</button>
       </div>
     </div>
 
     <div id="end-overlay" class="absolute inset-0 bg-red-950/95 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center">
-      <h1 id="end-title" class="text-4xl md:text-6xl font-black text-red-500 mb-4">GAME OVER</h1>
-      <p id="end-desc" class="text-sm md:text-xl text-slate-300 mb-8">你未能擊敗敵人，旅程到此為止。</p>
-      <button id="btn-restart" class="bg-slate-200 hover:bg-white text-slate-900 font-black py-3 px-8 md:py-4 md:px-12 rounded-full transition-transform hover:scale-105 active:scale-95 text-base md:text-xl shadow-xl">回到標題畫面</button>
+      <h1 id="end-title" class="text-5xl md:text-7xl font-black text-red-500 mb-4 pop-anim">GAME OVER</h1>
+      <p id="end-desc" class="text-lg md:text-2xl text-slate-300 mb-10 font-bold max-w-xl">你未能擊敗敵人，旅程到此為止。</p>
+      <button id="btn-restart" class="bg-white hover:bg-slate-200 text-slate-900 font-black py-4 px-10 md:py-5 md:px-16 rounded-full transition-transform hover:scale-105 active:scale-95 text-lg md:text-2xl shadow-2xl">回到標題畫面</button>
     </div>
   </main>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
