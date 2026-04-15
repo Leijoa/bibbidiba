@@ -3,95 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>比比丟八-BIBBIDIBA (遺物狂暴版)</title>
+  <title>比比丟八-BIBBIDIBA (V2.4 Web版)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 引入 Canvas Confetti 產生噴發彩帶特效 -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #0f172a;
-      color: #f1f5f9;
-      overflow-x: hidden;
-      overscroll-behavior-y: none; 
-    }
-    
-    .dice-btn { transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .dice-btn:active { transform: scale(0.85); }
-    
-    .pop-anim { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    @keyframes pop {
-      0% { transform: scale(1) rotate(45deg); }
-      50% { transform: scale(1.15) rotate(45deg); }
-      100% { transform: scale(1) rotate(45deg); }
-    }
-
-    .rolling-dice-anim { animation: rollJiggle 0.1s linear infinite alternate; }
-    @keyframes rollJiggle {
-      0% { transform: rotate(43deg) scale(0.95); }
-      100% { transform: rotate(47deg) scale(1.05); }
-    }
-
-    .pulse-border { animation: pulseBorder 0.6s infinite alternate; }
-    @keyframes pulseBorder {
-      0% { border-color: #475569; color: #64748b; }
-      100% { border-color: #cbd5e1; color: #f8fafc; }
-    }
-
-    .damage-text { animation: floatDamage 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: none; }
-    @keyframes floatDamage {
-      0% { opacity: 0; transform: translateY(20px) scale(0.5); }
-      20% { opacity: 1; transform: translateY(-30px) scale(1.3); }
-      100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
-    }
-
-    .shake-hard { animation: shakeHard 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes shakeHard {
-      0%, 100% { transform: translate3d(0, 0, 0); }
-      10%, 90% { transform: translate3d(-2px, -2px, 0); }
-      20%, 80% { transform: translate3d(4px, 4px, 0); }
-      30%, 50%, 70% { transform: translate3d(-6px, -4px, 0); }
-      40%, 60% { transform: translate3d(6px, 2px, 0); }
-    }
-
-    .flash-red-anim { animation: flashRed 0.5s ease-out forwards; }
-    @keyframes flashRed {
-      0% { background-color: rgba(220, 38, 38, 0.4); }
-      100% { background-color: transparent; }
-    }
-
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-
-    /* 浮動提示框動畫 */
-    .toast-enter { animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    @keyframes toastIn {
-      0% { opacity: 0; transform: translate(-50%, -30%) scale(0.8); }
-      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="p-2 md:p-4 h-[100dvh] flex flex-col relative overflow-hidden">
 
-  <!-- 全螢幕受擊閃紅光疊層 -->
+  <div id="title-screen" class="absolute inset-0 bg-slate-900 z-[60] flex flex-col items-center justify-center p-6 text-center">
+    <div class="mb-8 pop-anim">
+      <h1 class="text-5xl md:text-7xl font-black text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)] tracking-tighter">BIBBIDIBA</h1>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-300 mt-2">比比丟八</h2>
+    </div>
+    <div class="flex flex-col gap-4 w-full max-w-xs">
+      <button id="btn-continue" class="hidden bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(37,99,235,0.5)]">
+        繼續旅程
+      </button>
+      <button id="btn-new-game" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(217,119,6,0.5)]">
+        開始新遊戲
+      </button>
+    </div>
+    <div class="absolute bottom-4 text-slate-500 text-xs font-bold">V2.4 Web Edition</div>
+  </div>
+
   <div id="hit-flash" class="fixed inset-0 pointer-events-none z-40 hidden"></div>
 
-  <!-- 頂部資訊列 -->
   <header class="flex justify-between items-end mb-2 md:mb-4 border-b border-slate-700 pb-2 shrink-0 px-1">
     <div class="flex items-end gap-2 md:gap-4">
       <div>
         <h1 class="text-xl md:text-2xl font-black text-amber-400 flex items-center gap-1 md:gap-2 tracking-tight">
           <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-          BIBBIDIBA <span class="text-[10px] md:text-sm bg-amber-600 text-white px-1.5 md:px-2 py-0.5 rounded-full ml-1 md:ml-2">V2.2</span>
+          BIBBIDIBA
         </h1>
         <div class="text-xs md:text-sm text-slate-400 font-bold" id="stage-info">關卡 1-1</div>
       </div>
     </div>
     <div class="flex gap-3 md:gap-4 text-right items-center">
-      <button onclick="toggleRules()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] md:text-xs font-bold py-1.5 px-2 md:px-3 rounded shadow transition-colors flex items-center gap-1 active:scale-95">
+      <button id="btn-rules" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] md:text-xs font-bold py-1.5 px-2 md:px-3 rounded shadow transition-colors flex items-center gap-1 active:scale-95">
         📖 <span class="hidden sm:inline">牌型表</span>
       </button>
       <div>
@@ -105,90 +53,19 @@
     </div>
   </header>
 
-  <!-- 牌型表 Modal -->
   <div id="rules-modal" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
     <div class="bg-slate-800 border border-slate-600 rounded-xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl">
       <div class="p-3 md:p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900 rounded-t-xl shrink-0">
-         <h2 class="text-lg md:text-xl font-bold text-amber-400 flex items-center gap-2">📖 全牌型倍率表 (V2.1)</h2>
-         <button onclick="toggleRules()" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+        <h2 class="text-lg md:text-xl font-bold text-amber-400 flex items-center gap-2">📖 全牌型倍率表</h2>
+        <button id="btn-close-rules" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
       </div>
-      <div class="p-3 md:p-4 overflow-y-auto flex-grow text-xs md:text-sm">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <!-- A 群組 -->
-          <div>
-            <h3 class="text-base md:text-lg font-bold text-blue-300 mb-2 border-b border-blue-900/50 pb-1">A. 同數系 (Kind)</h3>
-            <table class="w-full text-left border-collapse">
-              <thead><tr class="bg-slate-700 text-slate-300"><th class="p-1.5 md:p-2 rounded-tl">牌型</th><th class="p-1.5 md:p-2">條件</th><th class="p-1.5 md:p-2 rounded-tr text-right">倍率</th></tr></thead>
-              <tbody class="divide-y divide-slate-700">
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">八重奏</td><td class="p-1.5 md:p-2 text-slate-400">8 顆骰子完全相同</td><td class="p-1.5 md:p-2 text-blue-400 font-bold text-right">x50.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">七同</td><td class="p-1.5 md:p-2 text-slate-400">至少 7 顆相同數字</td><td class="p-1.5 md:p-2 text-blue-400 font-bold text-right">x25.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">六同</td><td class="p-1.5 md:p-2 text-slate-400">至少 6 顆相同數字</td><td class="p-1.5 md:p-2 text-blue-400 font-bold text-right">x12.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">五同</td><td class="p-1.5 md:p-2 text-slate-400">至少 5 顆相同數字</td><td class="p-1.5 md:p-2 text-blue-400 font-bold text-right">x6.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">四同</td><td class="p-1.5 md:p-2 text-slate-400">至少 4 顆相同數字</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x4.5</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">三同</td><td class="p-1.5 md:p-2 text-slate-400">至少 3 顆相同數字</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x2.5</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">對子</td><td class="p-1.5 md:p-2 text-slate-400">至少 2 顆相同數字</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x1.5</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <!-- B 群組 -->
-          <div>
-            <h3 class="text-base md:text-lg font-bold text-pink-300 mb-2 border-b border-pink-900/50 pb-1">B. 順序系 (Seq)</h3>
-            <table class="w-full text-left border-collapse">
-              <thead><tr class="bg-slate-700 text-slate-300"><th class="p-1.5 md:p-2 rounded-tl">牌型</th><th class="p-1.5 md:p-2">條件</th><th class="p-1.5 md:p-2 rounded-tr text-right">倍率</th></tr></thead>
-              <tbody class="divide-y divide-slate-700">
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">大滿貫</td><td class="p-1.5 md:p-2 text-slate-400">1 到 8 剛好各一顆</td><td class="p-1.5 md:p-2 text-pink-400 font-bold text-right">x8.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">三龍會</td><td class="p-1.5 md:p-2 text-slate-400">完美分割為: 3順 + 3順 + 2順</td><td class="p-1.5 md:p-2 text-pink-400 font-bold text-right">x12.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">雙順</td><td class="p-1.5 md:p-2 text-slate-400">兩組長度為 4 的順子</td><td class="p-1.5 md:p-2 text-pink-400 font-bold text-right">x6.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">五連順</td><td class="p-1.5 md:p-2 text-slate-400">至少 5 顆連續數字</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x3.5</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">雙三連順</td><td class="p-1.5 md:p-2 text-slate-400">包含兩組獨立的 3 連順</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x3.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">三連順</td><td class="p-1.5 md:p-2 text-slate-400">至少 3 顆連續數字</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x2.0</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <!-- C 群組 -->
-          <div>
-            <h3 class="text-base md:text-lg font-bold text-purple-300 mb-2 border-b border-purple-900/50 pb-1">C. 結構系 (Struct)</h3>
-            <table class="w-full text-left border-collapse">
-              <thead><tr class="bg-slate-700 text-slate-300"><th class="p-1.5 md:p-2 rounded-tl">牌型</th><th class="p-1.5 md:p-2">條件</th><th class="p-1.5 md:p-2 rounded-tr text-right">倍率</th></tr></thead>
-              <tbody class="divide-y divide-slate-700">
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">雙子星</td><td class="p-1.5 md:p-2 text-slate-400">完美拆分：4同 + 4同</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x20.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">葫蘆</td><td class="p-1.5 md:p-2 text-slate-400">完美拆分：5同 + 3同</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x15.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">經典四對子</td><td class="p-1.5 md:p-2 text-slate-400">完美包含 4 組不重複的對子</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x10.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">中葫蘆</td><td class="p-1.5 md:p-2 text-slate-400">包含 4同 + 3同</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x8.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">平胡</td><td class="p-1.5 md:p-2 text-slate-400">完美拆分：3順 + 3順 + 2同</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x6.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">碰碰胡</td><td class="p-1.5 md:p-2 text-slate-400">完美拆分：3同 + 3同 + 2同</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x5.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">四對子</td><td class="p-1.5 md:p-2 text-slate-400">包含任意 4 組對子</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x5.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">小葫蘆</td><td class="p-1.5 md:p-2 text-slate-400">包含 3同 + 2同</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x3.5</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">雙三同</td><td class="p-1.5 md:p-2 text-slate-400">包含兩組獨立的 3同</td><td class="p-1.5 md:p-2 text-purple-400 font-bold text-right">x3.5</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">三對子</td><td class="p-1.5 md:p-2 text-slate-400">包含任意 3 組對子</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x3.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-emerald-300">雙對子</td><td class="p-1.5 md:p-2 text-slate-400">包含任意 2 組對子</td><td class="p-1.5 md:p-2 text-emerald-400 font-bold text-right">x2.0</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <!-- D 群組 -->
-          <div>
-            <h3 class="text-base md:text-lg font-bold text-teal-300 mb-2 border-b border-teal-900/50 pb-1">D. 屬性系 (Prop)</h3>
-            <table class="w-full text-left border-collapse">
-              <thead><tr class="bg-slate-700 text-slate-300"><th class="p-1.5 md:p-2 rounded-tl">牌型</th><th class="p-1.5 md:p-2">條件</th><th class="p-1.5 md:p-2 rounded-tr text-right">倍率</th></tr></thead>
-              <tbody class="divide-y divide-slate-700">
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">兩極</td><td class="p-1.5 md:p-2 text-slate-400">8 顆骰子「僅包含」1 與 8</td><td class="p-1.5 md:p-2 text-teal-400 font-bold text-right">x30.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">絕對秩序</td><td class="p-1.5 md:p-2 text-slate-400">8 顆全為奇數，或全為偶數</td><td class="p-1.5 md:p-2 text-teal-400 font-bold text-right">x8.0</td></tr>
-                <tr><td class="p-1.5 md:p-2 font-bold text-white">全異</td><td class="p-1.5 md:p-2 text-slate-400">8 顆骰子數字完全不重複</td><td class="p-1.5 md:p-2 text-teal-400 font-bold text-right">x2.5</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="p-3 md:p-4 overflow-y-auto flex-grow text-xs md:text-sm" id="rules-content">
         </div>
-      </div>
     </div>
   </div>
 
-  <!-- 主要內容區 -->
   <main class="flex-grow flex flex-col lg:flex-row gap-2 md:gap-4 overflow-hidden relative" id="main-container">
-    
-    <!-- 左側/上方：戰鬥區域 -->
     <div id="battle-area" class="flex-1 flex flex-col gap-2 md:gap-4 overflow-y-auto pb-4 lg:pb-0">
-      
-      <!-- 敵人與目標 -->
       <div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 shrink-0 relative overflow-hidden shadow-lg">
         <div class="flex justify-between items-center mb-2">
           <h2 class="text-base md:text-lg font-bold text-red-300 flex items-center gap-2" id="enemy-name">⚔️ 史萊姆</h2>
@@ -196,41 +73,36 @@
         </div>
         <div class="w-full bg-slate-900 rounded-full h-5 md:h-6 relative border border-slate-700 overflow-hidden">
           <div id="enemy-hp-bar" class="bg-red-600 h-full rounded-full transition-all duration-300 ease-out" style="width: 100%"></div>
-          <div class="absolute inset-0 flex items-center justify-center text-[10px] md:text-xs font-black text-white drop-shadow-md" id="enemy-hp-text">
-            1000 / 1000
-          </div>
+          <div class="absolute inset-0 flex items-center justify-center text-[10px] md:text-xs font-black text-white drop-shadow-md" id="enemy-hp-text">1000 / 1000</div>
         </div>
         <div id="damage-container" class="absolute inset-0 pointer-events-none flex items-center justify-center z-10 overflow-visible"></div>
       </div>
 
-      <!-- 骰子盤面 -->
-      <div class="bg-slate-800 p-3 md:p-6 rounded-xl border border-slate-700 shrink-0 shadow-lg">
-        <div class="flex justify-between items-center mb-3 md:mb-6">
+      <div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 shrink-0 shadow-lg flex flex-col">
+        <div class="flex justify-between items-center mb-3 md:mb-4 px-1">
           <h2 class="text-sm md:text-base font-bold text-slate-200">盤面 (8d8)</h2>
-          <span id="rolls-left-badge" class="bg-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-amber-300 transition-colors">
-            剩餘重骰：2
-          </span>
+          <span id="rolls-left-badge" class="bg-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-amber-300 transition-colors">剩餘重骰：2</span>
         </div>
-        
-        <div id="dice-container" class="grid grid-cols-4 gap-x-2 gap-y-4 md:gap-x-6 md:gap-y-8 mb-4 md:mb-6 px-2 md:px-4 py-2"></div>
-        
-        <div id="controls-container" class="flex gap-2 h-12 md:h-14"></div>
+        <div class="flex flex-row gap-2 md:gap-4 items-stretch justify-between">
+          <div id="dice-container" class="grid grid-cols-4 gap-x-2 gap-y-3 md:gap-x-6 md:gap-y-6 flex-grow px-1 md:px-4 py-2"></div>
+          <div id="controls-container" class="flex flex-col gap-2 w-16 md:w-28 shrink-0 justify-center"></div>
+        </div>
       </div>
 
-      <!-- 已持有遺物區 -->
       <div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 flex-grow overflow-y-auto min-h-[100px] md:min-h-[150px] shadow-inner">
-        <h2 class="text-xs md:text-sm font-bold text-slate-400 mb-2">已持有遺物</h2>
+        <h2 class="text-xs md:text-sm font-bold text-slate-400 mb-2">已持有遺物 (依稀有度排序)</h2>
         <div id="inventory-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
       </div>
     </div>
 
-    <!-- 右側/下方：即時結算面板 -->
-    <div id="score-area" class="w-full lg:w-80 bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 flex flex-col shrink-0 overflow-y-auto shadow-xl">
-      <h2 class="text-sm md:text-xl font-bold mb-2 md:mb-4 border-b border-slate-700 pb-2">即時結算引擎</h2>
+    <div id="score-area" class="w-full lg:w-80 bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700 flex flex-col shrink-0 overflow-y-auto shadow-xl relative z-20">
+      <div class="flex justify-between items-center mb-2 md:mb-4 border-b border-slate-700 pb-2">
+        <h2 class="text-sm md:text-xl font-bold">即時結算引擎</h2>
+        <span class="text-[9px] md:text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded">點擊牌型可預覽發動來源</span>
+      </div>
       <div id="score-display" class="flex-grow flex flex-col text-xs md:text-sm"></div>
     </div>
 
-    <!-- 商店疊層 -->
     <div id="shop-overlay" class="absolute inset-0 bg-slate-900/95 backdrop-blur-md z-50 hidden flex-col p-4 md:p-6 overflow-y-auto">
       <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
         <h1 class="text-2xl md:text-3xl font-black text-yellow-400">💰 雲雲商店</h1>
@@ -241,637 +113,18 @@
       <p class="text-xs md:text-sm text-slate-300 mb-4">選擇購買遺物來強化你的流派，或者進入下一關。</p>
       <div id="shop-items" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6"></div>
       <div class="flex flex-col sm:flex-row gap-3 mt-auto">
-        <button onclick="rerollShop()" class="w-full sm:w-auto flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 md:py-4 rounded-xl transition-colors active:scale-95 text-sm md:text-base">
-          刷新商店 (5 金幣)
-        </button>
-        <button onclick="nextStage()" class="w-full sm:w-auto flex-[2] bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 md:py-4 rounded-xl transition-colors text-sm md:text-lg active:scale-95 shadow-lg shadow-amber-900/50">
-          離開並前往下一關 ➡️
-        </button>
+        <button id="shop-reroll-btn" class="w-full sm:w-auto flex-1 text-white font-bold py-3 md:py-4 rounded-xl transition-colors active:scale-95 text-sm md:text-base border-2 border-transparent">刷新商店</button>
+        <button id="btn-next-stage" class="w-full sm:w-auto flex-[2] bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 md:py-4 rounded-xl transition-colors text-sm md:text-lg active:scale-95 shadow-lg shadow-amber-900/50">離開並前往下一關 ➡️</button>
       </div>
     </div>
 
-    <!-- Game Over / 勝利 疊層 -->
     <div id="end-overlay" class="absolute inset-0 bg-red-950/95 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center">
       <h1 id="end-title" class="text-4xl md:text-6xl font-black text-red-500 mb-4">GAME OVER</h1>
       <p id="end-desc" class="text-sm md:text-xl text-slate-300 mb-8">你未能擊敗敵人，旅程到此為止。</p>
-      <button onclick="location.reload()" class="bg-slate-200 hover:bg-white text-slate-900 font-black py-3 px-8 md:py-4 md:px-12 rounded-full transition-transform hover:scale-105 active:scale-95 text-base md:text-xl shadow-xl">
-        重新開始遊戲
-      </button>
+      <button id="btn-restart" class="bg-slate-200 hover:bg-white text-slate-900 font-black py-3 px-8 md:py-4 md:px-12 rounded-full transition-transform hover:scale-105 active:scale-95 text-base md:text-xl shadow-xl">回到標題畫面</button>
     </div>
-
   </main>
 
-  <script>
-    // --- 企劃資料庫 ---
-    const RELIC_DB = [
-      { id: 'b1', name: '【大一】', desc: '1 的計算點數 x5', price: 10 },
-      { id: 'b2', name: '【大二】', desc: '2 的計算點數 x5', price: 10 },
-      { id: 'b8', name: '【大八】', desc: '8 的計算點數 x5', price: 20 },
-      { id: 'small', name: '【小小】', desc: '1,2,3 的計算點數 x3.5', price: 15 },
-      { id: 'big', name: '【大大】', desc: '6,7,8 的計算點數 x3.5', price: 15 },
-      { id: 'mid', name: '【中堅】', desc: '4,5 的計算點數 x4', price: 12 },
-      { id: 'odd', name: '【奇數】', desc: '奇數點數 x2.5', price: 18 },
-      { id: 'even', name: '【偶數】', desc: '偶數點數 x2.5', price: 18 },
-      { id: 'pansy', name: '【潘絲絲的祝福】', desc: '場上有 8 時總傷害 x3', price: 30 },
-      { id: 'blue', name: '【青發的加護】', desc: '大滿貫倍率從 x8 變 x24', price: 25 },
-      { id: 'order', name: '【絕對秩序】', desc: '同數與順序倍率相加後再相乘', price: 40 },
-      { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +15', price: 20 },
-      { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +2', price: 35 },
-    ];
-
-    const ENEMY_DB = [
-      { name: '史萊姆', hp: 800, turns: 3 },
-      { name: '哥布林小隊', hp: 2500, turns: 3 },
-      { name: '巨石傀儡', hp: 10000, turns: 4 },
-      { name: '深淵魔龍', hp: 50000, turns: 4 },
-      { name: '創世神 (最終Boss)', hp: 200000, turns: 5 },
-    ];
-
-    let player = { hp: 3, gold: 0, relics: [], maxRolls: 2 };
-    let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0 };
-    let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i, highlightGroup: null, highlightMulti: 0 })), rollsLeft: 0, scoreResult: null };
-    let shopItems = [];
-
-    const el = {
-      stageInfo: document.getElementById('stage-info'),
-      playerHp: document.getElementById('player-hp'),
-      playerGold: document.getElementById('player-gold'),
-      enemyName: document.getElementById('enemy-name'),
-      enemyHpBar: document.getElementById('enemy-hp-bar'),
-      enemyHpText: document.getElementById('enemy-hp-text'),
-      turnsLeft: document.getElementById('turns-left'),
-      diceContainer: document.getElementById('dice-container'),
-      controlsContainer: document.getElementById('controls-container'),
-      rollsBadge: document.getElementById('rolls-left-badge'),
-      inventoryGrid: document.getElementById('inventory-grid'),
-      scoreDisplay: document.getElementById('score-display'),
-      battleArea: document.getElementById('battle-area'),
-      rulesModal: document.getElementById('rules-modal'),
-      shopOverlay: document.getElementById('shop-overlay'),
-      shopGold: document.getElementById('shop-gold'),
-      shopItemsContainer: document.getElementById('shop-items'),
-      endOverlay: document.getElementById('end-overlay'),
-      endTitle: document.getElementById('end-title'),
-      endDesc: document.getElementById('end-desc'),
-      damageContainer: document.getElementById('damage-container'),
-      hitFlash: document.getElementById('hit-flash')
-    };
-
-    function initGame() {
-      player.relics = []; 
-      player.gold = 10;
-      loadStage(0);
-    }
-
-    function toggleRules() {
-      el.rulesModal.classList.toggle('hidden');
-    }
-
-    function shootConfetti() {
-      if(typeof confetti === 'function') {
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f87171', '#60a5fa', '#34d399'] });
-      }
-    }
-
-    function showToast(msg, callback) {
-      let toast = document.createElement('div');
-      toast.className = 'fixed top-1/2 left-1/2 bg-slate-800 text-white font-bold py-4 px-6 md:py-6 md:px-10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-2 md:border-4 border-amber-500 z-[100] text-lg md:text-3xl text-center flex flex-col gap-2 toast-enter';
-      toast.innerHTML = msg.replace('\n', '<br/>');
-      document.body.appendChild(toast);
-      setTimeout(() => {
-        toast.style.transition = 'opacity 0.3s ease';
-        toast.style.opacity = '0';
-        setTimeout(() => { toast.remove(); if(callback) callback(); }, 300);
-      }, 1500);
-    }
-
-    function loadStage(levelIndex) {
-      if (levelIndex >= ENEMY_DB.length) return gameWin();
-      stage.level = levelIndex;
-      let enemy = ENEMY_DB[levelIndex];
-      stage.enemyMaxHp = enemy.hp;
-      stage.enemyHp = enemy.hp;
-      stage.turnsLeft = enemy.turns;
-      el.shopOverlay.classList.add('hidden');
-      updateHeaderUI();
-      updateEnemyUI();
-      startTurn();
-    }
-
-    function startTurn() {
-      if (stage.turnsLeft <= 0) return gameOver("回合耗盡，未能擊敗敵人！");
-      battle.state = 'IDLE';
-      // 刷新幣給予 +2 次重骰
-      player.maxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2);
-      battle.rollsLeft = player.maxRolls;
-      battle.dice = battle.dice.map((d, i) => ({ val: 1, locked: false, id: i, highlightGroup: null, highlightMulti: 0 }));
-      battle.scoreResult = null;
-      renderAll();
-      executeRoll(true);
-    }
-
-    function updateHeaderUI() {
-      el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
-      el.playerHp.innerText = `${player.hp}/3`;
-      el.playerGold.innerText = player.gold;
-    }
-
-    function updateEnemyUI() {
-      el.enemyName.innerText = `⚔️ ${ENEMY_DB[stage.level].name}`;
-      el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 回合`;
-      let pct = Math.max(0, (stage.enemyHp / stage.enemyMaxHp) * 100);
-      el.enemyHpBar.style.width = `${pct}%`;
-      el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
-    }
-
-    function renderInventory() {
-      if (player.relics.length === 0) {
-        el.inventoryGrid.innerHTML = `<div class="col-span-full text-[10px] md:text-xs text-slate-500">背包空空如也</div>`;
-        return;
-      }
-      el.inventoryGrid.innerHTML = player.relics.map(id => {
-        let r = RELIC_DB.find(x => x.id === id);
-        return `<div class="bg-slate-700/50 p-1.5 md:p-2 rounded border border-slate-600 shadow-sm"><div class="text-[10px] md:text-xs font-bold text-amber-400">${r.name}</div><div class="text-[9px] md:text-[10px] text-slate-400 leading-tight mt-0.5">${r.desc}</div></div>`;
-      }).join('');
-    }
-
-    function renderDice() {
-      el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
-        let wrapperClass = "w-11 h-11 sm:w-16 sm:h-16 flex items-center justify-center mx-auto";
-        let diamondClass = "w-full h-full rotate-45 rounded-md sm:rounded-lg border-2 flex items-center justify-center shadow-lg transition-all duration-200 relative ";
-        let innerClass = "-rotate-45 w-full h-full flex items-center justify-center text-xl sm:text-3xl font-black relative z-10";
-        
-        let colorClasses = "bg-slate-700 border-slate-500 text-white";
-        
-        if(battle.state !== 'IDLE'){
-          if (battle.state === 'ROLLING' && !d.locked) {
-            diamondClass += "rolling-dice-anim border-dashed ";
-            colorClasses = "bg-slate-800 border-slate-500 text-slate-500";
-          } else if (d.locked) {
-            colorClasses = "bg-emerald-900 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(52,211,153,0.5)]";
-          } else if (battle.state === 'WAIT_ACTION' && d.highlightGroup) {
-            if (d.highlightGroup === 'A') colorClasses = "bg-blue-900 border-blue-400 text-blue-200 shadow-[0_0_15px_rgba(96,165,250,0.6)]";
-            else if (d.highlightGroup === 'B') colorClasses = "bg-pink-900 border-pink-400 text-pink-200 shadow-[0_0_15px_rgba(244,114,182,0.6)]";
-            else if (d.highlightGroup === 'C') colorClasses = "bg-purple-900 border-purple-400 text-purple-200 shadow-[0_0_15px_rgba(192,132,252,0.6)]";
-            else if (d.highlightGroup === 'D') colorClasses = "bg-teal-900 border-teal-400 text-teal-200 shadow-[0_0_15px_rgba(45,212,191,0.6)]";
-          } else {
-            colorClasses = "bg-slate-700 border-slate-500 text-white hover:bg-slate-600";
-          }
-        }
-        
-        let lockIcon = d.locked ? `<div class="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 -rotate-45 bg-emerald-500 rounded-full p-0.5 sm:p-1 shadow border border-emerald-300 z-20"><svg class="w-3 h-3 sm:w-4 sm:h-4 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
-        let valDisplay = (battle.state === 'IDLE') ? '-' : (battle.state === 'ROLLING' && !d.locked ? '?' : d.val);
-        let cursor = battle.state === 'WAIT_ACTION' ? 'cursor-pointer dice-btn' : '';
-
-        return `
-        <div class="${wrapperClass}">
-            <div id="dice-element-${idx}" onclick="toggleLock(${idx})" class="${diamondClass} ${colorClasses} ${cursor}">
-                <div class="${innerClass}">
-                    ${valDisplay}
-                </div>
-                ${lockIcon}
-            </div>
-        </div>`;
-      }).join('');
-      
-      el.rollsBadge.innerText = `剩餘重骰：${battle.rollsLeft}`;
-      el.rollsBadge.className = battle.rollsLeft === 0 ? "bg-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-slate-400 transition-colors" : "bg-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-amber-300 transition-colors";
-    }
-
-    function renderControls() {
-      if (battle.state === 'IDLE') { el.controlsContainer.innerHTML = ''; return; }
-      let isRolling = battle.state === 'ROLLING', isAttacking = battle.state === 'ATTACKING';
-      let rollDisabled = (battle.rollsLeft <= 0 || isRolling || isAttacking) ? "disabled opacity-50 cursor-not-allowed" : "hover:bg-blue-500 active:scale-95";
-      let scoreDisabled = (isRolling || isAttacking) ? "disabled opacity-50 cursor-not-allowed" : "hover:bg-red-500 active:scale-95 shadow-lg shadow-red-900/50";
-      
-      el.controlsContainer.innerHTML = `
-        <button onclick="executeRoll(false)" ${rollDisabled} class="flex-1 bg-blue-600 text-white font-bold rounded-lg md:rounded-xl transition-all text-xs md:text-sm">重骰 (-1 次)</button>
-        <button onclick="fireAttack()" ${scoreDisabled} class="flex-[1.5] md:flex-1 bg-red-600 text-white font-bold rounded-lg md:rounded-xl transition-all text-sm md:text-base flex items-center justify-center gap-1">🗡️ 發動攻擊</button>
-      `;
-    }
-
-    function renderScore() {
-      if (!battle.scoreResult || battle.state === 'ROLLING') {
-        el.scoreDisplay.innerHTML = `<div class="text-slate-500 text-center mt-4 md:mt-10">等待盤面穩定...</div>`;
-        return;
-      }
-      let res = battle.scoreResult;
-      let notesHtml = res.globalNotes.map(n => `<div class="text-[10px] md:text-xs text-amber-400 bg-amber-900/30 p-1 md:p-1.5 rounded mb-1 border border-amber-900/50 font-bold">${n}</div>`).join('');
-      
-      let cA = res.tagA.name === '無' ? 'text-slate-500 border-slate-700/50' : 'text-blue-300 border-blue-900/30 bg-blue-900/20';
-      let cB = res.tagB.name === '無' ? 'text-slate-500 border-slate-700/50' : 'text-pink-300 border-pink-900/30 bg-pink-900/20';
-      let cC = res.tagC.name === '無' ? 'text-slate-500 border-slate-700/50' : 'text-purple-300 border-purple-900/30 bg-purple-900/20';
-      let cD = res.tagD.name === '無' ? 'text-slate-500 border-slate-700/50' : 'text-teal-300 border-teal-900/30 bg-teal-900/20';
-
-      el.scoreDisplay.innerHTML = `
-        <div class="flex justify-between items-center bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 mb-2">
-          <span class="text-[10px] md:text-xs text-slate-400 font-bold">底盤點數</span>
-          <span class="text-base md:text-xl font-black text-white">${res.totalBase.toFixed(1)}</span>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-1.5 md:gap-2 mb-2">
-          <div class="flex flex-col bg-slate-800 p-1.5 md:p-2 rounded-md border ${cA}">
-            <div class="text-[9px] md:text-[10px] opacity-80 font-bold">A: ${res.tagA.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagA.multi.toFixed(1)}</div>
-          </div>
-          <div class="flex flex-col bg-slate-800 p-1.5 md:p-2 rounded-md border ${cB}">
-            <div class="text-[9px] md:text-[10px] opacity-80 font-bold">B: ${res.tagB.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagB.multi.toFixed(1)}</div>
-          </div>
-          <div class="flex flex-col bg-slate-800 p-1.5 md:p-2 rounded-md border ${cC}">
-            <div class="text-[9px] md:text-[10px] opacity-80 font-bold">C: ${res.tagC.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagC.multi.toFixed(1)}</div>
-          </div>
-          <div class="flex flex-col bg-slate-800 p-1.5 md:p-2 rounded-md border ${cD}">
-            <div class="text-[9px] md:text-[10px] opacity-80 font-bold">D: ${res.tagD.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagD.multi.toFixed(1)}</div>
-          </div>
-        </div>
-        
-        <div class="mb-2">${notesHtml}</div>
-        
-        <div class="mt-auto border-t border-slate-700 pt-2 md:pt-3">
-          <div class="flex justify-between items-end mb-1 md:mb-2 px-1">
-            <span class="text-[10px] md:text-xs text-slate-400 font-bold">總乘區</span>
-            <span class="text-sm md:text-lg font-black text-amber-500">x${res.finalMultiplier.toFixed(2)}</span>
-          </div>
-          <div class="bg-gradient-to-br from-red-950 to-slate-900 border border-red-800 p-2 md:p-3 rounded-lg text-center relative overflow-hidden shadow-lg">
-             ${battle.state === 'WAIT_ACTION' ? '<div class="absolute inset-0 bg-red-500/10 animate-pulse"></div>' : ''}
-             <div class="text-[9px] md:text-[10px] text-red-300 mb-0.5 md:mb-1 relative z-10 font-bold">預估造成傷害</div>
-             <div class="text-2xl md:text-3xl font-black text-white relative z-10 drop-shadow-md tracking-tight">
-               ${Math.floor(res.finalScore).toLocaleString()}
-             </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderAll() {
-      updateHeaderUI(); renderInventory(); renderDice(); renderControls(); renderScore();
-    }
-
-    function toggleLock(idx) {
-      if (battle.state === 'WAIT_ACTION') {
-        battle.dice[idx].locked = !battle.dice[idx].locked;
-        renderDice();
-        const diceEl = document.getElementById(`dice-element-${idx}`);
-        if(diceEl) {
-          diceEl.classList.remove('pop-anim');
-          void diceEl.offsetWidth; 
-          diceEl.classList.add('pop-anim');
-        }
-      }
-    }
-
-    function executeRoll(isInitial = false) {
-      if (!isInitial && battle.rollsLeft <= 0) return;
-      if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') return;
-
-      if (!isInitial) battle.rollsLeft--;
-      battle.state = 'ROLLING';
-      
-      battle.dice.forEach(d => { d.highlightGroup = null; d.highlightMulti = 0; });
-      renderAll();
-
-      let intervals = 0;
-      let timer = setInterval(() => {
-        battle.dice = battle.dice.map(d => d.locked ? d : { ...d, val: Math.floor(Math.random() * 8) + 1 });
-        intervals++;
-        renderDice();
-        
-        if (intervals >= 10) {
-          clearInterval(timer);
-          battle.dice.sort((a, b) => a.val - b.val);
-          calculateEngine();
-          battle.state = 'WAIT_ACTION';
-          renderAll();
-        }
-      }, 45); 
-    }
-
-    function applyHighlight(usedVals, groupName, multi) {
-        if(!usedVals || usedVals.length === 0) return;
-        let available = [...usedVals];
-        battle.dice.forEach(d => {
-            let vIdx = available.indexOf(d.val);
-            if(vIdx !== -1) {
-                if (multi > d.highlightMulti) {
-                    d.highlightGroup = groupName;
-                    d.highlightMulti = multi;
-                }
-                available.splice(vIdx, 1);
-            }
-        });
-    }
-
-    function calculateEngine() {
-      let counts = new Array(9).fill(0);
-      battle.dice.forEach(d => counts[d.val]++);
-
-      // 1. 基底 - 套用遺物強化倍率 BUFF!
-      let totalBase = 0;
-      battle.dice.forEach(d => {
-         let multi = 1; let v = d.val;
-         if (v === 1 && player.relics.includes('b1')) multi *= 5;
-         if (v === 2 && player.relics.includes('b2')) multi *= 5;
-         if (v === 8 && player.relics.includes('b8')) multi *= 5;
-         if ([1,2,3].includes(v) && player.relics.includes('small')) multi *= 3.5;
-         if ([6,7,8].includes(v) && player.relics.includes('big')) multi *= 3.5;
-         if ([4,5].includes(v) && player.relics.includes('mid')) multi *= 4;
-         if (v % 2 !== 0 && player.relics.includes('odd')) multi *= 2.5;
-         if (v % 2 === 0 && player.relics.includes('even')) multi *= 2.5;
-         totalBase += (v * multi);
-      });
-
-      function getFreqVals(req1, req2 = 0) {
-           let c = [...counts], used = [];
-           let v1 = -1; for(let i=8; i>=1; i--) if(c[i]>=req1) { v1 = i; break; }
-           if(v1 !== -1) { for(let k=0; k<req1; k++) used.push(v1); c[v1] -= req1; } else return false;
-           if(req2) {
-               let v2 = -1; for(let i=8; i>=1; i--) if(c[i]>=req2) { v2 = i; break; }
-               if(v2 !== -1) { for(let k=0; k<req2; k++) used.push(v2); } else return false;
-           }
-           return used;
-      }
-      function getPairsVals(numPairs) {
-          let c = [...counts], used = [], pairsFound = 0;
-          for(let i=8; i>=1 && pairsFound < numPairs; i--) {
-              while(c[i] >= 2 && pairsFound < numPairs) { used.push(i, i); c[i] -= 2; pairsFound++; }
-          }
-          return pairsFound === numPairs ? used : false;
-      }
-      function getStrictPairsVals(numPairs) {
-          let used = [], pairsFound = 0;
-          for(let i=8; i>=1; i--) { if(counts[i] === 2) { used.push(i, i); pairsFound++; } }
-          return pairsFound === numPairs ? used : false;
-      }
-      function extractVals(targetLengths) {
-          let currentLengths = [...targetLengths].sort((a,b)=>b-a);
-          function search(c, idx, used) {
-            if(idx === currentLengths.length) return used;
-            let len = currentLengths[idx];
-            for(let start=1; start<=8-len+1; start++){
-              let valid = true;
-              for(let i=0; i<len; i++) if(c[start+i]<1) valid=false;
-              if(valid){
-                let nextC = [...c], nextUsed = [...used];
-                for(let i=0; i<len; i++) { nextC[start+i]--; nextUsed.push(start+i); }
-                let res = search(nextC, idx+1, nextUsed);
-                if(res) return res;
-              }
-            }
-            return false;
-          }
-          return search(counts, 0, []);
-      }
-      function exactPartitionVals(c, numSeqs) {
-          let remaining = c.reduce((a,b)=>a+b, 0);
-          if (remaining === 0 && numSeqs === 0) return [];
-          if (remaining < numSeqs * 2 || numSeqs === 0) return false;
-          for(let len=2; len<=8; len++){
-            for(let start=1; start<=8-len+1; start++){
-              let valid = true;
-              for(let i=0; i<len; i++) if(c[start+i]<1) valid=false;
-              if(valid){
-                let nextC = [...c], usedHere = [];
-                for(let i=0; i<len; i++) { nextC[start+i]--; usedHere.push(start+i); }
-                let res = exactPartitionVals(nextC, numSeqs - 1);
-                if(res !== false) return usedHere.concat(res);
-              }
-            }
-          }
-          return false;
-      }
-      function checkAllChowsVals(c) {
-          for(let i=1; i<=6; i++) {
-            if(c[i]>=1 && c[i+1]>=1 && c[i+2]>=1) {
-              let c1 = [...c]; c1[i]--; c1[i+1]--; c1[i+2]--;
-              for(let j=1; j<=6; j++) {
-                if(c1[j]>=1 && c1[j+1]>=1 && c1[j+2]>=1) {
-                  let c2 = [...c1]; c2[j]--; c2[j+1]--; c2[j+2]--;
-                  let p = -1; for(let k=8; k>=1; k--) if(c2[k]>=2) p = k;
-                  if(p !== -1) return [i,i+1,i+2, j,j+1,j+2, p,p];
-                }
-              }
-            }
-          }
-          return false;
-      }
-      function checkAllPongsVals(c) {
-          for(let i=1; i<=8; i++) {
-            if(c[i]>=3) {
-              let c1 = [...c]; c1[i]-=3;
-              for(let j=1; j<=8; j++) {
-                if(c1[j]>=3) {
-                  let c2 = [...c1]; c2[j]-=3;
-                  let p = -1; for(let k=8; k>=1; k--) if(c2[k]>=2) p = k;
-                  if(p !== -1) return [i,i,i, j,j,j, p,p];
-                }
-              }
-            }
-          }
-          return false;
-      }
-
-      // 2. A 群組 (Kind)
-      let tagA = { name: '無', multi: 1.0, used: [] };
-      let maxFreq = Math.max(...counts);
-      if (maxFreq >= 8) tagA = { name: '八重奏', multi: 50.0, used: getFreqVals(8) };
-      else if (maxFreq >= 7) tagA = { name: '七同', multi: 25.0, used: getFreqVals(7) };
-      else if (maxFreq >= 6) tagA = { name: '六同', multi: 12.0, used: getFreqVals(6) };
-      else if (maxFreq >= 5) tagA = { name: '五同', multi: 6.0, used: getFreqVals(5) };
-      else if (maxFreq >= 4) tagA = { name: '四同', multi: 4.5, used: getFreqVals(4) };
-      else if (maxFreq >= 3) tagA = { name: '三同', multi: 2.5, used: getFreqVals(3) };
-      else if (maxFreq >= 2) tagA = { name: '對子', multi: 1.5, used: getFreqVals(2) };
-
-      // 3. B 群組 (Seq)
-      let tagB = { name: '無', multi: 1.0, used: [] };
-      let bFull = counts.slice(1,9).every(c => c>=1) ? [1,2,3,4,5,6,7,8] : false;
-      let bDragon = exactPartitionVals([...counts], 3);
-      let bDouble4 = extractVals([4, 4]);
-      let b5 = extractVals([5]);
-      let bDouble3 = extractVals([3, 3]);
-      let b3 = extractVals([3]);
-
-      if (bFull) tagB = { name: '大滿貫', multi: player.relics.includes('blue') ? 24.0 : 8.0, used: bFull }; // 青發BUFF!
-      else if (bDragon) tagB = { name: '三龍會', multi: 12.0, used: bDragon };
-      else if (bDouble4) tagB = { name: '雙順', multi: 6.0, used: bDouble4 };
-      else if (b5) tagB = { name: '五連順', multi: 3.5, used: b5 };
-      else if (bDouble3) tagB = { name: '雙三連順', multi: 3.0, used: bDouble3 };
-      else if (b3) tagB = { name: '三連順', multi: 2.0, used: b3 };
-
-      // 4. C 群組 (Struct)
-      let tagC = { name: '無', multi: 1.0, used: [] };
-      let cDStar = getFreqVals(4, 4);
-      let cHulu = getFreqVals(5, 3);
-      let cStrictPairs = getStrictPairsVals(4);
-      let cMidHulu = getFreqVals(4, 3);
-      let cAllChows = checkAllChowsVals(counts);
-      let cAllPongs = checkAllPongsVals(counts);
-      let c4Pairs = getPairsVals(4);
-      let cDoubleTrips = getFreqVals(3, 3);
-      let cSmallHulu = getFreqVals(3, 2);
-      let c3Pairs = getPairsVals(3);
-      let c2Pairs = getPairsVals(2);
-
-      if (cDStar) tagC = { name: '雙子星', multi: 20.0, used: cDStar };
-      else if (cHulu) tagC = { name: '葫蘆', multi: 15.0, used: cHulu };
-      else if (cStrictPairs) tagC = { name: '經典四對子', multi: 10.0, used: cStrictPairs };
-      else if (cMidHulu) tagC = { name: '中葫蘆', multi: 8.0, used: cMidHulu };
-      else if (cAllChows) tagC = { name: '平胡', multi: 6.0, used: cAllChows };
-      else if (cAllPongs) tagC = { name: '碰碰胡', multi: 5.0, used: cAllPongs };
-      else if (c4Pairs) tagC = { name: '四對子', multi: 5.0, used: c4Pairs };
-      else if (cDoubleTrips) tagC = { name: '雙三同', multi: 3.5, used: cDoubleTrips };
-      else if (cSmallHulu) tagC = { name: '小葫蘆', multi: 3.5, used: cSmallHulu };
-      else if (c3Pairs) tagC = { name: '三對子', multi: 3.0, used: c3Pairs };
-      else if (c2Pairs) tagC = { name: '雙對子', multi: 2.0, used: c2Pairs };
-
-      // 5. D 群組 (Prop)
-      let tagD = { name: '無', multi: 1.0, used: [] };
-      let freqs = counts.slice(1).filter(c => c > 0);
-      if (counts[1] + counts[8] === 8) tagD = { name: '兩極', multi: 30.0, used: battle.dice.map(d=>d.val) };
-      else if (counts[1]+counts[3]+counts[5]+counts[7] === 8 || counts[2]+counts[4]+counts[6]+counts[8] === 8) tagD = { name: '絕對秩序', multi: 8.0, used: battle.dice.map(d=>d.val) };
-      else if (freqs.length === 8) tagD = { name: '全異', multi: 2.5, used: battle.dice.map(d=>d.val) };
-
-      applyHighlight(tagD.used, 'D', tagD.multi);
-      applyHighlight(tagC.used, 'C', tagC.multi);
-      applyHighlight(tagB.used, 'B', tagB.multi);
-      applyHighlight(tagA.used, 'A', tagA.multi);
-
-      // 6. 全域與遺物結算
-      let globalMulti = 1.0;
-      let globalNotes = [];
-      let baseABCD = 1.0;
-
-      if (player.relics.includes('order')) {
-        baseABCD = (tagA.multi + tagB.multi) * tagC.multi * tagD.multi;
-        globalNotes.push('【絕對秩序】發動: (A+B)*C*D');
-      } else {
-        baseABCD = tagA.multi * tagB.multi * tagC.multi * tagD.multi;
-      }
-
-      if (player.relics.includes('pansy') && counts[8] > 0) {
-        globalMulti *= 3.0; // 潘絲絲 BUFF!
-        globalNotes.push('【潘絲絲】 x3.0');
-      }
-
-      let rerollMulti = 1.0 + (battle.rollsLeft * 0.5); 
-      if (battle.rollsLeft > 0) {
-        globalMulti *= rerollMulti;
-        globalNotes.push(`保留資源加成 (剩 ${battle.rollsLeft} 次) x${rerollMulti.toFixed(1)}`);
-      }
-
-      let finalMultiplier = baseABCD * globalMulti;
-      let finalScore = totalBase * finalMultiplier;
-
-      battle.scoreResult = {
-        totalBase, tagA, tagB, tagC, tagD, globalMulti, globalNotes, finalMultiplier, finalScore
-      };
-    }
-
-    function fireAttack() {
-      if (battle.state !== 'WAIT_ACTION') return;
-      battle.state = 'ATTACKING';
-      renderControls();
-      
-      let dmg = Math.floor(battle.scoreResult.finalScore);
-      stage.enemyHp -= dmg;
-      
-      el.battleArea.classList.remove('shake-hard');
-      void el.battleArea.offsetWidth;
-      el.battleArea.classList.add('shake-hard');
-
-      el.hitFlash.classList.remove('hidden');
-      el.hitFlash.classList.remove('flash-red-anim');
-      void el.hitFlash.offsetWidth;
-      el.hitFlash.classList.add('flash-red-anim');
-
-      let dmgEl = document.createElement('div');
-      dmgEl.className = 'damage-text text-5xl md:text-7xl font-black text-red-500 drop-shadow-[0_0_20px_rgba(255,0,0,0.9)] z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
-      dmgEl.innerText = `-${dmg.toLocaleString()}`;
-      el.damageContainer.appendChild(dmgEl);
-      
-      setTimeout(() => {
-        dmgEl.remove();
-        el.hitFlash.classList.add('hidden');
-      }, 1200);
-
-      updateEnemyUI();
-
-      setTimeout(() => {
-        if (stage.enemyHp <= 0) enemyDefeated();
-        else {
-          stage.turnsLeft--;
-          if (stage.turnsLeft <= 0) {
-            player.hp--;
-            if (player.hp <= 0) gameOver("血量耗盡，旅程結束！");
-            else {
-              showToast(`⚠️ 未在回合內擊殺！\n扣除 1 HP，重新挑戰！`, () => {
-                  stage.turnsLeft = ENEMY_DB[stage.level].turns;
-                  startTurn();
-              });
-            }
-          } else startTurn();
-        }
-      }, 1000);
-    }
-
-    function enemyDefeated() {
-      let earn = 15 + (stage.turnsLeft * 5) + (player.relics.includes('coin') ? 15 : 0); // 金幣遺物 BUFF!
-      player.gold += earn;
-      
-      shootConfetti();
-      
-      showToast(`🎉 擊敗了 ${ENEMY_DB[stage.level].name}！\n💰 獲得 ${earn} 金幣！`, openShop);
-    }
-
-    function openShop() {
-      el.shopOverlay.classList.remove('hidden'); el.shopOverlay.classList.add('flex');
-      updateShopGold(); rerollShop(true);
-    }
-    function updateShopGold() {
-      el.shopGold.innerText = player.gold; updateHeaderUI();
-    }
-    function rerollShop(isFree = false) {
-      if (!isFree) {
-        if (player.gold < 5) return showToast("⚠️ 金幣不足！");
-        player.gold -= 5; updateShopGold();
-      }
-      shopItems = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
-      renderShopItems();
-    }
-    function renderShopItems() {
-      el.shopItemsContainer.innerHTML = shopItems.map((r, idx) => {
-        let canAfford = player.gold >= r.price;
-        let btnClass = canAfford ? "bg-yellow-600 hover:bg-yellow-500 text-white active:scale-95 shadow-md" : "bg-slate-700 text-slate-500 cursor-not-allowed";
-        return `<div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-600 flex flex-col justify-between"><div><h3 class="text-base md:text-xl font-bold text-amber-400 mb-1">${r.name}</h3><p class="text-xs md:text-sm text-slate-300 mb-3 h-10 md:h-12">${r.desc}</p></div><button onclick="buyItem(${idx})" class="w-full font-bold py-2 md:py-2.5 rounded-lg transition-all ${btnClass}" ${!canAfford ? 'disabled' : ''}>💰 ${r.price} 金幣</button></div>`;
-      }).join('');
-      if(shopItems.length === 0) el.shopItemsContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 py-8">商店已經被你買空了！</div>`;
-    }
-    function buyItem(idx) {
-      let r = shopItems[idx];
-      if (player.gold >= r.price) {
-        player.gold -= r.price; player.relics.push(r.id); shopItems.splice(idx, 1);
-        updateShopGold(); renderShopItems(); renderInventory();
-      }
-    }
-    function nextStage() { loadStage(stage.level + 1); }
-    function gameOver(reason) {
-      el.endOverlay.classList.remove('hidden'); el.endOverlay.classList.add('flex');
-      document.getElementById('end-title').className = "text-4xl md:text-6xl font-black text-red-500 mb-4 shake-hard";
-      document.getElementById('end-title').innerText = "GAME OVER";
-      document.getElementById('end-desc').innerText = reason;
-    }
-    function gameWin() {
-      el.endOverlay.classList.remove('hidden'); el.endOverlay.classList.add('flex');
-      document.getElementById('end-title').className = "text-4xl md:text-6xl font-black text-amber-400 mb-4";
-      document.getElementById('end-title').innerText = "🎉 遊戲通關 🎉";
-      document.getElementById('end-desc').innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
-      let endInterval = setInterval(shootConfetti, 1000);
-      setTimeout(() => clearInterval(endInterval), 5000);
-    }
-
-    initGame();
-  </script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
