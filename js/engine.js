@@ -7,16 +7,24 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
 
     let totalBase = 0;
     dice.forEach(d => {
-        let multi = 1; let v = d.val;
-        if (v === 1 && playerRelics.includes('b1')) multi *= 5;
-        if (v === 2 && playerRelics.includes('b2')) multi *= 5;
-        if (v === 8 && playerRelics.includes('b8')) multi *= 5;
-        if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 3.5;
+        let multi = 1; 
+        let v = d.val;
+        let baseVal = v; // 預設底盤點數為骰面數字
+
+        // ★ 更新：大一、大二、大八的計算邏輯 (以15計算)
+        if (v === 1 && playerRelics.includes('b1')) baseVal = 15;
+        if (v === 2 && playerRelics.includes('b2')) baseVal = 15;
+        if (v === 8 && playerRelics.includes('b8')) baseVal = 15;
+        
+        // ★ 更新：小小的倍率改為 *8
+        if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 8;
+        
         if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 3.5;
         if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4;
         if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 2.5;
         if (v % 2 === 0 && playerRelics.includes('even')) multi *= 2.5;
-        totalBase += (v * multi);
+        
+        totalBase += (baseVal * multi);
     });
 
     // --- 陣列配對輔助函式 ---
@@ -196,7 +204,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     let rerollMulti = 1.0 + (rollsLeft * 0.5);
     if (rollsLeft > 0) {
         globalMulti *= rerollMulti;
-        globalNotes.push(`保留資源加成 (剩 ${rollsLeft} 次) x${rerollMulti.toFixed(1)}`);
+        globalNotes.push(`剩餘資源加成 (剩 ${rollsLeft} 次) x${rerollMulti.toFixed(1)}`);
     }
 
     let finalMultiplier = baseABCD * globalMulti;
