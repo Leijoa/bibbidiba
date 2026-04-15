@@ -1,3 +1,5 @@
+// js/data.js
+
 export const RARITY = {
     1: { label: '普通', color: 'text-slate-300', bg: 'bg-slate-700/50', border: 'border-slate-500' },
     2: { label: '稀有', color: 'text-blue-400', bg: 'bg-blue-900/40', border: 'border-blue-600' },
@@ -6,14 +8,15 @@ export const RARITY = {
 };
 
 export const RELIC_DB = [
-    { id: 'b1', name: '【大一】', desc: '1 的計算點數 x5', price: 10, rarity: 1 },
-    { id: 'b2', name: '【大二】', desc: '2 的計算點數 x5', price: 10, rarity: 1 },
-    { id: 'b8', name: '【大八】', desc: '8 的計算點數 x5', price: 10, rarity: 1 },
-    { id: 'small', name: '【小小】', desc: '1,2,3 的計算點數 x3.5', price: 15, rarity: 2 },
-    { id: 'big', name: '【大大】', desc: '6,7,8 的計算點數 x3.5', price: 15, rarity: 2 },
-    { id: 'mid', name: '【中堅】', desc: '4,5 的計算點數 x4', price: 15, rarity: 2 },
-    { id: 'odd', name: '【奇數】', desc: '奇數點數 x2.5', price: 25, rarity: 3 },
-    { id: 'even', name: '【偶數】', desc: '偶數點數 x2.5', price: 25, rarity: 3 },
+    // ★ 任務3：修改大一～大八與小小的文字描述
+    { id: 'b1', name: '【大一】', desc: '該骰子點數以15計算', price: 10, rarity: 1 },
+    { id: 'b2', name: '【大二】', desc: '該骰子點數以15計算', price: 10, rarity: 1 },
+    { id: 'b8', name: '【大八】', desc: '該骰子點數以15計算', price: 10, rarity: 1 },
+    { id: 'small', name: '【小小】', desc: '1,2,3 的點數倍率*8', price: 15, rarity: 2 },
+    { id: 'big', name: '【大大】', desc: '6,7,8 的點數倍率*3.5', price: 15, rarity: 2 },
+    { id: 'mid', name: '【中堅】', desc: '4,5 的點數倍率*4', price: 15, rarity: 2 },
+    { id: 'odd', name: '【奇數】', desc: '奇數點數倍率*2.5', price: 25, rarity: 3 },
+    { id: 'even', name: '【偶數】', desc: '偶數點數倍率*2.5', price: 25, rarity: 3 },
     { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +15', price: 20, rarity: 3 },
     { id: 'pansy', name: '【潘絲絲的祝福】', desc: '場上有 8 時總傷害 x3', price: 35, rarity: 4 },
     { id: 'blue', name: '【青發的加護】', desc: '大滿貫倍率從 x8 變 x24', price: 35, rarity: 4 },
@@ -29,7 +32,6 @@ export const ENEMY_DB = [
     { name: '創世神 (最終Boss)', hp: 200000, turns: 5 },
 ];
 
-// 補回遺失的牌型表資料 (從你的演算法反推)
 export const RULE_DB = {
     groupA: [
         { name: '八重奏', desc: '8顆相同數字', multi: 'x50.0' },
