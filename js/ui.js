@@ -33,6 +33,12 @@ export const el = {
     btnNewGame: document.getElementById('btn-new-game')
 };
 
+// ★ 任務3：強制讓牌型表按鈕變得超顯眼 (透過 JS 直接覆寫 HTML 樣式)
+if (document.getElementById('btn-rules')) {
+    document.getElementById('btn-rules').innerHTML = "📖 牌型表";
+    document.getElementById('btn-rules').className = "bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-black py-2 px-4 rounded-lg shadow-[0_0_15px_rgba(217,119,6,0.6)] active:scale-95 flex items-center border border-amber-400";
+}
+
 // --- 動畫與特效 ---
 export function shootConfetti() {
     if (typeof confetti === 'function') confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f87171', '#60a5fa', '#34d399'] });
@@ -96,10 +102,13 @@ export function updateEnemyUI(stage) {
     el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
 }
 
-// --- 遺物渲染 (緊湊化) ---
+// --- ★ 任務2：遺物渲染「極限壓縮」，改為膠囊標籤 ---
 export function renderInventory(player) {
+    // 強制把 index.html 設定的網格洗掉，改成緊湊的 flex-wrap
+    el.inventoryGrid.className = "flex flex-wrap gap-1.5";
+
     if (player.relics.length === 0) {
-        el.inventoryGrid.innerHTML = `<div class="col-span-full text-xs text-slate-500 font-bold p-1">背包空空如也</div>`;
+        el.inventoryGrid.innerHTML = `<div class="text-[10px] text-slate-500 font-bold p-1">背包空空如也</div>`;
         return;
     }
     let sortedRelics = [...player.relics].sort((a,b) => RELIC_DB.find(x=>x.id===b).rarity - RELIC_DB.find(x=>x.id===a).rarity);
@@ -108,17 +117,13 @@ export function renderInventory(player) {
         let r = RELIC_DB.find(x => x.id === id);
         let style = RARITY[r.rarity];
         return `
-        <div class="${style.bg} p-2 rounded-lg border ${style.border} shadow-sm flex flex-col justify-between">
-            <div class="flex justify-between items-start mb-1">
-                <div class="text-xs md:text-sm font-black ${style.color} leading-tight">${r.name}</div>
-                <span class="text-[9px] bg-slate-900/50 px-1 py-0.5 rounded ${style.color} border ${style.border} opacity-80 font-bold">${style.label}</span>
-            </div>
-            <div class="text-[10px] md:text-xs text-slate-300 leading-tight font-bold">${r.desc}</div>
+        <div class="${style.bg} px-2 py-1 rounded-full border ${style.border} shadow-sm flex items-center gap-1">
+            <span class="text-[10px] md:text-xs font-black ${style.color} whitespace-nowrap">${r.name}</span>
         </div>`;
     }).join('');
 }
 
-// --- 骰子渲染 (微調大小與間距) ---
+// --- 骰子渲染 ---
 export function renderDice(battle, activeHighlight) {
     el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
         let wrapperClass = "w-9 h-9 md:w-12 md:h-12 flex items-center justify-center mx-auto my-0.5";
@@ -188,56 +193,57 @@ export function renderControls(battle) {
     `;
 }
 
-// --- ★ 任務2 & 4：ABCD 牌型改一排，緊湊化 ---
+// --- ★ 任務4：刪除 ABCD 字眼，將底盤點數與加成合併在一行節省空間 ---
 export function renderScore(battle, activeHighlight) {
     if (!battle.scoreResult || battle.state === 'ROLLING') {
-        el.scoreDisplay.innerHTML = `<div class="text-slate-500 text-center mt-4 mb-4 font-bold animate-pulse text-sm">盤面結算中...</div>`;
+        el.scoreDisplay.innerHTML = `<div class="text-slate-500 text-center mt-2 mb-2 font-bold animate-pulse text-xs">盤面結算中...</div>`;
         if (el.finalScoreValue) el.finalScoreValue.innerText = '0';
         return;
     }
     let res = battle.scoreResult;
-    let notesHtml = res.globalNotes.map(n => `<div class="text-[10px] md:text-xs text-amber-400 bg-amber-900/30 p-1.5 rounded-md mb-1 border border-amber-900/50 font-bold text-center">${n}</div>`).join('');
+    // 讓保留資源加成的 tag 變成極小的膠囊
+    let notesHtml = res.globalNotes.map(n => `<span class="text-[9px] text-amber-400 bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-900/50 font-bold whitespace-nowrap">${n}</span>`).join('');
 
     let getBoxStyle = (group, tag) => {
-        if(tag.name === '無') return 'text-slate-500 border-slate-700/50 opacity-50 bg-slate-900/50';
+        if(tag.name === '無') return 'text-slate-500 border-slate-700/50 opacity-40 bg-slate-900/50';
         let base = '';
         if(group === 'A') base = 'text-blue-300 border-blue-900/80 bg-blue-900/30 hover:border-blue-400 cursor-pointer transition-all active:scale-95';
         if(group === 'B') base = 'text-pink-300 border-pink-900/80 bg-pink-900/30 hover:border-pink-400 cursor-pointer transition-all active:scale-95';
         if(group === 'C') base = 'text-purple-300 border-purple-900/80 bg-purple-900/30 hover:border-purple-400 cursor-pointer transition-all active:scale-95';
         if(group === 'D') base = 'text-teal-300 border-teal-900/80 bg-teal-900/30 hover:border-teal-400 cursor-pointer transition-all active:scale-95';
 
-        if(activeHighlight === group) base += ' ring-1 ring-white scale-105 shadow-lg z-10';
+        if(activeHighlight === group) base += ' ring-1 ring-white scale-105 shadow-md z-10';
         else if(activeHighlight && activeHighlight !== group) base += ' opacity-30 grayscale';
         return base;
     };
 
     el.scoreDisplay.innerHTML = `
-    <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-slate-700 mb-1.5 shadow-inner">
-        <span class="text-xs md:text-sm font-bold text-slate-400">底盤點數</span>
-        <span class="text-lg md:text-xl font-black text-white">${res.totalBase.toFixed(1)}</span>
+    <div class="flex justify-between items-center bg-slate-900 px-2 py-1.5 rounded-lg border border-slate-700 mb-1.5 shadow-inner">
+        <div class="text-[11px] md:text-sm font-bold text-slate-400 whitespace-nowrap">底盤: <span class="text-sm md:text-base font-black text-white">${res.totalBase.toFixed(1)}</span></div>
+        <div class="flex flex-wrap gap-1 justify-end pl-2">${notesHtml}</div>
     </div>
     
-    <div class="grid grid-cols-4 gap-1.5 mb-1.5">
-        <div onclick="window.setHighlight('A')" class="flex flex-col p-1.5 rounded-lg border ${getBoxStyle('A', res.tagA)} justify-center">
-            <div class="text-[9px] md:text-xs font-bold truncate opacity-90 text-center">A:${res.tagA.name}</div>
-            <div class="font-black text-center text-sm md:text-lg mt-0.5">x${res.tagA.multi.toFixed(1)}</div>
+    <div class="grid grid-cols-4 gap-1.5 mb-1">
+        <div onclick="window.setHighlight('A')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('A', res.tagA)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagA.name}</div>
+            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagA.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('B')" class="flex flex-col p-1.5 rounded-lg border ${getBoxStyle('B', res.tagB)} justify-center">
-            <div class="text-[9px] md:text-xs font-bold truncate opacity-90 text-center">B:${res.tagB.name}</div>
-            <div class="font-black text-center text-sm md:text-lg mt-0.5">x${res.tagB.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('B')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('B', res.tagB)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagB.name}</div>
+            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagB.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('C')" class="flex flex-col p-1.5 rounded-lg border ${getBoxStyle('C', res.tagC)} justify-center">
-            <div class="text-[9px] md:text-xs font-bold truncate opacity-90 text-center">C:${res.tagC.name}</div>
-            <div class="font-black text-center text-sm md:text-lg mt-0.5">x${res.tagC.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('C')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('C', res.tagC)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagC.name}</div>
+            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagC.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('D')" class="flex flex-col p-1.5 rounded-lg border ${getBoxStyle('D', res.tagD)} justify-center">
-            <div class="text-[9px] md:text-xs font-bold truncate opacity-90 text-center">D:${res.tagD.name}</div>
-            <div class="font-black text-center text-sm md:text-lg mt-0.5">x${res.tagD.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('D')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('D', res.tagD)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagD.name}</div>
+            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagD.multi.toFixed(1)}</div>
         </div>
     </div>
-    <div class="mb-1">${notesHtml}</div>
     `;
 
+    // 更新左側獨立出來的巨型傷害預覽
     if (el.finalScoreValue) {
         el.finalScoreValue.innerText = Math.floor(res.finalScore).toLocaleString();
         if(res.finalMultiplier > 50) {
@@ -250,7 +256,7 @@ export function renderScore(battle, activeHighlight) {
     }
 }
 
-// --- 商店渲染邏輯 (緊湊化) ---
+// --- 商店渲染邏輯 ---
 export function renderShopItems(shopItems, player) {
     el.shopItemsContainer.innerHTML = shopItems.map((r, idx) => {
         let canAfford = player.gold >= r.price;
