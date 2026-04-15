@@ -33,7 +33,7 @@ export const el = {
     btnNewGame: document.getElementById('btn-new-game')
 };
 
-// ★ 任務3：強制讓牌型表按鈕變得超顯眼 (透過 JS 直接覆寫 HTML 樣式)
+// 牌型表按鈕樣式覆寫
 if (document.getElementById('btn-rules')) {
     document.getElementById('btn-rules').innerHTML = "📖 牌型表";
     document.getElementById('btn-rules').className = "bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-black py-2 px-4 rounded-lg shadow-[0_0_15px_rgba(217,119,6,0.6)] active:scale-95 flex items-center border border-amber-400";
@@ -102,11 +102,9 @@ export function updateEnemyUI(stage) {
     el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
 }
 
-// --- ★ 任務2：遺物渲染「極限壓縮」，改為膠囊標籤 ---
+// --- 遺物渲染 ---
 export function renderInventory(player) {
-    // 強制把 index.html 設定的網格洗掉，改成緊湊的 flex-wrap
     el.inventoryGrid.className = "flex flex-wrap gap-1.5";
-
     if (player.relics.length === 0) {
         el.inventoryGrid.innerHTML = `<div class="text-[10px] text-slate-500 font-bold p-1">背包空空如也</div>`;
         return;
@@ -123,50 +121,61 @@ export function renderInventory(player) {
     }).join('');
 }
 
-// --- 骰子渲染 ---
+// --- ★ 任務：巨型八邊形骰子渲染 ---
 export function renderDice(battle, activeHighlight) {
     el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
-        let wrapperClass = "w-9 h-9 md:w-12 md:h-12 flex items-center justify-center mx-auto my-0.5";
-        let diamondClass = "w-full h-full rotate-45 rounded-xl border-2 flex items-center justify-center shadow-lg transition-all duration-200 relative ";
-        let innerClass = "-rotate-45 w-full h-full flex items-center justify-center text-xl md:text-2xl font-black relative z-10";
-        let colorClasses = "bg-slate-700 border-slate-500 text-white";
+        // 大幅提升尺寸: 手機 44px (w-11), 電腦 64px (w-16)
+        let wrapperClass = "w-11 h-11 md:w-16 md:h-16 relative mx-auto my-0.5 cursor-pointer dice-btn transition-transform duration-200";
+        
+        let outerColor = "bg-slate-500";
+        let innerColor = "bg-slate-700";
+        let innerHover = "hover:bg-slate-600";
+        let textColor = "text-white";
+        let extraClass = "";
 
+        // 狀態判斷與顏色分派
         if(battle.state !== 'IDLE'){
             if (battle.state === 'ROLLING' && !d.locked) {
-                diamondClass += "rolling-dice-anim border-dashed ";
-                colorClasses = "bg-slate-800 border-slate-500 text-slate-500";
+                innerColor = "bg-slate-800"; outerColor = "bg-slate-600"; textColor = "text-slate-500"; extraClass = "animate-pulse"; innerHover = "";
             } else if (battle.state === 'WAIT_ACTION') {
                 if (activeHighlight) {
                     if (d.matchedGroups[activeHighlight]) {
-                        if (activeHighlight === 'A') colorClasses = "bg-blue-600 border-blue-300 text-white shadow-[0_0_15px_rgba(96,165,250,0.8)] scale-110 z-20";
-                        else if (activeHighlight === 'B') colorClasses = "bg-pink-600 border-pink-300 text-white shadow-[0_0_15px_rgba(244,114,182,0.8)] scale-110 z-20";
-                        else if (activeHighlight === 'C') colorClasses = "bg-purple-600 border-purple-300 text-white shadow-[0_0_15px_rgba(192,132,252,0.8)] scale-110 z-20";
-                        else if (activeHighlight === 'D') colorClasses = "bg-teal-600 border-teal-300 text-white shadow-[0_0_15px_rgba(45,212,191,0.8)] scale-110 z-20";
-                    } else colorClasses = "bg-slate-800 border-slate-700 text-slate-600 opacity-30";
+                        if (activeHighlight === 'A') { innerColor = "bg-blue-600"; outerColor = "bg-blue-300"; extraClass = "scale-110 z-20 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]"; }
+                        else if (activeHighlight === 'B') { innerColor = "bg-pink-600"; outerColor = "bg-pink-300"; extraClass = "scale-110 z-20 drop-shadow-[0_0_10px_rgba(244,114,182,0.8)]"; }
+                        else if (activeHighlight === 'C') { innerColor = "bg-purple-600"; outerColor = "bg-purple-300"; extraClass = "scale-110 z-20 drop-shadow-[0_0_10px_rgba(192,132,252,0.8)]"; }
+                        else if (activeHighlight === 'D') { innerColor = "bg-teal-600"; outerColor = "bg-teal-300"; extraClass = "scale-110 z-20 drop-shadow-[0_0_10px_rgba(45,212,191,0.8)]"; }
+                        innerHover = "";
+                    } else {
+                        innerColor = "bg-slate-800"; outerColor = "bg-slate-700"; textColor = "text-slate-600"; extraClass = "opacity-30"; innerHover = "";
+                    }
                 } else {
-                    if (d.locked) colorClasses = "bg-emerald-900 border-emerald-400 text-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]";
-                    else {
-                        if (d.matchedGroups['D']) colorClasses = "bg-teal-900 border-teal-400 text-teal-200 shadow-[0_0_8px_rgba(45,212,191,0.5)]";
-                        else if (d.matchedGroups['C']) colorClasses = "bg-purple-900 border-purple-400 text-purple-200 shadow-[0_0_8px_rgba(192,132,252,0.5)]";
-                        else if (d.matchedGroups['B']) colorClasses = "bg-pink-900 border-pink-400 text-pink-200 shadow-[0_0_8px_rgba(244,114,182,0.5)]";
-                        else if (d.matchedGroups['A']) colorClasses = "bg-blue-900 border-blue-400 text-blue-200 shadow-[0_0_8px_rgba(96,165,250,0.5)]";
-                        else colorClasses = "bg-slate-700 border-slate-500 text-white hover:bg-slate-600";
+                    if (d.locked) {
+                        innerColor = "bg-emerald-900"; outerColor = "bg-emerald-400"; textColor = "text-emerald-300"; extraClass = "drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"; innerHover = "";
+                    } else {
+                        if (d.matchedGroups['D']) { innerColor = "bg-teal-900"; outerColor = "bg-teal-400"; textColor = "text-teal-200"; }
+                        else if (d.matchedGroups['C']) { innerColor = "bg-purple-900"; outerColor = "bg-purple-400"; textColor = "text-purple-200"; }
+                        else if (d.matchedGroups['B']) { innerColor = "bg-pink-900"; outerColor = "bg-pink-400"; textColor = "text-pink-200"; }
+                        else if (d.matchedGroups['A']) { innerColor = "bg-blue-900"; outerColor = "bg-blue-400"; textColor = "text-blue-200"; }
                     }
                 }
-            } else if (d.locked) colorClasses = "bg-emerald-900 border-emerald-400 text-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]";
-            else colorClasses = "bg-slate-700 border-slate-500 text-white hover:bg-slate-600";
+            } else if (d.locked) {
+                innerColor = "bg-emerald-900"; outerColor = "bg-emerald-400"; textColor = "text-emerald-300"; extraClass = "drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"; innerHover = "";
+            }
         }
 
-        let lockIcon = d.locked && !activeHighlight ? `<div class="absolute -top-2.5 -right-2.5 -rotate-45 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-3.5 h-3.5 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
+        // 使用 CSS clip-path 完美裁切出八邊形
+        let octagonClip = "[clip-path:polygon(29%_0%,71%_0%,100%_29%,100%_71%,71%_100%,29%_100%,0%_71%,0%_29%)]";
         let valDisplay = (battle.state === 'IDLE') ? '-' : (battle.state === 'ROLLING' && !d.locked ? '?' : d.val);
-        let cursor = battle.state === 'WAIT_ACTION' && !activeHighlight ? 'cursor-pointer dice-btn' : '';
+        // 鎖頭位置微調
+        let lockIcon = d.locked && !activeHighlight ? `<div class="absolute -top-1.5 -right-1.5 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
 
         return `
-        <div class="${wrapperClass}">
-            <div id="dice-element-${idx}" onclick="window.toggleLock(${idx})" class="${diamondClass} ${colorClasses} ${cursor}">
-                <div class="${innerClass}">${valDisplay}</div>
-                ${lockIcon}
+        <div id="dice-element-${idx}" onclick="window.toggleLock(${idx})" class="${wrapperClass} ${extraClass}">
+            <div class="absolute inset-0 ${outerColor} ${octagonClip} transition-colors duration-200"></div>
+            <div class="absolute inset-[2px] md:inset-[3px] ${innerColor} ${innerHover} ${octagonClip} flex items-center justify-center transition-colors duration-200">
+                <span class="text-2xl md:text-4xl font-black ${textColor}">${valDisplay}</span>
             </div>
+            ${lockIcon}
         </div>`;
     }).join('');
 
@@ -193,7 +202,7 @@ export function renderControls(battle) {
     `;
 }
 
-// --- ★ 任務4：刪除 ABCD 字眼，將底盤點數與加成合併在一行節省空間 ---
+// --- 牌型結算渲染 ---
 export function renderScore(battle, activeHighlight) {
     if (!battle.scoreResult || battle.state === 'ROLLING') {
         el.scoreDisplay.innerHTML = `<div class="text-slate-500 text-center mt-2 mb-2 font-bold animate-pulse text-xs">盤面結算中...</div>`;
@@ -201,7 +210,6 @@ export function renderScore(battle, activeHighlight) {
         return;
     }
     let res = battle.scoreResult;
-    // 讓保留資源加成的 tag 變成極小的膠囊
     let notesHtml = res.globalNotes.map(n => `<span class="text-[9px] text-amber-400 bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-900/50 font-bold whitespace-nowrap">${n}</span>`).join('');
 
     let getBoxStyle = (group, tag) => {
@@ -243,7 +251,6 @@ export function renderScore(battle, activeHighlight) {
     </div>
     `;
 
-    // 更新左側獨立出來的巨型傷害預覽
     if (el.finalScoreValue) {
         el.finalScoreValue.innerText = Math.floor(res.finalScore).toLocaleString();
         if(res.finalMultiplier > 50) {
