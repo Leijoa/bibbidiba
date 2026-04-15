@@ -11,7 +11,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         let v = d.val;
         let baseVal = v; // 預設底盤點數為骰面數字
 
-        // ★ 更新：大一~大八的基礎點數 (1,2為10點; 3~6為11點; 7,8為12點)
+        // 基礎點數計算
         if (v === 1 && playerRelics.includes('b1')) baseVal = 10;
         if (v === 2 && playerRelics.includes('b2')) baseVal = 10;
         if (v === 3 && playerRelics.includes('b3')) baseVal = 11;
@@ -21,7 +21,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         if (v === 7 && playerRelics.includes('b7')) baseVal = 12;
         if (v === 8 && playerRelics.includes('b8')) baseVal = 12;
         
-        // ★ 更新：小小、中中、大大的全新平衡倍率
+        // 小小、中中、大大的平衡倍率
         if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 5.0;
         if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4.5;
         if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 4.0;
@@ -149,7 +149,6 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     let bDouble3 = extractVals([3, 3]);
     let b3 = extractVals([3]);
 
-    // ★ 更新：大滿貫直接鎖定 25.0 倍
     if (bFull) tagB = { name: '大滿貫', multi: 25.0, used: bFull };
     else if (bDragon) tagB = { name: '三龍會', multi: 12.0, used: bDragon };
     else if (bDouble4) tagB = { name: '雙順', multi: 6.0, used: bDouble4 };
@@ -187,10 +186,9 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     let tagD = { name: '無', multi: 1.0, used: [] };
     let freqs = counts.slice(1).filter(c => c > 0);
     
-    // ★ 更新：絕對秩序機制重製
     let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
     let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
-    let orderReq = playerRelics.includes('order') ? 7 : 8; // 有遺物只需7顆
+    let orderReq = playerRelics.includes('order') ? 7 : 8;
     
     let orderUsed = [];
     if (oddCount >= orderReq) {
@@ -206,14 +204,18 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     // --- 總乘區計算 ---
     let globalMulti = 1.0;
     let globalNotes = [];
-    
-    // ★ 更新：回歸最純粹的 ABCD 連乘
     let baseABCD = tagA.multi * tagB.multi * tagC.multi * tagD.multi;
 
-    // ★ 更新：改名為雷爪獅的祝福
-    if (playerRelics.includes('pansy') && counts[8] > 0) {
+    // ★ 更新：【雷爪獅的祝福】條件改為場上有 1
+    if (playerRelics.includes('pansy') && counts[1] > 0) {
         globalMulti *= 3.0;
         globalNotes.push('【雷爪獅的祝福】 x3.0');
+    }
+
+    // ★ 新增：【捧夠的祝福】條件為場上有 8
+    if (playerRelics.includes('pongo') && counts[8] > 0) {
+        globalMulti *= 3.0;
+        globalNotes.push('【捧夠的祝福】 x3.0');
     }
 
     let rerollMulti = 1.0 + (rollsLeft * 0.5);

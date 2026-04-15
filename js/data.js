@@ -30,16 +30,17 @@ export const RELIC_DB = [
     { id: 'order', name: '【絕對秩序】', desc: '只要七顆奇數或偶數就會發動絕對秩序牌型', price: 25, rarity: 3 },
     
     // 傳說類 (Rarity 4)
-    { id: 'pansy', name: '【雷爪獅的祝福】', desc: '場上有 8 時總傷害 x3', price: 35, rarity: 4 },
+    { id: 'pansy', name: '【雷爪獅的祝福】', desc: '場上有 1 時總傷害 x3', price: 50, rarity: 4 },
+    { id: 'pongo', name: '【捧夠的祝福】', desc: '場上有 8 時總傷害 x3', price: 50, rarity: 4 },
     { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +2', price: 35, rarity: 4 },
 ];
 
 export const ENEMY_DB = [
-    { name: '史萊姆', hp: 800, turns: 3 },
-    { name: '哥布林小隊', hp: 2500, turns: 3 },
-    { name: '巨石傀儡 (菁英)', hp: 10000, turns: 4 },
-    { name: '深淵魔龍', hp: 50000, turns: 4 },
-    { name: '創世神 (最終Boss)', hp: 200000, turns: 5 },
+    { name: '史萊姆', hp: 1000, turns: 3 },
+    { name: '哥布林小隊', hp: 4000, turns: 3 },
+    { name: '巨石傀儡 (菁英)', hp: 16000, turns: 4 },
+    { name: '深淵魔龍', hp: 80000, turns: 4 },
+    { name: '創世神 (最終Boss)', hp: 500000, turns: 5 },
 ];
 
 export const RULE_DB = {
