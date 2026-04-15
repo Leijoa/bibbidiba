@@ -8,21 +8,29 @@ export const RARITY = {
 };
 
 export const RELIC_DB = [
-    // ★ 任務2：更新大一、大二、大八的說明，並新增大七
+    // 基礎點數類 (Rarity 1)
     { id: 'b1', name: '【大一】', desc: '1 以 10 點計算', price: 10, rarity: 1 },
     { id: 'b2', name: '【大二】', desc: '2 以 10 點計算', price: 10, rarity: 1 },
+    { id: 'b3', name: '【大三】', desc: '3 以 11 點計算', price: 10, rarity: 1 },
+    { id: 'b4', name: '【大四】', desc: '4 以 11 點計算', price: 10, rarity: 1 },
+    { id: 'b5', name: '【大五】', desc: '5 以 11 點計算', price: 10, rarity: 1 },
+    { id: 'b6', name: '【大六】', desc: '6 以 11 點計算', price: 10, rarity: 1 },
     { id: 'b7', name: '【大七】', desc: '7 以 12 點計算', price: 10, rarity: 1 },
     { id: 'b8', name: '【大八】', desc: '8 以 12 點計算', price: 10, rarity: 1 },
     
-    { id: 'small', name: '【小小】', desc: '1,2,3 的點數倍率*8', price: 15, rarity: 2 },
-    { id: 'big', name: '【大大】', desc: '6,7,8 的點數倍率*3.5', price: 15, rarity: 2 },
-    { id: 'mid', name: '【中堅】', desc: '4,5 的點數倍率*4', price: 15, rarity: 2 },
+    // 區段倍率類 (Rarity 2)
+    { id: 'small', name: '【小小】', desc: '1,2,3 的點數倍率*5', price: 15, rarity: 2 },
+    { id: 'mid', name: '【中中】', desc: '4,5 的點數倍率*4.5', price: 15, rarity: 2 },
+    { id: 'big', name: '【大大】', desc: '6,7,8 的點數倍率*4', price: 15, rarity: 2 },
+    
+    // 條件倍率類 (Rarity 3)
     { id: 'odd', name: '【奇數】', desc: '奇數點數倍率*2.5', price: 25, rarity: 3 },
     { id: 'even', name: '【偶數】', desc: '偶數點數倍率*2.5', price: 25, rarity: 3 },
     { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +15', price: 20, rarity: 3 },
-    { id: 'pansy', name: '【潘絲絲的祝福】', desc: '場上有 8 時總傷害 x3', price: 35, rarity: 4 },
-    { id: 'blue', name: '【青發的加護】', desc: '大滿貫倍率從 x8 變 x24', price: 35, rarity: 4 },
-    { id: 'order', name: '【絕對秩序】', desc: '同數與順序倍率相加後再相乘', price: 40, rarity: 4 },
+    { id: 'order', name: '【絕對秩序】', desc: '只要七顆奇數或偶數就會發動絕對秩序牌型', price: 25, rarity: 3 },
+    
+    // 傳說類 (Rarity 4)
+    { id: 'pansy', name: '【雷爪獅的祝福】', desc: '場上有 8 時總傷害 x3', price: 35, rarity: 4 },
     { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +2', price: 35, rarity: 4 },
 ];
 
@@ -45,7 +53,7 @@ export const RULE_DB = {
         { name: '對子', desc: '2顆相同數字', multi: 'x1.5' }
     ],
     groupB: [
-        { name: '大滿貫', desc: '1~8各有一顆', multi: 'x8.0' },
+        { name: '大滿貫', desc: '1~8各有一顆', multi: 'x25.0' },
         { name: '三龍會', desc: '分成三組完全相連的順子', multi: 'x12.0' },
         { name: '雙順', desc: '兩組4連順', multi: 'x6.0' },
         { name: '五連順', desc: '5顆數字相連', multi: 'x3.5' },
@@ -67,7 +75,7 @@ export const RULE_DB = {
     ],
     groupD: [
         { name: '兩極', desc: '盤面只有 1 和 8', multi: 'x30.0' },
-        { name: '絕對秩序', desc: '全奇數或全偶數', multi: 'x8.0' },
+        { name: '絕對秩序', desc: '7顆以上數字為全奇數或全偶數', multi: 'x8.0' },
         { name: '全異', desc: '8顆數字皆不相同', multi: 'x2.5' }
     ]
 };
