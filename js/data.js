@@ -8,10 +8,12 @@ export const RARITY = {
 };
 
 export const RELIC_DB = [
-    // ★ 任務3：修改大一～大八與小小的文字描述
-    { id: 'b1', name: '【大一】', desc: '該骰子點數以15計算', price: 10, rarity: 1 },
-    { id: 'b2', name: '【大二】', desc: '該骰子點數以15計算', price: 10, rarity: 1 },
-    { id: 'b8', name: '【大八】', desc: '該骰子點數以15計算', price: 10, rarity: 1 },
+    // ★ 任務2：更新大一、大二、大八的說明，並新增大七
+    { id: 'b1', name: '【大一】', desc: '1 以 10 點計算', price: 10, rarity: 1 },
+    { id: 'b2', name: '【大二】', desc: '2 以 10 點計算', price: 10, rarity: 1 },
+    { id: 'b7', name: '【大七】', desc: '7 以 12 點計算', price: 10, rarity: 1 },
+    { id: 'b8', name: '【大八】', desc: '8 以 12 點計算', price: 10, rarity: 1 },
+    
     { id: 'small', name: '【小小】', desc: '1,2,3 的點數倍率*8', price: 15, rarity: 2 },
     { id: 'big', name: '【大大】', desc: '6,7,8 的點數倍率*3.5', price: 15, rarity: 2 },
     { id: 'mid', name: '【中堅】', desc: '4,5 的點數倍率*4', price: 15, rarity: 2 },
