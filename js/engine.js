@@ -11,12 +11,13 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         let v = d.val;
         let baseVal = v; // 預設底盤點數為骰面數字
 
-        // ★ 更新：大一、大二、大八的計算邏輯 (以15計算)
-        if (v === 1 && playerRelics.includes('b1')) baseVal = 15;
-        if (v === 2 && playerRelics.includes('b2')) baseVal = 15;
-        if (v === 8 && playerRelics.includes('b8')) baseVal = 15;
+        // ★ 更新：大一、大二改為 10 點；大七、大八改為 12 點
+        if (v === 1 && playerRelics.includes('b1')) baseVal = 10;
+        if (v === 2 && playerRelics.includes('b2')) baseVal = 10;
+        if (v === 7 && playerRelics.includes('b7')) baseVal = 12;
+        if (v === 8 && playerRelics.includes('b8')) baseVal = 12;
         
-        // ★ 更新：小小的倍率改為 *8
+        // 小小的倍率為 *8
         if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 8;
         
         if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 3.5;
