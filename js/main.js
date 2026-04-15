@@ -10,7 +10,7 @@ let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, loc
 let shopItems = [];
 let shopRerollsUsed = 0;
 let activeHighlight = null;
-const SAVE_KEY = 'bibbidiba_save_v24';
+const SAVE_KEY = 'bibbidiba_save_v30';
 
 // --- 存檔系統 (Save System) ---
 function saveGame() {
@@ -24,7 +24,7 @@ function loadGame() {
         const parsed = JSON.parse(data);
         player = parsed.player;
         UI.el.titleScreen.classList.add('hidden');
-        loadStage(parsed.stage.level, true); // 讀取關卡並恢復血量
+        loadStage(parsed.stage.level, true); 
     }
 }
 
@@ -43,7 +43,6 @@ function initTitleScreen() {
     UI.renderRulesDB();
     checkSaveExists();
     
-    // 綁定靜態按鈕事件
     UI.el.btnNewGame.onclick = () => {
         clearSave();
         UI.el.titleScreen.classList.add('hidden');
@@ -69,12 +68,11 @@ function loadStage(levelIndex, isLoad = false) {
     stage.level = levelIndex;
     let enemy = ENEMY_DB[levelIndex];
     stage.enemyMaxHp = enemy.hp;
-    // 如果是讀檔，敵人血量回滿，重新挑戰該關卡
     stage.enemyHp = enemy.hp; 
     stage.turnsLeft = enemy.turns;
     UI.el.shopOverlay.classList.add('hidden');
     
-    saveGame(); // 進關卡自動存檔
+    saveGame(); 
     renderAll();
     startTurn();
 }
@@ -142,10 +140,8 @@ window.executeRoll = function(isInitial = false) {
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
             
-            // 呼叫獨立的引擎進行計算
             battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft);
             
-            // 將引擎計算出的 used 綁定回骰子的 UI 狀態
             const applyMatch = (usedVals, groupName) => {
                 if(!usedVals || usedVals.length === 0) return;
                 let available = battle.dice.filter(d => !d.matchedGroups[groupName]);
@@ -178,7 +174,6 @@ window.fireAttack = function() {
     let dmg = Math.floor(battle.scoreResult.finalScore);
     stage.enemyHp -= dmg;
 
-    // 觸發打擊震動與特效
     UI.el.battleArea.classList.remove('shake-hard');
     void UI.el.battleArea.offsetWidth;
     UI.el.battleArea.classList.add('shake-hard');
@@ -189,7 +184,7 @@ window.fireAttack = function() {
     UI.el.hitFlash.classList.add('flash-red-anim');
 
     let dmgEl = document.createElement('div');
-    dmgEl.className = 'damage-text text-5xl md:text-7xl font-black text-red-500 drop-shadow-[0_0_20px_rgba(255,0,0,0.9)] z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
+    dmgEl.className = 'damage-text text-6xl md:text-8xl font-black text-red-500 drop-shadow-[0_0_20px_rgba(255,0,0,0.9)] z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
     dmgEl.innerText = `-${dmg.toLocaleString()}`;
     UI.el.damageContainer.appendChild(dmgEl);
 
@@ -224,7 +219,6 @@ function enemyDefeated() {
     player.gold += earn;
     UI.shootConfetti();
 
-    // 菁英怪(關卡3)必定掉落遺物
     if (stage.level === 2) {
         let available = RELIC_DB.filter(r => !player.relics.includes(r.id));
         if (available.length > 0) {
@@ -241,7 +235,7 @@ function openShop() {
     UI.el.shopOverlay.classList.remove('hidden'); 
     UI.el.shopOverlay.classList.add('flex');
     shopRerollsUsed = 0;
-    saveGame(); // 進商店前存檔
+    saveGame(); 
     UI.updateShopRerollBtn(shopRerollsUsed);
     UI.el.shopGold.innerText = player.gold;
     UI.updateHeaderUI(player, stage);
@@ -271,26 +265,28 @@ window.buyItem = function(idx) {
         UI.el.shopGold.innerText = player.gold;
         UI.renderShopItems(shopItems, player);
         UI.renderInventory(player);
-        saveGame(); // 買完東西即刻存檔
+        saveGame(); 
     }
 };
 
 function nextStage() { loadStage(stage.level + 1); }
 
 function gameOver(reason) {
-    clearSave(); // 死亡清空存檔
+    clearSave(); 
     UI.el.endOverlay.classList.remove('hidden'); 
     UI.el.endOverlay.classList.add('flex');
-    UI.el.endTitle.className = "text-4xl md:text-6xl font-black text-red-500 mb-4 shake-hard";
+    // ★ 已將這裡的字體配合 HTML 加大 (text-5xl md:text-7xl)
+    UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-red-500 mb-4 shake-hard";
     UI.el.endTitle.innerText = "GAME OVER";
     UI.el.endDesc.innerText = reason;
 }
 
 function gameWin() {
-    clearSave(); // 通關清空存檔
+    clearSave(); 
     UI.el.endOverlay.classList.remove('hidden'); 
     UI.el.endOverlay.classList.add('flex');
-    UI.el.endTitle.className = "text-4xl md:text-6xl font-black text-amber-400 mb-4";
+    // ★ 已將這裡的字體配合 HTML 加大 (text-5xl md:text-7xl)
+    UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
     UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
     let endInterval = setInterval(UI.shootConfetti, 1000);

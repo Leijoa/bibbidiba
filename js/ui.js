@@ -15,6 +15,7 @@ export const el = {
     rollsBadge: document.getElementById('rolls-left-badge'),
     inventoryGrid: document.getElementById('inventory-grid'),
     scoreDisplay: document.getElementById('score-display'),
+    finalScoreValue: document.getElementById('final-score-value'), // ★ 新增綁定：最終傷害數字
     battleArea: document.getElementById('battle-area'),
     rulesModal: document.getElementById('rules-modal'),
     rulesContent: document.getElementById('rules-content'),
@@ -39,7 +40,7 @@ export function shootConfetti() {
 
 export function showToast(msg, callback) {
     let toast = document.createElement('div');
-    toast.className = 'fixed top-1/2 left-1/2 bg-slate-800 text-white font-bold py-4 px-6 md:py-6 md:px-10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-2 md:border-4 border-amber-500 z-[100] text-lg md:text-3xl text-center flex flex-col gap-2 toast-enter whitespace-pre-wrap';
+    toast.className = 'fixed top-1/2 left-1/2 bg-slate-800 text-white font-bold py-5 px-8 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-amber-500 z-[100] text-2xl md:text-3xl text-center flex flex-col gap-2 toast-enter whitespace-pre-wrap';
     toast.innerHTML = msg;
     document.body.appendChild(toast);
     setTimeout(() => {
@@ -49,7 +50,7 @@ export function showToast(msg, callback) {
     }, 1500);
 }
 
-// --- 動態生成牌型表 ---
+// --- 動態生成牌型表 (字加大) ---
 export function renderRulesDB() {
     let html = '';
     const groups = [
@@ -60,16 +61,16 @@ export function renderRulesDB() {
     ];
     
     groups.forEach(g => {
-        html += `<h3 class="font-black text-slate-300 mt-4 mb-2 border-b border-slate-700 pb-1">${g.title}</h3>`;
-        html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">`;
+        html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-5 mb-2 border-b border-slate-700 pb-1">${g.title}</h3>`;
+        html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">`;
         RULE_DB[g.key].forEach(rule => {
             html += `
-            <div class="flex justify-between items-center bg-slate-900/50 p-2 rounded border border-slate-700">
+            <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-lg border border-slate-700">
                 <div>
-                    <div class="font-bold text-slate-200">${rule.name}</div>
-                    <div class="text-[10px] text-slate-400">${rule.desc}</div>
+                    <div class="text-sm md:text-base font-bold text-slate-200">${rule.name}</div>
+                    <div class="text-xs md:text-sm text-slate-400">${rule.desc}</div>
                 </div>
-                <div class="font-black text-amber-400">${rule.multi}</div>
+                <div class="text-base md:text-lg font-black text-amber-400">${rule.multi}</div>
             </div>`;
         });
         html += `</div>`;
@@ -95,9 +96,10 @@ export function updateEnemyUI(stage) {
     el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
 }
 
+// --- ★ 任務4：遺物字體加大 ---
 export function renderInventory(player) {
     if (player.relics.length === 0) {
-        el.inventoryGrid.innerHTML = `<div class="col-span-full text-[10px] md:text-xs text-slate-500">背包空空如也</div>`;
+        el.inventoryGrid.innerHTML = `<div class="col-span-full text-sm text-slate-500 font-bold p-2">背包空空如也</div>`;
         return;
     }
     let sortedRelics = [...player.relics].sort((a,b) => RELIC_DB.find(x=>x.id===b).rarity - RELIC_DB.find(x=>x.id===a).rarity);
@@ -106,21 +108,21 @@ export function renderInventory(player) {
         let r = RELIC_DB.find(x => x.id === id);
         let style = RARITY[r.rarity];
         return `
-        <div class="${style.bg} p-1.5 md:p-2 rounded border ${style.border} shadow-sm flex flex-col justify-between">
-            <div class="flex justify-between items-start mb-0.5">
-                <div class="text-[10px] md:text-xs font-bold ${style.color} leading-tight">${r.name}</div>
-                <span class="text-[8px] bg-slate-900/50 px-1 rounded ${style.color} border ${style.border} opacity-80">${style.label}</span>
+        <div class="${style.bg} p-2.5 rounded-lg border ${style.border} shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-1.5">
+                <div class="text-sm font-black ${style.color} leading-tight">${r.name}</div>
+                <span class="text-[10px] bg-slate-900/50 px-1.5 py-0.5 rounded ${style.color} border ${style.border} opacity-80 font-bold">${style.label}</span>
             </div>
-            <div class="text-[9px] md:text-[10px] text-slate-300 leading-tight">${r.desc}</div>
+            <div class="text-xs text-slate-300 leading-tight font-bold">${r.desc}</div>
         </div>`;
     }).join('');
 }
 
 export function renderDice(battle, activeHighlight) {
     el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
-        let wrapperClass = "w-9 h-9 md:w-12 md:h-12 flex items-center justify-center mx-auto my-1";
-        let diamondClass = "w-full h-full rotate-45 rounded-md border-2 flex items-center justify-center shadow-lg transition-all duration-200 relative ";
-        let innerClass = "-rotate-45 w-full h-full flex items-center justify-center text-lg md:text-2xl font-black relative z-10";
+        let wrapperClass = "w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mx-auto my-1";
+        let diamondClass = "w-full h-full rotate-45 rounded-xl border-2 flex items-center justify-center shadow-lg transition-all duration-200 relative ";
+        let innerClass = "-rotate-45 w-full h-full flex items-center justify-center text-xl md:text-3xl font-black relative z-10";
         let colorClasses = "bg-slate-700 border-slate-500 text-white";
 
         if(battle.state !== 'IDLE'){
@@ -149,11 +151,10 @@ export function renderDice(battle, activeHighlight) {
             else colorClasses = "bg-slate-700 border-slate-500 text-white hover:bg-slate-600";
         }
 
-        let lockIcon = d.locked && !activeHighlight ? `<div class="absolute -top-2.5 -right-2.5 -rotate-45 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-3 h-3 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
+        let lockIcon = d.locked && !activeHighlight ? `<div class="absolute -top-2.5 -right-2.5 -rotate-45 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-4 h-4 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
         let valDisplay = (battle.state === 'IDLE') ? '-' : (battle.state === 'ROLLING' && !d.locked ? '?' : d.val);
         let cursor = battle.state === 'WAIT_ACTION' && !activeHighlight ? 'cursor-pointer dice-btn' : '';
 
-        // 注意這裡綁定了全域的 onclick="window.toggleLock(${idx})"
         return `
         <div class="${wrapperClass}">
             <div id="dice-element-${idx}" onclick="window.toggleLock(${idx})" class="${diamondClass} ${colorClasses} ${cursor}">
@@ -164,7 +165,7 @@ export function renderDice(battle, activeHighlight) {
     }).join('');
 
     el.rollsBadge.innerText = `剩餘重骰：${battle.rollsLeft}`;
-    el.rollsBadge.className = battle.rollsLeft === 0 ? "bg-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-slate-400 transition-colors" : "bg-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-amber-300 transition-colors";
+    el.rollsBadge.className = battle.rollsLeft === 0 ? "bg-slate-700 px-3 py-1 rounded-full text-xs md:text-sm font-bold text-slate-400 transition-colors" : "bg-slate-700 px-3 py-1 rounded-full text-xs md:text-sm font-bold text-amber-300 transition-colors";
 }
 
 export function renderControls(battle) {
@@ -174,24 +175,27 @@ export function renderControls(battle) {
     let scoreDisabled = (isRolling || isAttacking) ? "disabled opacity-50 cursor-not-allowed" : "hover:bg-red-500 active:scale-95 shadow-lg shadow-red-900/50";
 
     el.controlsContainer.innerHTML = `
-    <button onclick="window.executeRoll(false)" ${rollDisabled} class="w-full flex-1 bg-blue-600 text-white font-bold rounded-lg transition-all flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
-        <span class="text-sm md:text-base leading-tight">重骰</span>
-        <span class="text-[9px] md:text-[10px] opacity-80 mt-0.5">(-1 次)</span>
+    <button onclick="window.executeRoll(false)" ${rollDisabled} class="w-full flex-1 bg-blue-600 text-white font-black rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
+        <span class="text-base md:text-lg leading-tight">重骰</span>
+        <span class="text-[10px] md:text-xs opacity-80 mt-0.5">(-1 次)</span>
     </button>
-    <button onclick="window.fireAttack()" ${scoreDisabled} class="w-full flex-[1.5] bg-red-600 text-white font-bold rounded-lg transition-all flex flex-col items-center justify-center border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
-        <span class="text-lg md:text-xl mb-0.5">🗡️</span>
-        <span class="text-xs md:text-sm leading-tight">攻擊</span>
+    <button onclick="window.fireAttack()" ${scoreDisabled} class="w-full flex-[1.5] bg-red-600 text-white font-black rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
+        <span class="text-xl md:text-2xl mb-0.5">🗡️</span>
+        <span class="text-sm md:text-base leading-tight">攻擊</span>
     </button>
     `;
 }
 
+// --- ★ 任務1 & 4：增加顯眼牌型字體與倍率 ---
 export function renderScore(battle, activeHighlight) {
     if (!battle.scoreResult || battle.state === 'ROLLING') {
-        el.scoreDisplay.innerHTML = `<div class="text-slate-500 text-center mt-4 md:mt-10 font-bold animate-pulse">盤面結算中...</div>`;
+        el.scoreDisplay.innerHTML = `<div class="text-slate-500 text-center mt-6 mb-6 font-bold animate-pulse text-lg">盤面結算中...</div>`;
+        if (el.finalScoreValue) el.finalScoreValue.innerText = '0';
         return;
     }
     let res = battle.scoreResult;
-    let notesHtml = res.globalNotes.map(n => `<div class="text-[10px] md:text-xs text-amber-400 bg-amber-900/30 p-1 md:p-1.5 rounded mb-1 border border-amber-900/50 font-bold">${n}</div>`).join('');
+    // 總乘區的 Note 也加大了
+    let notesHtml = res.globalNotes.map(n => `<div class="text-xs md:text-sm text-amber-400 bg-amber-900/30 p-2 rounded-md mb-1.5 border border-amber-900/50 font-bold">${n}</div>`).join('');
 
     let getBoxStyle = (group, tag) => {
         if(tag.name === '無') return 'text-slate-500 border-slate-700/50 opacity-50';
@@ -207,44 +211,46 @@ export function renderScore(battle, activeHighlight) {
     };
 
     el.scoreDisplay.innerHTML = `
-    <div class="flex justify-between items-center bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 mb-2 shadow-inner">
-        <span class="text-[10px] md:text-xs text-slate-400 font-bold">底盤點數</span>
-        <span class="text-base md:text-xl font-black text-white">${res.totalBase.toFixed(1)}</span>
+    <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700 mb-3 shadow-inner">
+        <span class="text-sm md:text-base font-bold text-slate-400">底盤點數</span>
+        <span class="text-xl md:text-2xl font-black text-white">${res.totalBase.toFixed(1)}</span>
     </div>
-    <div class="grid grid-cols-2 gap-2 mb-2">
-        <div onclick="window.setHighlight('A')" class="flex flex-col p-2 rounded-md border ${getBoxStyle('A', res.tagA)}">
-            <div class="text-[9px] md:text-[10px] opacity-90 font-bold truncate">A: ${res.tagA.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagA.multi.toFixed(1)}</div>
+    <div class="grid grid-cols-2 gap-3 mb-3">
+        <div onclick="window.setHighlight('A')" class="flex flex-col p-3 rounded-xl border ${getBoxStyle('A', res.tagA)}">
+            <div class="text-sm md:text-base font-bold truncate opacity-90">A: ${res.tagA.name}</div>
+            <div class="font-black text-right text-2xl md:text-3xl mt-1">x${res.tagA.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('B')" class="flex flex-col p-2 rounded-md border ${getBoxStyle('B', res.tagB)}">
-            <div class="text-[9px] md:text-[10px] opacity-90 font-bold truncate">B: ${res.tagB.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagB.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('B')" class="flex flex-col p-3 rounded-xl border ${getBoxStyle('B', res.tagB)}">
+            <div class="text-sm md:text-base font-bold truncate opacity-90">B: ${res.tagB.name}</div>
+            <div class="font-black text-right text-2xl md:text-3xl mt-1">x${res.tagB.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('C')" class="flex flex-col p-2 rounded-md border ${getBoxStyle('C', res.tagC)}">
-            <div class="text-[9px] md:text-[10px] opacity-90 font-bold truncate">C: ${res.tagC.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagC.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('C')" class="flex flex-col p-3 rounded-xl border ${getBoxStyle('C', res.tagC)}">
+            <div class="text-sm md:text-base font-bold truncate opacity-90">C: ${res.tagC.name}</div>
+            <div class="font-black text-right text-2xl md:text-3xl mt-1">x${res.tagC.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('D')" class="flex flex-col p-2 rounded-md border ${getBoxStyle('D', res.tagD)}">
-            <div class="text-[9px] md:text-[10px] opacity-90 font-bold truncate">D: ${res.tagD.name}</div>
-            <div class="font-black text-right text-xs md:text-sm">x${res.tagD.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('D')" class="flex flex-col p-3 rounded-xl border ${getBoxStyle('D', res.tagD)}">
+            <div class="text-sm md:text-base font-bold truncate opacity-90">D: ${res.tagD.name}</div>
+            <div class="font-black text-right text-2xl md:text-3xl mt-1">x${res.tagD.multi.toFixed(1)}</div>
         </div>
     </div>
     <div class="mb-2">${notesHtml}</div>
-    <div class="mt-auto border-t border-slate-700 pt-2 md:pt-3 transition-opacity ${activeHighlight ? 'opacity-30' : 'opacity-100'}">
-        <div class="flex justify-between items-end mb-1 md:mb-2 px-1">
-            <span class="text-[10px] md:text-xs text-slate-400 font-bold">總乘區</span>
-            <span class="text-sm md:text-lg font-black text-amber-500">x${res.finalMultiplier.toFixed(2)}</span>
-        </div>
-        <div class="bg-gradient-to-br from-red-950 to-slate-900 border border-red-800 p-2 md:p-3 rounded-lg text-center relative overflow-hidden shadow-lg">
-            ${battle.state === 'WAIT_ACTION' ? '<div class="absolute inset-0 bg-red-500/10 animate-pulse"></div>' : ''}
-            <div class="text-[9px] md:text-[10px] text-red-300 mb-0.5 md:mb-1 relative z-10 font-bold">預估造成傷害</div>
-            <div class="text-2xl md:text-3xl font-black text-white relative z-10 drop-shadow-md tracking-tight">
-                ${Math.floor(res.finalScore).toLocaleString()}
-            </div>
-        </div>
-    </div>`;
+    `;
+
+    // ★ 任務2：將數字更新到新的顯眼位置 ★
+    if (el.finalScoreValue) {
+        el.finalScoreValue.innerText = Math.floor(res.finalScore).toLocaleString();
+        // 如果有發動絕對秩序等高倍率，可以加上簡單的顏色反饋
+        if(res.finalMultiplier > 50) {
+            el.finalScoreValue.classList.add('text-amber-300');
+            el.finalScoreValue.classList.remove('text-white');
+        } else {
+            el.finalScoreValue.classList.add('text-white');
+            el.finalScoreValue.classList.remove('text-amber-300');
+        }
+    }
 }
 
+// 商店渲染邏輯 (字加大)
 export function renderShopItems(shopItems, player) {
     el.shopItemsContainer.innerHTML = shopItems.map((r, idx) => {
         let canAfford = player.gold >= r.price;
@@ -252,30 +258,30 @@ export function renderShopItems(shopItems, player) {
         let style = RARITY[r.rarity];
 
         return `
-        <div class="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-16 h-16 ${style.bg} blur-xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 ${style.bg} blur-2xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
             <div class="relative z-10">
-                <div class="flex justify-between items-start mb-1">
-                    <h3 class="text-base md:text-xl font-bold ${style.color}">${r.name}</h3>
-                    <span class="text-[9px] md:text-[10px] px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border}">${style.label}</span>
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-lg md:text-xl font-black ${style.color}">${r.name}</h3>
+                    <span class="text-[10px] md:text-xs px-2 py-1 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
                 </div>
-                <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 md:h-12">${r.desc}</p>
+                <p class="text-sm text-slate-300 mb-4 h-12 font-bold">${r.desc}</p>
             </div>
-            <button onclick="window.buyItem(${idx})" class="w-full font-bold py-2 md:py-2.5 rounded-lg transition-all relative z-10 ${btnClass}" ${!canAfford ? 'disabled' : ''}>
+            <button onclick="window.buyItem(${idx})" class="w-full font-black py-3 rounded-xl transition-all relative z-10 text-base md:text-lg ${btnClass}" ${!canAfford ? 'disabled' : ''}>
                 💰 ${r.price} 金幣
             </button>
         </div>`;
     }).join('');
     
-    if(shopItems.length === 0) el.shopItemsContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 py-8">商店已經被你買空了！</div>`;
+    if(shopItems.length === 0) el.shopItemsContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 py-8 font-bold text-lg">商店已經被你買空了！</div>`;
 }
 
 export function updateShopRerollBtn(shopRerollsUsed) {
     if (shopRerollsUsed === 0) {
         el.shopRerollBtn.innerHTML = "🆓 免費刷新";
-        el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 md:py-4 rounded-xl transition-colors active:scale-95 text-sm md:text-base border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
+        el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-xl transition-colors active:scale-95 text-lg md:text-xl border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
     } else {
         el.shopRerollBtn.innerHTML = "🔄 刷新商店 (3 金幣)";
-        el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 md:py-4 rounded-xl transition-colors active:scale-95 text-sm md:text-base border-b-4 border-slate-900 active:border-b-0 active:translate-y-1";
+        el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-xl transition-colors active:scale-95 text-lg md:text-xl border-b-4 border-slate-900 active:border-b-0 active:translate-y-1";
     }
 }
