@@ -33,7 +33,6 @@ export const el = {
     btnNewGame: document.getElementById('btn-new-game')
 };
 
-// 牌型表按鈕樣式覆寫
 if (document.getElementById('btn-rules')) {
     document.getElementById('btn-rules').innerHTML = "📖 牌型表";
     document.getElementById('btn-rules').className = "bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-black py-2 px-4 rounded-lg shadow-[0_0_15px_rgba(217,119,6,0.6)] active:scale-95 flex items-center border border-amber-400";
@@ -44,16 +43,17 @@ export function shootConfetti() {
     if (typeof confetti === 'function') confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f87171', '#60a5fa', '#34d399'] });
 }
 
+// ★ 更新：讓 Toast 提示更顯眼，支援多行文字
 export function showToast(msg, callback) {
     let toast = document.createElement('div');
-    toast.className = 'fixed top-1/2 left-1/2 bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-amber-500 z-[100] text-xl md:text-3xl text-center flex flex-col gap-2 toast-enter whitespace-pre-wrap';
+    toast.className = 'fixed top-1/2 left-1/2 bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-amber-500 z-[100] text-lg md:text-2xl text-center flex flex-col gap-2 toast-enter whitespace-pre-wrap leading-relaxed';
     toast.innerHTML = msg;
     document.body.appendChild(toast);
     setTimeout(() => {
         toast.style.transition = 'opacity 0.3s ease';
         toast.style.opacity = '0';
-        setTimeout(() => { toast.remove(); if(callback) callback(); }, 1500);
-    }, 1200);
+        setTimeout(() => { toast.remove(); if(callback) callback(); }, 1800);
+    }, 1500);
 }
 
 // --- 動態生成牌型表 ---
@@ -96,13 +96,13 @@ export function updateEnemyUI(stage) {
     el.enemyName.innerText = `⚔️ ${enemy.name}`;
     if(stage.level === 2) el.enemyName.classList.replace('text-red-300', 'text-purple-400');
     
-    el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 回合`;
+    el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 次發動攻擊次數`;
     let pct = Math.max(0, (stage.enemyHp / stage.enemyMaxHp) * 100);
     el.enemyHpBar.style.width = `${pct}%`;
     el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
 }
 
-// --- 遺物渲染 ---
+// --- ★ 任務4：遺物點擊顯示說明 ---
 export function renderInventory(player) {
     el.inventoryGrid.className = "flex flex-wrap gap-1.5";
     if (player.relics.length === 0) {
@@ -114,17 +114,25 @@ export function renderInventory(player) {
     el.inventoryGrid.innerHTML = sortedRelics.map(id => {
         let r = RELIC_DB.find(x => x.id === id);
         let style = RARITY[r.rarity];
+        // 加入 onclick 呼叫全域的 showRelicInfo
         return `
-        <div class="${style.bg} px-2 py-1 rounded-full border ${style.border} shadow-sm flex items-center gap-1">
+        <div onclick="window.showRelicInfo('${r.id}')" class="${style.bg} px-2 py-1 rounded-full border ${style.border} shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform active:scale-95">
             <span class="text-[10px] md:text-xs font-black ${style.color} whitespace-nowrap">${r.name}</span>
         </div>`;
     }).join('');
 }
 
-// --- ★ 任務：巨型八邊形骰子渲染 ---
+// 註冊給 inventory 點擊用的全域函式
+window.showRelicInfo = function(id) {
+    let r = RELIC_DB.find(x => x.id === id);
+    if(r) {
+        showToast(`<span class="text-amber-400 font-black">${r.name}</span>\n<span class="text-sm md:text-lg text-slate-200 mt-2 block">${r.desc}</span>`);
+    }
+};
+
+// --- 巨型八邊形骰子渲染 ---
 export function renderDice(battle, activeHighlight) {
     el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
-        // 大幅提升尺寸: 手機 44px (w-11), 電腦 64px (w-16)
         let wrapperClass = "w-11 h-11 md:w-16 md:h-16 relative mx-auto my-0.5 cursor-pointer dice-btn transition-transform duration-200";
         
         let outerColor = "bg-slate-500";
@@ -133,7 +141,6 @@ export function renderDice(battle, activeHighlight) {
         let textColor = "text-white";
         let extraClass = "";
 
-        // 狀態判斷與顏色分派
         if(battle.state !== 'IDLE'){
             if (battle.state === 'ROLLING' && !d.locked) {
                 innerColor = "bg-slate-800"; outerColor = "bg-slate-600"; textColor = "text-slate-500"; extraClass = "animate-pulse"; innerHover = "";
@@ -163,10 +170,8 @@ export function renderDice(battle, activeHighlight) {
             }
         }
 
-        // 使用 CSS clip-path 完美裁切出八邊形
         let octagonClip = "[clip-path:polygon(29%_0%,71%_0%,100%_29%,100%_71%,71%_100%,29%_100%,0%_71%,0%_29%)]";
         let valDisplay = (battle.state === 'IDLE') ? '-' : (battle.state === 'ROLLING' && !d.locked ? '?' : d.val);
-        // 鎖頭位置微調
         let lockIcon = d.locked && !activeHighlight ? `<div class="absolute -top-1.5 -right-1.5 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
 
         return `
@@ -193,7 +198,7 @@ export function renderControls(battle) {
     el.controlsContainer.innerHTML = `
     <button onclick="window.executeRoll(false)" ${rollDisabled} class="w-full flex-1 bg-blue-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
         <span class="text-sm md:text-lg leading-tight">重骰</span>
-        <span class="text-[9px] md:text-xs opacity-80 mt-0.5">(-1 次)</span>
+        <span class="text-[8px] md:text-[10px] opacity-90 mt-0.5 font-bold">(可點擊骰子保留)</span>
     </button>
     <button onclick="window.fireAttack()" ${scoreDisabled} class="w-full flex-[1.5] bg-red-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
         <span class="text-lg md:text-2xl mb-0.5">🗡️</span>
@@ -226,9 +231,9 @@ export function renderScore(battle, activeHighlight) {
     };
 
     el.scoreDisplay.innerHTML = `
-    <div class="flex justify-between items-center bg-slate-900 px-2 py-1.5 rounded-lg border border-slate-700 mb-1.5 shadow-inner">
-        <div class="text-[11px] md:text-sm font-bold text-slate-400 whitespace-nowrap">底盤: <span class="text-sm md:text-base font-black text-white">${res.totalBase.toFixed(1)}</span></div>
-        <div class="flex flex-wrap gap-1 justify-end pl-2">${notesHtml}</div>
+    <div class="flex flex-col gap-1.5 bg-slate-900 px-2 py-1.5 rounded-lg border border-slate-700 mb-1.5 shadow-inner">
+        <div class="text-[11px] md:text-sm font-bold text-slate-400 whitespace-nowrap">骰子點數加成後總和: <span class="text-sm md:text-base font-black text-white ml-1">${res.totalBase.toFixed(1)}</span></div>
+        <div class="flex flex-wrap gap-1">${notesHtml}</div>
     </div>
     
     <div class="grid grid-cols-4 gap-1.5 mb-1">
