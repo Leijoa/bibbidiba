@@ -196,7 +196,14 @@ window.fireAttack = function() {
     UI.updateEnemyUI(stage);
 
     setTimeout(() => {
-        if (stage.enemyHp <= 0) enemyDefeated();
+        if (stage.enemyHp <= 0) {
+            // ★ 如果是最終BOSS (最後一關)，直接觸發勝利
+            if (stage.level === ENEMY_DB.length - 1) {
+                gameWin();
+            } else {
+                enemyDefeated();
+            }
+        }
         else {
             stage.turnsLeft--;
             if (stage.turnsLeft <= 0) {
@@ -275,7 +282,6 @@ function gameOver(reason) {
     clearSave(); 
     UI.el.endOverlay.classList.remove('hidden'); 
     UI.el.endOverlay.classList.add('flex');
-    // ★ 已將這裡的字體配合 HTML 加大 (text-5xl md:text-7xl)
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-red-500 mb-4 shake-hard";
     UI.el.endTitle.innerText = "GAME OVER";
     UI.el.endDesc.innerText = reason;
@@ -285,7 +291,6 @@ function gameWin() {
     clearSave(); 
     UI.el.endOverlay.classList.remove('hidden'); 
     UI.el.endOverlay.classList.add('flex');
-    // ★ 已將這裡的字體配合 HTML 加大 (text-5xl md:text-7xl)
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
     UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
