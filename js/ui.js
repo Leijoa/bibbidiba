@@ -28,7 +28,8 @@ export const el = {
     damageContainer: document.getElementById('damage-container'),
     hitFlash: document.getElementById('hit-flash'),
     titleScreen: document.getElementById('title-screen'),
-    btnContinue: document.getElementById('btn-continue')
+    btnContinue: document.getElementById('btn-continue'),
+    btnNewGame: document.getElementById('btn-new-game')
 };
 
 // --- 動畫與特效 ---
