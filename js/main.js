@@ -197,7 +197,7 @@ window.fireAttack = function() {
 
     setTimeout(() => {
         if (stage.enemyHp <= 0) {
-            // ★ 如果是最終BOSS (最後一關)，直接觸發勝利
+            // 如果是最後一關，直接觸發勝利
             if (stage.level === ENEMY_DB.length - 1) {
                 gameWin();
             } else {
@@ -257,6 +257,8 @@ window.rerollShop = function(isInitial = false) {
         shopRerollsUsed++;
         UI.updateShopRerollBtn(shopRerollsUsed);
         UI.el.shopGold.innerText = player.gold;
+        // ★ 修復：同步更新頂部資訊列的金幣
+        UI.updateHeaderUI(player, stage); 
     }
     let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
     shopItems = available;
@@ -270,6 +272,8 @@ window.buyItem = function(idx) {
         player.relics.push(r.id); 
         shopItems.splice(idx, 1);
         UI.el.shopGold.innerText = player.gold;
+        // ★ 修復：同步更新頂部資訊列的金幣
+        UI.updateHeaderUI(player, stage); 
         UI.renderShopItems(shopItems, player);
         UI.renderInventory(player);
         saveGame(); 
