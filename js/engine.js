@@ -19,12 +19,12 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         }
 
         // 小小、中中、大大的平衡倍率
-        if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 5.0;
-        if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4.5;
-        if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 4.0;
+        if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 2.0;
+        if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 2.5;
+        if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 2.0;
 
-        if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 2.5;
-        if (v % 2 === 0 && playerRelics.includes('even')) multi *= 2.5;
+        if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 1.6;
+        if (v % 2 === 0 && playerRelics.includes('even')) multi *= 1.6;
 
         totalBase += (baseVal * multi);
     });
@@ -201,7 +201,14 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     // --- 總乘區計算 ---
     let globalMulti = 1.0;
     let globalNotes = [];
-    let baseABCD = tagA.multi * tagB.multi * tagC.multi * tagD.multi;
+    let baseABCD = 1.0;
+
+    if (playerRelics.includes('order')) {
+        baseABCD = (tagA.multi + tagB.multi) * tagC.multi * tagD.multi;
+        globalNotes.push('【絕對秩序】發動: (A+B)*C*D');
+    } else {
+        baseABCD = tagA.multi * tagB.multi * tagC.multi * tagD.multi;
+    }
 
     // ★ 更新：【雷爪獅的祝福】條件改為場上有 1
     if (playerRelics.includes('pansy') && counts[1] > 0) {
