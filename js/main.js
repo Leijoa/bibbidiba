@@ -14,7 +14,12 @@ const SAVE_KEY = 'bibbidiba_save_v30';
 
 // --- 存檔系統 (Save System) ---
 function saveGame() {
-    const saveData = { player, stage: { level: stage.level } };
+    let inShop = !UI.el.shopOverlay.classList.contains('hidden');
+    const saveData = {
+        player,
+        stage: { level: stage.level },
+        shop: inShop ? { active: true, items: shopItems, rerolls: shopRerollsUsed } : { active: false }
+    };
     localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
 }
 
@@ -24,7 +29,26 @@ function loadGame() {
         const parsed = JSON.parse(data);
         player = parsed.player;
         UI.el.titleScreen.classList.add('hidden');
-        loadStage(parsed.stage.level, true); 
+
+        if (parsed.shop && parsed.shop.active) {
+            stage.level = parsed.stage.level;
+            let enemy = ENEMY_DB[stage.level];
+            stage.enemyMaxHp = enemy.hp;
+            stage.enemyHp = 0; // 已經擊敗
+            stage.turnsLeft = enemy.turns;
+
+            shopItems = parsed.shop.items || [];
+            shopRerollsUsed = parsed.shop.rerolls || 0;
+
+            renderAll();
+            UI.el.shopOverlay.classList.remove('hidden');
+            UI.el.shopOverlay.classList.add('flex');
+            UI.updateShopRerollBtn(shopRerollsUsed);
+            UI.el.shopGold.innerText = player.gold;
+            UI.renderShopItems(shopItems, player);
+        } else {
+            loadStage(parsed.stage.level, true);
+        }
     }
 }
 
@@ -42,17 +66,17 @@ function checkSaveExists() {
 function initTitleScreen() {
     UI.renderRulesDB();
     checkSaveExists();
-    
+
     UI.el.btnNewGame.onclick = () => {
         clearSave();
         UI.el.titleScreen.classList.add('hidden');
         initNewGame();
     };
     UI.el.btnContinue.onclick = () => loadGame();
-    
+
     document.getElementById('btn-rules').onclick = () => UI.el.rulesModal.classList.remove('hidden');
     document.getElementById('btn-close-rules').onclick = () => UI.el.rulesModal.classList.add('hidden');
-    
+
     UI.el.shopRerollBtn.onclick = () => window.rerollShop(false);
     document.getElementById('btn-next-stage').onclick = () => nextStage();
     document.getElementById('btn-restart').onclick = () => location.reload();
@@ -68,11 +92,11 @@ function loadStage(levelIndex, isLoad = false) {
     stage.level = levelIndex;
     let enemy = ENEMY_DB[levelIndex];
     stage.enemyMaxHp = enemy.hp;
-    stage.enemyHp = enemy.hp; 
+    stage.enemyHp = enemy.hp;
     stage.turnsLeft = enemy.turns;
     UI.el.shopOverlay.classList.add('hidden');
-    
-    saveGame(); 
+
+    saveGame();
     renderAll();
     startTurn();
 }
@@ -114,7 +138,7 @@ window.toggleLock = function(idx) {
 
 window.setHighlight = function(group) {
     if (battle.state !== 'WAIT_ACTION') return;
-    if (activeHighlight === group) activeHighlight = null; 
+    if (activeHighlight === group) activeHighlight = null;
     else activeHighlight = group;
     UI.renderDice(battle, activeHighlight);
     UI.renderScore(battle, activeHighlight);
@@ -126,7 +150,7 @@ window.executeRoll = function(isInitial = false) {
 
     if (!isInitial) battle.rollsLeft--;
     battle.state = 'ROLLING';
-    activeHighlight = null; 
+    activeHighlight = null;
     battle.dice.forEach(d => { d.matchedGroups = {A:false, B:false, C:false, D:false}; });
     renderAll();
 
@@ -139,9 +163,9 @@ window.executeRoll = function(isInitial = false) {
         if (intervals >= 10) {
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
-            
+
             battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft);
-            
+
             const applyMatch = (usedVals, groupName) => {
                 if(!usedVals || usedVals.length === 0) return;
                 let available = battle.dice.filter(d => !d.matchedGroups[groupName]);
@@ -153,7 +177,7 @@ window.executeRoll = function(isInitial = false) {
                     }
                 });
             };
-            
+
             applyMatch(battle.scoreResult.tagA.used, 'A');
             applyMatch(battle.scoreResult.tagB.used, 'B');
             applyMatch(battle.scoreResult.tagC.used, 'C');
@@ -239,10 +263,9 @@ function enemyDefeated() {
 }
 
 function openShop() {
-    UI.el.shopOverlay.classList.remove('hidden'); 
+    UI.el.shopOverlay.classList.remove('hidden');
     UI.el.shopOverlay.classList.add('flex');
     shopRerollsUsed = 0;
-    saveGame(); 
     UI.updateShopRerollBtn(shopRerollsUsed);
     UI.el.shopGold.innerText = player.gold;
     UI.updateHeaderUI(player, stage);
@@ -258,33 +281,34 @@ window.rerollShop = function(isInitial = false) {
         UI.updateShopRerollBtn(shopRerollsUsed);
         UI.el.shopGold.innerText = player.gold;
         // ★ 修復：同步更新頂部資訊列的金幣
-        UI.updateHeaderUI(player, stage); 
+        UI.updateHeaderUI(player, stage);
     }
     let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
     shopItems = available;
     UI.renderShopItems(shopItems, player);
+    saveGame();
 };
 
 window.buyItem = function(idx) {
     let r = shopItems[idx];
     if (player.gold >= r.price) {
-        player.gold -= r.price; 
-        player.relics.push(r.id); 
+        player.gold -= r.price;
+        player.relics.push(r.id);
         shopItems.splice(idx, 1);
         UI.el.shopGold.innerText = player.gold;
         // ★ 修復：同步更新頂部資訊列的金幣
-        UI.updateHeaderUI(player, stage); 
+        UI.updateHeaderUI(player, stage);
         UI.renderShopItems(shopItems, player);
         UI.renderInventory(player);
-        saveGame(); 
+        saveGame();
     }
 };
 
 function nextStage() { loadStage(stage.level + 1); }
 
 function gameOver(reason) {
-    clearSave(); 
-    UI.el.endOverlay.classList.remove('hidden'); 
+    clearSave();
+    UI.el.endOverlay.classList.remove('hidden');
     UI.el.endOverlay.classList.add('flex');
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-red-500 mb-4 shake-hard";
     UI.el.endTitle.innerText = "GAME OVER";
@@ -292,8 +316,8 @@ function gameOver(reason) {
 }
 
 function gameWin() {
-    clearSave(); 
-    UI.el.endOverlay.classList.remove('hidden'); 
+    clearSave();
+    UI.el.endOverlay.classList.remove('hidden');
     UI.el.endOverlay.classList.add('flex');
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
