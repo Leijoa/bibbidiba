@@ -47,7 +47,13 @@ export function shootConfetti() {
 export function showToast(msg, callback) {
     let toast = document.createElement('div');
     toast.className = 'fixed top-1/2 left-1/2 bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-amber-500 z-[100] text-lg md:text-2xl text-center flex flex-col gap-2 toast-enter whitespace-pre-wrap leading-relaxed';
-    toast.innerHTML = msg;
+
+    if (msg instanceof Node) {
+        toast.appendChild(msg);
+    } else {
+        toast.textContent = msg;
+    }
+
     document.body.appendChild(toast);
     setTimeout(() => {
         toast.style.transition = 'opacity 0.3s ease';
@@ -126,7 +132,19 @@ export function renderInventory(player) {
 window.showRelicInfo = function(id) {
     let r = RELIC_DB.find(x => x.id === id);
     if(r) {
-        showToast(`<span class="text-amber-400 font-black">${r.name}</span>\n<span class="text-sm md:text-lg text-slate-200 mt-2 block">${r.desc}</span>`);
+        let container = document.createElement('div');
+        let nameSpan = document.createElement('span');
+        nameSpan.className = "text-amber-400 font-black";
+        nameSpan.textContent = r.name;
+
+        let descSpan = document.createElement('span');
+        descSpan.className = "text-sm md:text-lg text-slate-200 mt-2 block";
+        descSpan.textContent = r.desc;
+
+        container.appendChild(nameSpan);
+        container.appendChild(descSpan);
+
+        showToast(container);
     }
 };
 
