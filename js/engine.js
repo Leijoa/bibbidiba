@@ -6,29 +6,26 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     dice.forEach(d => counts[d.val]++);
 
     let totalBase = 0;
+    const relicBaseVals = { 1: 10, 2: 10, 3: 11, 4: 11, 5: 11, 6: 11, 7: 12, 8: 12 };
+
     dice.forEach(d => {
-        let multi = 1; 
+        let multi = 1;
         let v = d.val;
         let baseVal = v; // 預設底盤點數為骰面數字
 
         // 基礎點數計算
-        if (v === 1 && playerRelics.includes('b1')) baseVal = 10;
-        if (v === 2 && playerRelics.includes('b2')) baseVal = 10;
-        if (v === 3 && playerRelics.includes('b3')) baseVal = 11;
-        if (v === 4 && playerRelics.includes('b4')) baseVal = 11;
-        if (v === 5 && playerRelics.includes('b5')) baseVal = 11;
-        if (v === 6 && playerRelics.includes('b6')) baseVal = 11;
-        if (v === 7 && playerRelics.includes('b7')) baseVal = 12;
-        if (v === 8 && playerRelics.includes('b8')) baseVal = 12;
-        
+        if (playerRelics.includes(`b${v}`)) {
+            baseVal = relicBaseVals[v];
+        }
+
         // 小小、中中、大大的平衡倍率
         if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 5.0;
         if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4.5;
         if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 4.0;
-        
+
         if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 2.5;
         if (v % 2 === 0 && playerRelics.includes('even')) multi *= 2.5;
-        
+
         totalBase += (baseVal * multi);
     });
 
@@ -43,7 +40,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         }
         return used;
     }
-    
+
     function getPairsVals(numPairs) {
         let c = [...counts], used = [], pairsFound = 0;
         for(let i=8; i>=1 && pairsFound < numPairs; i--) {
@@ -51,13 +48,13 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         }
         return pairsFound === numPairs ? used : false;
     }
-    
+
     function getStrictPairsVals(numPairs) {
         let used = [], pairsFound = 0;
         for(let i=8; i>=1; i--) { if(counts[i] === 2) { used.push(i, i); pairsFound++; } }
         return pairsFound === numPairs ? used : false;
     }
-    
+
     function extractVals(targetLengths) {
         let currentLengths = [...targetLengths].sort((a,b)=>b-a);
         function search(c, idx, used) {
@@ -77,7 +74,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         }
         return search(counts, 0, []);
     }
-    
+
     function exactPartitionVals(c, numSeqs) {
         let remaining = c.reduce((a,b)=>a+b, 0);
         if (remaining === 0 && numSeqs === 0) return [];
@@ -96,7 +93,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         }
         return false;
     }
-    
+
     function checkAllChowsVals(c) {
         for(let i=1; i<=6; i++) {
             if(c[i]>=1 && c[i+1]>=1 && c[i+2]>=1) {
@@ -112,7 +109,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         }
         return false;
     }
-    
+
     function checkAllPongsVals(c) {
         for(let i=1; i<=8; i++) {
             if(c[i]>=3) {
@@ -185,11 +182,11 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     // --- 判斷 D 區 ---
     let tagD = { name: '無', multi: 1.0, used: [] };
     let freqs = counts.slice(1).filter(c => c > 0);
-    
+
     let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
     let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
     let orderReq = playerRelics.includes('order') ? 7 : 8;
-    
+
     let orderUsed = [];
     if (oddCount >= orderReq) {
         dice.forEach(d => { if(d.val % 2 !== 0) orderUsed.push(d.val); });
