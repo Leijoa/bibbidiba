@@ -1,7 +1,7 @@
 // js/engine.js
 // 負責處理所有骰子數值的結算與配對邏輯
 
-export function calculateEngineScore(dice, playerRelics, rollsLeft) {
+export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3) {
     let counts = new Array(9).fill(0);
     dice.forEach(d => counts[d.val]++);
 
@@ -126,6 +126,18 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
         return false;
     }
 
+    function checkChowPongVals(c) {
+        for(let i=1; i<=6; i++) {
+            if(c[i]>=1 && c[i+1]>=1 && c[i+2]>=1) {
+                let c1 = [...c]; c1[i]--; c1[i+1]--; c1[i+2]--;
+                for(let j=1; j<=8; j++) {
+                    if(c1[j]>=3) return [i, i+1, i+2, j, j, j];
+                }
+            }
+        }
+        return false;
+    }
+
     // --- 判斷 A 區 ---
     let tagA = { name: '無', multi: 1.0, used: [] };
     let maxFreq = Math.max(...counts);
@@ -141,16 +153,22 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     let tagB = { name: '無', multi: 1.0, used: [] };
     let bFull = counts.slice(1,9).every(c => c>=1) ? [1,2,3,4,5,6,7,8] : false;
     let bDragon = exactPartitionVals([...counts], 3);
+    let b7 = extractVals([7]);
+    let b6 = extractVals([6]);
     let bDouble4 = extractVals([4, 4]);
     let b5 = extractVals([5]);
     let bDouble3 = extractVals([3, 3]);
+    let b4 = extractVals([4]);
     let b3 = extractVals([3]);
 
     if (bFull) tagB = { name: '大滿貫', multi: 25.0, used: bFull };
     else if (bDragon) tagB = { name: '三龍會', multi: 12.0, used: bDragon };
+    else if (b7) tagB = { name: '七連順', multi: 10.0, used: b7 };
+    else if (b6) tagB = { name: '六連順', multi: 6.0, used: b6 };
     else if (bDouble4) tagB = { name: '雙順', multi: 6.0, used: bDouble4 };
     else if (b5) tagB = { name: '五連順', multi: 3.5, used: b5 };
     else if (bDouble3) tagB = { name: '雙三連順', multi: 3.0, used: bDouble3 };
+    else if (b4) tagB = { name: '四連順', multi: 2.5, used: b4 };
     else if (b3) tagB = { name: '三連順', multi: 2.0, used: b3 };
 
     // --- 判斷 C 區 ---
@@ -161,6 +179,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     let cMidHulu = getFreqVals(4, 3);
     let cAllChows = checkAllChowsVals(counts);
     let cAllPongs = checkAllPongsVals(counts);
+    let cChowPong = checkChowPongVals(counts);
     let c4Pairs = getPairsVals(4);
     let cDoubleTrips = getFreqVals(3, 3);
     let cSmallHulu = getFreqVals(3, 2);
@@ -173,6 +192,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     else if (cMidHulu) tagC = { name: '中葫蘆', multi: 8.0, used: cMidHulu };
     else if (cAllChows) tagC = { name: '平胡', multi: 6.0, used: cAllChows };
     else if (cAllPongs) tagC = { name: '碰碰胡', multi: 5.0, used: cAllPongs };
+    else if (cChowPong) tagC = { name: '順碰交響曲', multi: 4.0, used: cChowPong };
     else if (c4Pairs) tagC = { name: '四對子', multi: 5.0, used: c4Pairs };
     else if (cDoubleTrips) tagC = { name: '雙三同', multi: 3.5, used: cDoubleTrips };
     else if (cSmallHulu) tagC = { name: '小葫蘆', multi: 3.5, used: cSmallHulu };
@@ -197,6 +217,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     if (counts[1] + counts[8] === 8) tagD = { name: '兩極', multi: 30.0, used: dice.map(d=>d.val) };
     else if (oddCount >= orderReq || evenCount >= orderReq) tagD = { name: '絕對秩序', multi: 8.0, used: orderUsed };
     else if (freqs.length === 8) tagD = { name: '全異', multi: 2.5, used: dice.map(d=>d.val) };
+    else if (counts[1] === 0 && counts[8] === 0) tagD = { name: '中庸之道', multi: 2.0, used: dice.map(d=>d.val) };
 
     // --- 總乘區計算 ---
     let globalMulti = 1.0;
@@ -220,6 +241,21 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft) {
     if (playerRelics.includes('pongo') && counts[8] > 0) {
         globalMulti *= 3.0;
         globalNotes.push('【捧夠的祝福】 x3.0');
+    }
+
+    if (playerRelics.includes('highlow') && counts[1] > 0 && counts[8] > 0) {
+        globalMulti *= 1.5;
+        globalNotes.push('【高低差】 x1.5');
+    }
+
+    if (playerRelics.includes('laststand') && rollsLeft === 0) {
+        globalMulti *= 1.5;
+        globalNotes.push('【破釜沉舟】 x1.5');
+    }
+
+    if (playerRelics.includes('allin') && playerHp === 1) {
+        globalMulti *= 2.5;
+        globalNotes.push('【孤注一擲】 x2.5');
     }
 
     let rerollMulti = 1.0 + (rollsLeft * 0.5);

@@ -28,11 +28,18 @@ export const RELIC_DB = [
     { id: 'even', name: '【偶數】', desc: '偶數點數倍率*2.5', price: 25, rarity: 3 },
     { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +15', price: 20, rarity: 3 },
     { id: 'order', name: '【絕對秩序】', desc: '只要七顆奇數或偶數就會發動絕對秩序牌型', price: 25, rarity: 3 },
+    { id: 'allin', name: '【孤注一擲】', desc: '當玩家 HP 只剩 1 時，最終傷害 x2.5', price: 30, rarity: 3 },
     
+    // 其他新增遺物
+    { id: 'laststand', name: '【破釜沉舟】', desc: '當剩餘重骰次數為 0 時，最終結算傷害 x1.5', price: 20, rarity: 2 },
+    { id: 'investor', name: '【投資達人】', desc: '戰鬥結算時，每持有 10 枚金幣，就額外獲得 1 枚金幣利息', price: 25, rarity: 2 },
+    { id: 'highlow', name: '【高低差】', desc: '只要盤面同時存在 1 和 8，總傷害 x1.5', price: 20, rarity: 2 },
+
     // 傳說類 (Rarity 4)
     { id: 'pansy', name: '【雷爪獅的祝福】', desc: '場上有 1 時總傷害 x3', price: 50, rarity: 4 },
     { id: 'pongo', name: '【捧夠的祝福】', desc: '場上有 8 時總傷害 x3', price: 50, rarity: 4 },
     { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +2', price: 35, rarity: 4 },
+    { id: 'goldendice', name: '【黃金骰子】', desc: '戰鬥結算時，盤面上每有一顆 7，結算時額外獲得 3 金幣', price: 40, rarity: 4 },
 ];
 
 export const ENEMY_DB = [
@@ -56,9 +63,12 @@ export const RULE_DB = {
     groupB: [
         { name: '大滿貫', desc: '1~8各有一顆', multi: 'x25.0' },
         { name: '三龍會', desc: '分成三組完全相連的順子', multi: 'x12.0' },
+        { name: '七連順', desc: '7顆數字相連', multi: 'x10.0' },
+        { name: '六連順', desc: '6顆數字相連', multi: 'x6.0' },
         { name: '雙順', desc: '兩組4連順', multi: 'x6.0' },
         { name: '五連順', desc: '5顆數字相連', multi: 'x3.5' },
         { name: '雙三連順', desc: '兩組3連順', multi: 'x3.0' },
+        { name: '四連順', desc: '4顆數字相連', multi: 'x2.5' },
         { name: '三連順', desc: '3顆數字相連', multi: 'x2.0' }
     ],
     groupC: [
@@ -68,6 +78,7 @@ export const RULE_DB = {
         { name: '中葫蘆', desc: '4同 + 3同', multi: 'x8.0' },
         { name: '平胡', desc: '兩組3連順 + 一組對子', multi: 'x6.0' },
         { name: '碰碰胡', desc: '兩組3同 + 一組對子', multi: 'x5.0' },
+        { name: '順碰交響曲', desc: '1組3連順 + 1組3同', multi: 'x4.0' },
         { name: '四對子', desc: '任意4組對子', multi: 'x5.0' },
         { name: '雙三同', desc: '兩組3同', multi: 'x3.5' },
         { name: '小葫蘆', desc: '3同 + 一組對子', multi: 'x3.5' },
@@ -77,6 +88,7 @@ export const RULE_DB = {
     groupD: [
         { name: '兩極', desc: '盤面只有 1 和 8', multi: 'x30.0' },
         { name: '絕對秩序', desc: '7顆以上數字為全奇數或全偶數', multi: 'x8.0' },
-        { name: '全異', desc: '8顆數字皆不相同', multi: 'x2.5' }
+        { name: '全異', desc: '8顆數字皆不相同', multi: 'x2.5' },
+        { name: '中庸之道', desc: '盤面完全沒有 1 和 8', multi: 'x2.0' }
     ]
 };

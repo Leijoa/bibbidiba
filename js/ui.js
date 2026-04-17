@@ -30,7 +30,12 @@ export const el = {
     hitFlash: document.getElementById('hit-flash'),
     titleScreen: document.getElementById('title-screen'),
     btnContinue: document.getElementById('btn-continue'),
-    btnNewGame: document.getElementById('btn-new-game')
+    btnNewGame: document.getElementById('btn-new-game'),
+    btnHistory: document.getElementById('btn-history'),
+    historyModal: document.getElementById('history-modal'),
+    historyContent: document.getElementById('history-content'),
+    btnCloseHistory: document.getElementById('btn-close-history'),
+    endStats: document.getElementById('end-stats')
 };
 
 if (document.getElementById('btn-rules')) {
@@ -320,4 +325,67 @@ export function updateShopRerollBtn(shopRerollsUsed) {
         el.shopRerollBtn.innerHTML = "🔄 刷新商店 (3 金幣)";
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-slate-900 active:border-b-0 active:translate-y-1";
     }
+}
+
+export function renderHistoryModal(records) {
+    if (!records || records.length === 0) {
+        el.historyContent.innerHTML = `<div class="text-center text-slate-500 py-6 font-bold">尚無歷史紀錄。</div>`;
+        return;
+    }
+    
+    el.historyContent.innerHTML = records.map((r, i) => {
+        let resultColor = r.win ? "text-amber-400" : "text-red-400";
+        let resultText = r.win ? "勝利" : "失敗";
+        let dateObj = new Date(r.date);
+        let dateStr = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        let relicHtml = (r.relics && r.relics.length > 0) ? r.relics.map(id => {
+            let relicDef = RELIC_DB.find(x => x.id === id);
+            if (!relicDef) return '';
+            return `<span class="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300 mr-1 mb-1 inline-block">${relicDef.name}</span>`;
+        }).join('') : '<span class="text-slate-500 text-[10px]">無</span>';
+        
+        return `
+        <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col gap-1 relative overflow-hidden">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-1 mb-1">
+                <span class="font-black ${resultColor} text-sm md:text-base">${resultText}</span>
+                <span class="text-[10px] md:text-xs text-slate-400">${dateStr}</span>
+            </div>
+            <div class="text-xs md:text-sm text-slate-300">
+                <span class="text-slate-500">最高傷害:</span> <span class="font-black text-white">${Number(r.highestDamage).toLocaleString()}</span>
+            </div>
+            <div class="text-xs md:text-sm text-slate-300">
+                <span class="text-slate-500">最佳牌型:</span> <span class="font-bold text-blue-300">${r.combo || '無'}</span>
+            </div>
+            <div class="mt-1">
+                <div class="text-[10px] text-slate-500 mb-0.5">最終持有遺物:</div>
+                <div class="flex flex-wrap">${relicHtml}</div>
+            </div>
+        </div>`;
+    }).reverse().join('');
+}
+
+export function renderEndGameStats(highestDamage, highestDamageCombo, relics) {
+    if(!el.endStats) return;
+    
+    let relicHtml = (relics && relics.length > 0) ? relics.map(id => {
+        let relicDef = RELIC_DB.find(x => x.id === id);
+        if (!relicDef) return '';
+        let style = RARITY[relicDef.rarity] || RARITY[1];
+        return `<span class="${style.bg} ${style.color} px-2 py-1 rounded text-xs border ${style.border} inline-block">${relicDef.name}</span>`;
+    }).join(' ') : '<span class="text-slate-500">無</span>';
+    
+    el.endStats.innerHTML = `
+        <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700/50 w-full max-w-sm mx-auto shadow-inner text-left">
+            <div class="mb-2 border-b border-slate-700/50 pb-2">
+                <div class="text-xs text-slate-400 mb-1">本局最高傷害</div>
+                <div class="text-2xl md:text-3xl font-black text-white">${Number(highestDamage).toLocaleString()}</div>
+                <div class="text-sm font-bold text-blue-300 mt-1">${highestDamageCombo || '無'}</div>
+            </div>
+            <div>
+                <div class="text-xs text-slate-400 mb-1.5">最終持有遺物</div>
+                <div class="flex flex-wrap gap-1">${relicHtml}</div>
+            </div>
+        </div>
+    `;
 }

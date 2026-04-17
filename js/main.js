@@ -268,13 +268,13 @@ window.fireAttack = function() {
 function enemyDefeated() {
     let baseEarn = 15 + ((stage.turnsLeft - 1) * 10);
     let extraEarn = 0;
-
+    
     if (player.relics.includes('coin')) extraEarn += 15;
     if (player.relics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
     if (player.relics.includes('goldendice') && battle.dice) {
         extraEarn += (battle.dice.filter(d => d.val === 7).length * 3);
     }
-
+    
     let earn = baseEarn + extraEarn;
     player.gold += earn;
     UI.shootConfetti();
