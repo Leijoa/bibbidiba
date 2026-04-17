@@ -19,12 +19,12 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         }
 
         // 小小、中中、大大的平衡倍率
-        if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 2.0;
-        if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 2.5;
-        if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 2.0;
+        if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 5.0;
+        if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4.5;
+        if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 4.0;
 
-        if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 1.6;
-        if (v % 2 === 0 && playerRelics.includes('even')) multi *= 1.6;
+        if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 2.5;
+        if (v % 2 === 0 && playerRelics.includes('even')) multi *= 2.5;
 
         totalBase += (baseVal * multi);
     });
@@ -189,11 +189,11 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     if (cDStar) tagC = { name: '雙子星', multi: 20.0, used: cDStar };
     else if (cHulu) tagC = { name: '葫蘆', multi: 15.0, used: cHulu };
     else if (cStrictPairs) tagC = { name: '經典四對子', multi: 10.0, used: cStrictPairs };
+    else if (c4Pairs) tagC = { name: '豪華四對子', multi: 15.0, used: c4Pairs };
     else if (cMidHulu) tagC = { name: '中葫蘆', multi: 8.0, used: cMidHulu };
     else if (cAllChows) tagC = { name: '平胡', multi: 6.0, used: cAllChows };
     else if (cAllPongs) tagC = { name: '碰碰胡', multi: 5.0, used: cAllPongs };
     else if (cChowPong) tagC = { name: '順碰交響曲', multi: 4.0, used: cChowPong };
-    else if (c4Pairs) tagC = { name: '四對子', multi: 5.0, used: c4Pairs };
     else if (cDoubleTrips) tagC = { name: '雙三同', multi: 3.5, used: cDoubleTrips };
     else if (cSmallHulu) tagC = { name: '小葫蘆', multi: 3.5, used: cSmallHulu };
     else if (c3Pairs) tagC = { name: '三對子', multi: 3.0, used: c3Pairs };
