@@ -11,6 +11,7 @@ let shopItems = [];
 let shopRerollsUsed = 0;
 let activeHighlight = null;
 const SAVE_KEY = 'bibbidiba_save_v30';
+const HISTORY_KEY = 'bibbidiba_history_v30';
 
 // --- 存檔系統 (Save System) ---
 function saveGame() {
@@ -77,13 +78,22 @@ function initTitleScreen() {
     document.getElementById('btn-rules').onclick = () => UI.el.rulesModal.classList.remove('hidden');
     document.getElementById('btn-close-rules').onclick = () => UI.el.rulesModal.classList.add('hidden');
 
+    if (UI.el.btnHistory && UI.el.historyModal && UI.el.btnCloseHistory) {
+        UI.el.btnHistory.onclick = () => {
+            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            UI.renderHistoryModal(history);
+            UI.el.historyModal.classList.remove('hidden');
+        };
+        UI.el.btnCloseHistory.onclick = () => UI.el.historyModal.classList.add('hidden');
+    }
+
     UI.el.shopRerollBtn.onclick = () => window.rerollShop(false);
     document.getElementById('btn-next-stage').onclick = () => nextStage();
     document.getElementById('btn-restart').onclick = () => location.reload();
 }
 
 function initNewGame() {
-    player = { hp: 3, gold: 20, relics: [], maxRolls: 2 };
+    player = { hp: 3, gold: 20, relics: [], maxRolls: 2, highestDamage: 0, highestDamageCombo: '' };
     loadStage(0);
 }
 
@@ -164,7 +174,7 @@ window.executeRoll = function(isInitial = false) {
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
 
-            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft);
+            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp);
 
             const applyMatch = (usedVals, groupName) => {
                 if(!usedVals || usedVals.length === 0) return;
@@ -197,6 +207,16 @@ window.fireAttack = function() {
 
     let dmg = Math.floor(battle.scoreResult.finalScore);
     stage.enemyHp -= dmg;
+
+    if (dmg > (player.highestDamage || 0)) {
+        player.highestDamage = dmg;
+        let combos = [];
+        if (battle.scoreResult.tagA.name !== '無') combos.push(battle.scoreResult.tagA.name);
+        if (battle.scoreResult.tagB.name !== '無') combos.push(battle.scoreResult.tagB.name);
+        if (battle.scoreResult.tagC.name !== '無') combos.push(battle.scoreResult.tagC.name);
+        if (battle.scoreResult.tagD.name !== '無') combos.push(battle.scoreResult.tagD.name);
+        player.highestDamageCombo = combos.join(' + ') || '無';
+    }
 
     UI.el.battleArea.classList.remove('shake-hard');
     void UI.el.battleArea.offsetWidth;
@@ -246,7 +266,16 @@ window.fireAttack = function() {
 
 // --- 商店與關卡結算 ---
 function enemyDefeated() {
-    let earn = 15 + (stage.turnsLeft * 5) + (player.relics.includes('coin') ? 15 : 0);
+    let baseEarn = 15 + ((stage.turnsLeft - 1) * 10);
+    let extraEarn = 0;
+
+    if (player.relics.includes('coin')) extraEarn += 15;
+    if (player.relics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
+    if (player.relics.includes('goldendice') && battle.dice) {
+        extraEarn += (battle.dice.filter(d => d.val === 7).length * 3);
+    }
+
+    let earn = baseEarn + extraEarn;
     player.gold += earn;
     UI.shootConfetti();
 
@@ -306,22 +335,43 @@ window.buyItem = function(idx) {
 
 function nextStage() { loadStage(stage.level + 1); }
 
+function recordHistory(win) {
+    let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    let currentRecord = {
+        win: win,
+        date: new Date().toISOString(),
+        highestDamage: player.highestDamage || 0,
+        combo: player.highestDamageCombo || '無',
+        relics: [...player.relics]
+    };
+    history.push(currentRecord);
+    // 只保留最近 20 筆紀錄
+    if (history.length > 20) {
+        history.shift();
+    }
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
 function gameOver(reason) {
     clearSave();
+    recordHistory(false);
     UI.el.endOverlay.classList.remove('hidden');
     UI.el.endOverlay.classList.add('flex');
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-red-500 mb-4 shake-hard";
     UI.el.endTitle.innerText = "GAME OVER";
     UI.el.endDesc.innerText = reason;
+    UI.renderEndGameStats(player.highestDamage, player.highestDamageCombo, player.relics);
 }
 
 function gameWin() {
     clearSave();
+    recordHistory(true);
     UI.el.endOverlay.classList.remove('hidden');
     UI.el.endOverlay.classList.add('flex');
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
     UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
+    UI.renderEndGameStats(player.highestDamage, player.highestDamageCombo, player.relics);
     let endInterval = setInterval(UI.shootConfetti, 1000);
     setTimeout(() => clearInterval(endInterval), 5000);
 }
