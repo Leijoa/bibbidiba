@@ -74,12 +74,12 @@ export const RULE_DB = {
     groupC: [
         { name: '雙子星', desc: '兩組4同', multi: 'x20.0' },
         { name: '葫蘆', desc: '5同 + 3同', multi: 'x15.0' },
+        { name: '豪華四對子', desc: '包含3同或4同的4組對子', multi: 'x15.0' },
         { name: '經典四對子', desc: '嚴格的4組對子(無3同或4同)', multi: 'x10.0' },
         { name: '中葫蘆', desc: '4同 + 3同', multi: 'x8.0' },
         { name: '平胡', desc: '兩組3連順 + 一組對子', multi: 'x6.0' },
         { name: '碰碰胡', desc: '兩組3同 + 一組對子', multi: 'x5.0' },
         { name: '順碰交響曲', desc: '1組3連順 + 1組3同', multi: 'x4.0' },
-        { name: '四對子', desc: '任意4組對子', multi: 'x5.0' },
         { name: '雙三同', desc: '兩組3同', multi: 'x3.5' },
         { name: '小葫蘆', desc: '3同 + 一組對子', multi: 'x3.5' },
         { name: '三對子', desc: '任意3組對子', multi: 'x3.0' },
