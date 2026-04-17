@@ -25,8 +25,18 @@
       <button id="btn-new-game" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(217,119,6,0.4)] text-lg">
         開始新遊戲
       </button>
+      <button id="btn-history" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(147,51,234,0.4)] text-lg">
+        歷史牌局
+      </button>
     </div>
-    <div class="absolute bottom-4 text-slate-600 text-xs font-bold">V3.2 極致精簡版</div>
+    <div class="absolute bottom-4 flex flex-col items-center text-slate-500 text-[10px] md:text-xs font-bold">
+      <div>V3.2 極致精簡版</div>
+      <div class="mt-1 flex gap-2">
+        <span>作者:雷爪獅</span>
+        <span>Youtube:雷爪獅遊戲頻道</span>
+        <span>threads:@leijoalan</span>
+      </div>
+    </div>
   </div>
 
   <div id="hit-flash" class="fixed inset-0 pointer-events-none z-40 hidden"></div>
@@ -123,10 +133,29 @@
 
     <div id="end-overlay" class="absolute inset-0 bg-red-950/95 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4 text-center">
       <h1 id="end-title" class="text-5xl md:text-7xl font-black text-red-500 mb-3 pop-anim">GAME OVER</h1>
-      <p id="end-desc" class="text-sm md:text-xl text-slate-300 mb-8 font-bold">你未能擊敗敵人，旅程到此為止。</p>
-      <button id="btn-restart" class="bg-white hover:bg-slate-200 text-slate-900 font-black py-3 px-8 rounded-full transition-transform hover:scale-105 active:scale-95 text-base shadow-xl">回到標題畫面</button>
+      <p id="end-desc" class="text-sm md:text-xl text-slate-300 mb-4 font-bold">你未能擊敗敵人，旅程到此為止。</p>
+      <div id="end-stats" class="flex flex-col gap-2 mb-6 text-sm md:text-base text-slate-300"></div>
+      <button id="btn-restart" class="bg-white hover:bg-slate-200 text-slate-900 font-black py-3 px-8 rounded-full transition-transform hover:scale-105 active:scale-95 text-base shadow-xl mb-4">回到標題畫面</button>
+
+      <div class="flex flex-col items-center text-slate-500 text-[10px] md:text-xs font-bold mt-2">
+        <div class="flex gap-2">
+          <span>作者:雷爪獅</span>
+          <span>Youtube:雷爪獅遊戲頻道</span>
+          <span>threads:@leijoalan</span>
+        </div>
+      </div>
     </div>
   </main>
+
+  <div id="history-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[70] flex items-center justify-center p-2 backdrop-blur-sm">
+    <div class="bg-slate-800 border-2 border-slate-600 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-2 md:p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900 shrink-0">
+        <h2 class="text-base md:text-xl font-black text-purple-400 flex items-center gap-2">📜 歷史牌局紀錄</h2>
+        <button id="btn-close-history" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+      </div>
+      <div class="p-2 md:p-4 overflow-y-auto flex-grow text-xs md:text-sm flex flex-col gap-2" id="history-content"></div>
+    </div>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>
