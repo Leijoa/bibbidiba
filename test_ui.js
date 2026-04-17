@@ -18,3 +18,4 @@ import('./js/ui.js').then((ui) => {
     ui.showToast("Test message", () => {});
     console.log("showToast executed without error in mock.");
 }).catch(console.error);
+global.Node = class {};
