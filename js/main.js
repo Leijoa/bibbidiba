@@ -18,7 +18,18 @@ function saveGame() {
     let inShop = !UI.el.shopOverlay.classList.contains('hidden');
     const saveData = {
         player,
-        stage: { level: stage.level },
+        stage: {
+            level: stage.level,
+            enemyMaxHp: stage.enemyMaxHp,
+            enemyHp: stage.enemyHp,
+            turnsLeft: stage.turnsLeft
+        },
+        battle: {
+            state: battle.state,
+            dice: battle.dice,
+            rollsLeft: battle.rollsLeft,
+            scoreResult: battle.scoreResult
+        },
         shop: inShop ? { active: true, items: shopItems, rerolls: shopRerollsUsed } : { active: false }
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
@@ -48,7 +59,7 @@ function loadGame() {
             UI.el.shopGold.innerText = player.gold;
             UI.renderShopItems(shopItems, player);
         } else {
-            loadStage(parsed.stage.level, true);
+            loadStage(parsed.stage.level, true, parsed);
         }
     }
 }
@@ -97,18 +108,37 @@ function initNewGame() {
     loadStage(0);
 }
 
-function loadStage(levelIndex, isLoad = false) {
+function loadStage(levelIndex, isLoad = false, parsedData = null) {
     if (levelIndex >= ENEMY_DB.length) return gameWin();
     stage.level = levelIndex;
     let enemy = ENEMY_DB[levelIndex];
     stage.enemyMaxHp = enemy.hp;
-    stage.enemyHp = enemy.hp;
-    stage.turnsLeft = enemy.turns;
+
+    if (isLoad && parsedData && parsedData.stage) {
+        stage.enemyHp = parsedData.stage.enemyHp ?? enemy.hp;
+        stage.turnsLeft = parsedData.stage.turnsLeft ?? enemy.turns;
+        if (parsedData.battle) {
+            battle.state = parsedData.battle.state;
+            if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') {
+                battle.state = 'WAIT_ACTION';
+            }
+            battle.dice = parsedData.battle.dice || battle.dice;
+            battle.rollsLeft = parsedData.battle.rollsLeft;
+            battle.scoreResult = parsedData.battle.scoreResult;
+        }
+    } else {
+        stage.enemyHp = enemy.hp;
+        stage.turnsLeft = enemy.turns;
+    }
+
     UI.el.shopOverlay.classList.add('hidden');
 
     saveGame();
     renderAll();
-    startTurn();
+
+    if (!isLoad || !parsedData || !parsedData.battle || battle.state === 'IDLE') {
+        startTurn();
+    }
 }
 
 function startTurn() {
@@ -119,6 +149,7 @@ function startTurn() {
     battle.rollsLeft = player.maxRolls;
     battle.dice = battle.dice.map((d, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} }));
     battle.scoreResult = null;
+    saveGame();
     renderAll();
     window.executeRoll(true);
 }
@@ -136,6 +167,7 @@ function renderAll() {
 window.toggleLock = function(idx) {
     if (battle.state === 'WAIT_ACTION' && !activeHighlight) {
         battle.dice[idx].locked = !battle.dice[idx].locked;
+        saveGame();
         UI.renderDice(battle, activeHighlight);
         const diceEl = document.getElementById(`dice-element-${idx}`);
         if(diceEl) {
@@ -162,6 +194,7 @@ window.executeRoll = function(isInitial = false) {
     battle.state = 'ROLLING';
     activeHighlight = null;
     battle.dice.forEach(d => { d.matchedGroups = {A:false, B:false, C:false, D:false}; });
+    saveGame();
     renderAll();
 
     let intervals = 0;
@@ -194,6 +227,7 @@ window.executeRoll = function(isInitial = false) {
             applyMatch(battle.scoreResult.tagD.used, 'D');
 
             battle.state = 'WAIT_ACTION';
+            saveGame();
             renderAll();
         }
     }, 45);
