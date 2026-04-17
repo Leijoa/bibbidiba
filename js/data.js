@@ -39,7 +39,7 @@ export const RELIC_DB = [
     { id: 'pansy', name: '【雷爪獅的祝福】', desc: '場上有 1 時總傷害 x3', price: 50, rarity: 4 },
     { id: 'pongo', name: '【捧夠的祝福】', desc: '場上有 8 時總傷害 x3', price: 50, rarity: 4 },
     { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +2', price: 35, rarity: 4 },
-    { id: 'goldendice', name: '【黃金骰子】', desc: '戰鬥結算時，盤面上每有一顆 7，結算時額外獲得 3 金幣', price: 40, rarity: 4 },
+    { id: 'goldendice', name: '【黃金骰子】', desc: '每次發動攻擊時，盤面上每有一顆 7，立即獲得 3 金幣', price: 40, rarity: 4 },
 ];
 
 export const ENEMY_DB = [
