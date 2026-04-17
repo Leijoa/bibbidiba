@@ -208,6 +208,16 @@ window.fireAttack = function() {
     let dmg = Math.floor(battle.scoreResult.finalScore);
     stage.enemyHp -= dmg;
 
+    if (player.relics.includes('goldendice') && battle.dice) {
+        let sevens = battle.dice.filter(d => d.val === 7).length;
+        if (sevens > 0) {
+            let goldEarned = sevens * 3;
+            player.gold += goldEarned;
+            UI.updateHeaderUI(player, stage);
+            UI.showToast(`💰 黃金骰子發動：獲得 ${goldEarned} 金幣！`);
+        }
+    }
+
     if (dmg > (player.highestDamage || 0)) {
         player.highestDamage = dmg;
         let combos = [];
@@ -271,9 +281,6 @@ function enemyDefeated() {
     
     if (player.relics.includes('coin')) extraEarn += 15;
     if (player.relics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
-    if (player.relics.includes('goldendice') && battle.dice) {
-        extraEarn += (battle.dice.filter(d => d.val === 7).length * 3);
-    }
     
     let earn = baseEarn + extraEarn;
     player.gold += earn;
