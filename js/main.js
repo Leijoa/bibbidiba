@@ -101,22 +101,49 @@ function initTitleScreen() {
     UI.el.shopRerollBtn.onclick = () => window.rerollShop(false);
     document.getElementById('btn-next-stage').onclick = () => nextStage();
     document.getElementById('btn-restart').onclick = () => location.reload();
+
+    let btnInfinite = document.getElementById('btn-infinite');
+    if (btnInfinite) {
+        btnInfinite.onclick = () => {
+            player.isInfiniteMode = true;
+            UI.el.endOverlay.classList.add('hidden');
+            document.getElementById('btn-restart').classList.remove('hidden');
+            btnInfinite.classList.add('hidden');
+            enemyDefeated(); // Proceed to shop as if enemy was defeated normally
+        };
+    }
 }
 
 function initNewGame() {
-    player = { hp: 3, gold: 20, relics: [], maxRolls: 2, highestDamage: 0, highestDamageCombo: '' };
+    player = { hp: 3, gold: 20, relics: [], maxRolls: 2, highestDamage: 0, highestDamageCombo: '', isInfiniteMode: false };
     loadStage(0);
 }
 
+function getEnemy(levelIndex) {
+    if (levelIndex < ENEMY_DB.length) {
+        return ENEMY_DB[levelIndex];
+    } else {
+        let baseHp = ENEMY_DB[ENEMY_DB.length - 1].hp;
+        let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
+        let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
+        return { name: `無限塔第 ${infiniteLevel} 層`, hp: hp, turns: 5 };
+    }
+}
+
 function loadStage(levelIndex, isLoad = false, parsedData = null) {
-    if (levelIndex >= ENEMY_DB.length) return gameWin();
+    if (levelIndex >= ENEMY_DB.length && !player.isInfiniteMode) return gameWin();
     stage.level = levelIndex;
-    let enemy = ENEMY_DB[levelIndex];
+    let enemy = getEnemy(levelIndex);
     stage.enemyMaxHp = enemy.hp;
 
     if (isLoad && parsedData && parsedData.stage) {
         stage.enemyHp = parsedData.stage.enemyHp ?? enemy.hp;
         stage.turnsLeft = parsedData.stage.turnsLeft ?? enemy.turns;
+
+        if (parsedData.player && parsedData.player.isInfiniteMode !== undefined) {
+            player.isInfiniteMode = parsedData.player.isInfiniteMode;
+        }
+
         if (parsedData.battle) {
             battle.state = parsedData.battle.state;
             if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') {
@@ -329,7 +356,9 @@ function enemyDefeated() {
             return;
         }
     }
-    UI.showToast(`🎉 擊敗了 ${ENEMY_DB[stage.level].name}！\n💰 獲得 ${earn} 金幣！`, openShop);
+
+    let enemyName = getEnemy(stage.level).name;
+    UI.showToast(`🎉 擊敗了 ${enemyName}！\n💰 獲得 ${earn} 金幣！`, openShop);
 }
 
 function openShop() {
@@ -380,6 +409,8 @@ function recordHistory(win) {
     let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
     let currentRecord = {
         win: win,
+        isInfiniteMode: player.isInfiniteMode,
+        infiniteLevel: player.isInfiniteMode ? (stage.level - ENEMY_DB.length + 1) : 0,
         date: new Date().toISOString(),
         highestDamage: player.highestDamage || 0,
         combo: player.highestDamageCombo || '無',
@@ -399,7 +430,14 @@ function gameOver(reason) {
     UI.el.endOverlay.classList.remove('hidden');
     UI.el.endOverlay.classList.add('flex');
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-red-500 mb-4 shake-hard";
-    UI.el.endTitle.innerText = "GAME OVER";
+
+    if (player.isInfiniteMode) {
+        let infiniteLevel = stage.level - ENEMY_DB.length + 1;
+        UI.el.endTitle.innerText = `無限塔第 ${infiniteLevel} 層 挑戰失敗`;
+    } else {
+        UI.el.endTitle.innerText = "GAME OVER";
+    }
+
     UI.el.endDesc.innerText = reason;
     UI.renderEndGameStats(player.highestDamage, player.highestDamageCombo, player.relics);
 }
@@ -409,6 +447,13 @@ function gameWin() {
     recordHistory(true);
     UI.el.endOverlay.classList.remove('hidden');
     UI.el.endOverlay.classList.add('flex');
+
+    let btnRestart = document.getElementById('btn-restart');
+    let btnInfinite = document.getElementById('btn-infinite');
+
+    if (btnRestart) btnRestart.classList.add('hidden');
+    if (btnInfinite) btnInfinite.classList.remove('hidden');
+
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
     UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
