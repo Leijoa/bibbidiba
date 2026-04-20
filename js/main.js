@@ -44,7 +44,7 @@ function loadGame() {
 
         if (parsed.shop && parsed.shop.active) {
             stage.level = parsed.stage.level;
-            let enemy = ENEMY_DB[stage.level];
+            let enemy = getEnemy(stage.level);
             stage.enemyMaxHp = enemy.hp;
             stage.enemyHp = 0; // 已經擊敗
             stage.turnsLeft = enemy.turns;
@@ -326,7 +326,7 @@ window.fireAttack = function() {
                 if (player.hp <= 0) gameOver("血量耗盡，旅程結束！");
                 else {
                     UI.showToast(`⚠️ 未在回合內擊殺！\n扣除 1 HP，重新挑戰！`, () => {
-                        stage.turnsLeft = ENEMY_DB[stage.level].turns;
+                        stage.turnsLeft = getEnemy(stage.level).turns;
                         startTurn();
                     });
                 }
