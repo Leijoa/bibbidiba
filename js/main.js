@@ -431,6 +431,7 @@ function recordHistory(win) {
         win: win,
         isInfiniteMode: player.isInfiniteMode,
         infiniteLevel: player.isInfiniteMode ? (stage.level - ENEMY_DB.length + 1) : 0,
+        stageName: getEnemy(stage.level).name,
         date: new Date().toISOString(),
         highestDamage: player.highestDamage || 0,
         combo: player.highestDamageCombo || '無',
