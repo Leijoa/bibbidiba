@@ -361,7 +361,7 @@ function enemyDefeated() {
     UI.shootConfetti();
 
     let goldMessage = turnsBonus > 0 
-        ? `💰 獲得 ${totalBaseEarn} 金幣 + ${turnsBonus} 金幣 (剩餘次數加成)！`
+        ? `💰 獲得 ${totalBaseEarn} 金幣 + ${turnsBonus} 金幣 (剩餘攻擊次數加成)！`
         : `💰 獲得 ${totalBaseEarn} 金幣！`;
 
     let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id));
