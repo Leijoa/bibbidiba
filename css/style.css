@@ -17,10 +17,10 @@ body {
   100% { transform: scale(1) rotate(45deg); }
 }
 
-.rolling-dice-anim { animation: rollJiggle 0.1s linear infinite alternate; }
+.rolling-dice-anim { animation: rollJiggle 0.08s linear infinite alternate; }
 @keyframes rollJiggle {
-  0% { transform: rotate(43deg) scale(0.95); }
-  100% { transform: rotate(47deg) scale(1.05); }
+  0% { transform: rotate(-10deg) scale(0.9); }
+  100% { transform: rotate(15deg) scale(1.15); }
 }
 
 .pulse-border { animation: pulseBorder 0.6s infinite alternate; }
