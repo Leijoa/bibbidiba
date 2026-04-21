@@ -1,12 +1,13 @@
 // js/engine.js
 // 負責處理所有骰子數值的結算與配對邏輯
 
+const relicBaseVals = { 1: 10, 2: 10, 3: 11, 4: 11, 5: 11, 6: 11, 7: 12, 8: 12 };
+
 export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3) {
     let counts = new Array(9).fill(0);
     dice.forEach(d => counts[d.val]++);
 
     let totalBase = 0;
-    const relicBaseVals = { 1: 10, 2: 10, 3: 11, 4: 11, 5: 11, 6: 11, 7: 12, 8: 12 };
 
     dice.forEach(d => {
         let multi = 1;
@@ -151,53 +152,56 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     // --- 判斷 B 區 ---
     let tagB = { name: '無', multi: 1.0, used: [] };
-    let bFull = counts.slice(1,9).every(c => c>=1) ? [1,2,3,4,5,6,7,8] : false;
-    let bDragon = exactPartitionVals([...counts], 3);
-    let b7 = extractVals([7]);
-    let b6 = extractVals([6]);
-    let bDouble4 = extractVals([4, 4]);
-    let b5 = extractVals([5]);
-    let bDouble3 = extractVals([3, 3]);
-    let b4 = extractVals([4]);
-    let b3 = extractVals([3]);
+    let tempUsed;
 
-    if (bFull) tagB = { name: '大滿貫', multi: 25.0, used: bFull };
-    else if (bDragon) tagB = { name: '三龍會', multi: 12.0, used: bDragon };
-    else if (b7) tagB = { name: '七連順', multi: 10.0, used: b7 };
-    else if (b6) tagB = { name: '六連順', multi: 6.0, used: b6 };
-    else if (bDouble4) tagB = { name: '雙順', multi: 6.0, used: bDouble4 };
-    else if (b5) tagB = { name: '五連順', multi: 3.5, used: b5 };
-    else if (bDouble3) tagB = { name: '雙三連順', multi: 3.0, used: bDouble3 };
-    else if (b4) tagB = { name: '四連順', multi: 2.5, used: b4 };
-    else if (b3) tagB = { name: '三連順', multi: 2.0, used: b3 };
+    if (counts.slice(1,9).every(c => c>=1)) {
+        tagB = { name: '大滿貫', multi: 25.0, used: [1,2,3,4,5,6,7,8] };
+    } else if ((tempUsed = exactPartitionVals([...counts], 3))) {
+        tagB = { name: '三龍會', multi: 12.0, used: tempUsed };
+    } else if ((tempUsed = extractVals([7]))) {
+        tagB = { name: '七連順', multi: 10.0, used: tempUsed };
+    } else if ((tempUsed = extractVals([6]))) {
+        tagB = { name: '六連順', multi: 6.0, used: tempUsed };
+    } else if ((tempUsed = extractVals([4, 4]))) {
+        tagB = { name: '雙順', multi: 6.0, used: tempUsed };
+    } else if ((tempUsed = extractVals([5]))) {
+        tagB = { name: '五連順', multi: 3.5, used: tempUsed };
+    } else if ((tempUsed = extractVals([3, 3]))) {
+        tagB = { name: '雙三連順', multi: 3.0, used: tempUsed };
+    } else if ((tempUsed = extractVals([4]))) {
+        tagB = { name: '四連順', multi: 2.5, used: tempUsed };
+    } else if ((tempUsed = extractVals([3]))) {
+        tagB = { name: '三連順', multi: 2.0, used: tempUsed };
+    }
 
     // --- 判斷 C 區 ---
     let tagC = { name: '無', multi: 1.0, used: [] };
-    let cDStar = getFreqVals(4, 4);
-    let cHulu = getFreqVals(5, 3);
-    let cStrictPairs = getStrictPairsVals(4);
-    let cMidHulu = getFreqVals(4, 3);
-    let cAllChows = checkAllChowsVals(counts);
-    let cAllPongs = checkAllPongsVals(counts);
-    let cChowPong = checkChowPongVals(counts);
-    let c4Pairs = getPairsVals(4);
-    let cDoubleTrips = getFreqVals(3, 3);
-    let cSmallHulu = getFreqVals(3, 2);
-    let c3Pairs = getPairsVals(3);
-    let c2Pairs = getPairsVals(2);
 
-    if (cDStar) tagC = { name: '雙子星', multi: 20.0, used: cDStar };
-    else if (cHulu) tagC = { name: '葫蘆', multi: 15.0, used: cHulu };
-    else if (cStrictPairs) tagC = { name: '經典四對子', multi: 10.0, used: cStrictPairs };
-    else if (c4Pairs) tagC = { name: '豪華四對子', multi: 15.0, used: c4Pairs };
-    else if (cMidHulu) tagC = { name: '中葫蘆', multi: 8.0, used: cMidHulu };
-    else if (cAllChows) tagC = { name: '平胡', multi: 6.0, used: cAllChows };
-    else if (cAllPongs) tagC = { name: '碰碰胡', multi: 5.0, used: cAllPongs };
-    else if (cChowPong) tagC = { name: '順碰交響曲', multi: 4.0, used: cChowPong };
-    else if (cDoubleTrips) tagC = { name: '雙三同', multi: 3.5, used: cDoubleTrips };
-    else if (cSmallHulu) tagC = { name: '小葫蘆', multi: 3.5, used: cSmallHulu };
-    else if (c3Pairs) tagC = { name: '三對子', multi: 3.0, used: c3Pairs };
-    else if (c2Pairs) tagC = { name: '雙對子', multi: 2.0, used: c2Pairs };
+    if ((tempUsed = getFreqVals(4, 4))) {
+        tagC = { name: '雙子星', multi: 20.0, used: tempUsed };
+    } else if ((tempUsed = getFreqVals(5, 3))) {
+        tagC = { name: '葫蘆', multi: 15.0, used: tempUsed };
+    } else if ((tempUsed = getStrictPairsVals(4))) {
+        tagC = { name: '經典四對子', multi: 10.0, used: tempUsed };
+    } else if ((tempUsed = getPairsVals(4))) {
+        tagC = { name: '豪華四對子', multi: 15.0, used: tempUsed };
+    } else if ((tempUsed = getFreqVals(4, 3))) {
+        tagC = { name: '中葫蘆', multi: 8.0, used: tempUsed };
+    } else if ((tempUsed = checkAllChowsVals(counts))) {
+        tagC = { name: '平胡', multi: 6.0, used: tempUsed };
+    } else if ((tempUsed = checkAllPongsVals(counts))) {
+        tagC = { name: '碰碰胡', multi: 5.0, used: tempUsed };
+    } else if ((tempUsed = checkChowPongVals(counts))) {
+        tagC = { name: '順碰交響曲', multi: 4.0, used: tempUsed };
+    } else if ((tempUsed = getFreqVals(3, 3))) {
+        tagC = { name: '雙三同', multi: 3.5, used: tempUsed };
+    } else if ((tempUsed = getFreqVals(3, 2))) {
+        tagC = { name: '小葫蘆', multi: 3.5, used: tempUsed };
+    } else if ((tempUsed = getPairsVals(3))) {
+        tagC = { name: '三對子', multi: 3.0, used: tempUsed };
+    } else if ((tempUsed = getPairsVals(2))) {
+        tagC = { name: '雙對子', multi: 2.0, used: tempUsed };
+    }
 
     // --- 判斷 D 區 ---
     let tagD = { name: '無', multi: 1.0, used: [] };
