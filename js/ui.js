@@ -335,7 +335,7 @@ export function renderHistoryModal(records) {
     
     el.historyContent.innerHTML = records.map((r, i) => {
         let resultColor = r.win ? "text-amber-400" : "text-red-400";
-        let resultText = r.win ? "勝利" : "失敗";
+        let resultText = r.stageName || (r.win ? "勝利" : "失敗");
         let dateObj = new Date(r.date);
         let dateStr = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
