@@ -85,7 +85,10 @@ function initTitleScreen() {
         UI.el.titleScreen.classList.add('hidden');
         initNewGame();
     };
-    UI.el.btnContinue.onclick = () => loadGame();
+    UI.el.btnContinue.onclick = () => {
+        UI.el.titleScreen.classList.add('hidden');
+        loadGame();
+    };
 
     document.getElementById('btn-rules').onclick = () => UI.el.rulesModal.classList.remove('hidden');
     document.getElementById('btn-close-rules').onclick = () => UI.el.rulesModal.classList.add('hidden');
@@ -100,7 +103,10 @@ function initTitleScreen() {
     }
 
     UI.el.shopRerollBtn.onclick = () => window.rerollShop(false);
-    document.getElementById('btn-next-stage').onclick = () => nextStage();
+    document.getElementById('btn-next-stage').onclick = () => {
+        if (UI.el.shopOverlay.classList.contains('hidden')) return;
+        nextStage();
+    };
     document.getElementById('btn-restart').onclick = () => location.reload();
 
     let btnInfinite = document.getElementById('btn-infinite');
