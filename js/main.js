@@ -2,6 +2,7 @@
 import { RELIC_DB, ENEMY_DB } from './data.js';
 import { calculateEngineScore } from './engine.js';
 import * as UI from './ui.js';
+import * as Audio from './audio.js';
 
 // --- 遊戲狀態 ---
 let player = { hp: 3, gold: 0, relics: [], maxRolls: 2 };
@@ -110,6 +111,14 @@ function initTitleScreen() {
             document.getElementById('btn-restart').classList.remove('hidden');
             btnInfinite.classList.add('hidden');
             enemyDefeated(); // Proceed to shop as if enemy was defeated normally
+        };
+    }
+
+    let btnSound = document.getElementById('btn-sound-toggle');
+    if (btnSound) {
+        btnSound.onclick = () => {
+            let enabled = Audio.toggleSound();
+            btnSound.innerText = enabled ? '🔈 音效: 開' : '🔈 音效: 關';
         };
     }
 }
@@ -226,11 +235,12 @@ window.executeRoll = function(isInitial = false) {
 
     let intervals = 0;
     let timer = setInterval(() => {
+        Audio.playRollSound();
         battle.dice = battle.dice.map(d => d.locked ? d : { ...d, val: Math.floor(Math.random() * 8) + 1 });
         intervals++;
         UI.renderDice(battle, activeHighlight);
 
-        if (intervals >= 10) {
+        if (intervals >= 25) { // increased animation duration
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
 
@@ -265,6 +275,7 @@ window.fireAttack = function() {
     battle.state = 'ATTACKING';
     activeHighlight = null;
     UI.renderControls(battle);
+    Audio.playAttackSound();
 
     let dmg = Math.floor(battle.scoreResult.finalScore);
     stage.enemyHp -= dmg;
@@ -337,28 +348,36 @@ window.fireAttack = function() {
 
 // --- 商店與關卡結算 ---
 function enemyDefeated() {
-    let baseEarn = 15 + ((stage.turnsLeft - 1) * 10);
+    let baseEarn = 15;
+    let turnsBonus = (stage.turnsLeft - 1) * 10;
     let extraEarn = 0;
     
     if (player.relics.includes('coin')) extraEarn += 15;
     if (player.relics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
     
-    let earn = baseEarn + extraEarn;
+    let totalBaseEarn = baseEarn + extraEarn;
+    let earn = totalBaseEarn + turnsBonus;
     player.gold += earn;
     UI.shootConfetti();
 
+    let goldMessage = turnsBonus > 0
+        ? `💰 獲得 ${totalBaseEarn} 金幣 + ${turnsBonus} 金幣 (剩餘次數加成)！`
+        : `💰 獲得 ${totalBaseEarn} 金幣！`;
+
+    let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id));
+    let nextStep = availableForShop.length === 0 ? nextStage : openShop;
+
     if (stage.level === 2) {
-        let available = RELIC_DB.filter(r => !player.relics.includes(r.id));
-        if (available.length > 0) {
-            let randomRelic = available[Math.floor(Math.random() * available.length)];
+        if (availableForShop.length > 0) {
+            let randomRelic = availableForShop[Math.floor(Math.random() * availableForShop.length)];
             player.relics.push(randomRelic.id);
-            UI.showToast(`🎉 擊敗了菁英怪！\n💰 獲得 ${earn} 金幣！\n🎁 掉落遺物：${randomRelic.name}`, openShop);
+            UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
             return;
         }
     }
 
     let enemyName = getEnemy(stage.level).name;
-    UI.showToast(`🎉 擊敗了 ${enemyName}！\n💰 獲得 ${earn} 金幣！`, openShop);
+    UI.showToast(`🎉 擊敗了 ${enemyName}！\n${goldMessage}`, nextStep);
 }
 
 function openShop() {
@@ -391,6 +410,7 @@ window.rerollShop = function(isInitial = false) {
 window.buyItem = function(idx) {
     let r = shopItems[idx];
     if (player.gold >= r.price) {
+        Audio.playBuySound();
         player.gold -= r.price;
         player.relics.push(r.id);
         shopItems.splice(idx, 1);

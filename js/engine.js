@@ -230,7 +230,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     if (playerRelics.includes('order')) {
         baseABCD = (tagA.multi + tagB.multi) * tagC.multi * tagD.multi;
-        globalNotes.push('【絕對秩序】發動: (A+B)*C*D');
+        globalNotes.push('【寬容】發動: (A+B)*C*D');
     } else {
         baseABCD = tagA.multi * tagB.multi * tagC.multi * tagD.multi;
     }
