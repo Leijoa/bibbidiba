@@ -176,7 +176,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     // --- 判斷 C 區 ---
     let tagC = { name: '無', multi: 1.0, used: [] };
-
+    
     if ((tempUsed = getFreqVals(4, 4))) {
         tagC = { name: '雙子星', multi: 20.0, used: tempUsed };
     } else if ((tempUsed = getFreqVals(5, 3))) {
@@ -230,7 +230,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     if (playerRelics.includes('order')) {
         baseABCD = (tagA.multi + tagB.multi) * tagC.multi * tagD.multi;
-        globalNotes.push('【絕對秩序】發動: (A+B)*C*D');
+        globalNotes.push('【寬容】發動: (A+B)*C*D');
     } else {
         baseABCD = tagA.multi * tagB.multi * tagC.multi * tagD.multi;
     }

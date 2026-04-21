@@ -27,7 +27,7 @@ export const RELIC_DB = [
     { id: 'odd', name: '【奇數】', desc: '奇數點數倍率*2.5', price: 25, rarity: 3 },
     { id: 'even', name: '【偶數】', desc: '偶數點數倍率*2.5', price: 25, rarity: 3 },
     { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +15', price: 20, rarity: 3 },
-    { id: 'order', name: '【絕對秩序】', desc: '只要七顆奇數或偶數就會發動絕對秩序牌型', price: 25, rarity: 3 },
+    { id: 'order', name: '【寬容】', desc: '只要七顆奇數或偶數就會發動絕對秩序牌型', price: 25, rarity: 3 },
     { id: 'allin', name: '【孤注一擲】', desc: '當玩家 HP 只剩 1 時，最終傷害 x2.5', price: 30, rarity: 3 },
     
     // 其他新增遺物

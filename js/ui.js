@@ -97,28 +97,14 @@ export function renderRulesDB() {
 
 // --- 更新 UI 狀態 ---
 export function updateHeaderUI(player, stage) {
-    if (player.isInfiniteMode && stage.level >= ENEMY_DB.length) {
-        let infiniteLevel = stage.level - ENEMY_DB.length + 1;
-        el.stageInfo.innerText = `無限塔第 ${infiniteLevel} 層`;
-    } else {
-        el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
-    }
+    el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
     el.playerHp.innerText = `${player.hp}/3`;
     el.playerGold.innerText = player.gold;
 }
 
 export function updateEnemyUI(stage) {
-    // Note: getEnemy is defined in main.js, which is not exported.
-    // Instead we will duplicate the logic or we can retrieve it safely since updateEnemyUI is called from main.js
-    let enemyName = "";
-    if (stage.level < ENEMY_DB.length) {
-        enemyName = ENEMY_DB[stage.level].name;
-    } else {
-        let infiniteLevel = stage.level - ENEMY_DB.length + 1;
-        enemyName = `無限塔第 ${infiniteLevel} 層`;
-    }
-
-    el.enemyName.innerText = `⚔️ ${enemyName}`;
+    let enemy = ENEMY_DB[stage.level];
+    el.enemyName.innerText = `⚔️ ${enemy.name}`;
     if(stage.level === 2) el.enemyName.classList.replace('text-red-300', 'text-purple-400');
     
     el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 次發動攻擊次數`;
@@ -350,10 +336,6 @@ export function renderHistoryModal(records) {
     el.historyContent.innerHTML = records.map((r, i) => {
         let resultColor = r.win ? "text-amber-400" : "text-red-400";
         let resultText = r.win ? "勝利" : "失敗";
-        if (r.isInfiniteMode) {
-            resultText = `無限塔第 ${r.infiniteLevel} 層`;
-            resultColor = "text-purple-400";
-        }
         let dateObj = new Date(r.date);
         let dateStr = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
