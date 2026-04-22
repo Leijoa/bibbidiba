@@ -283,7 +283,16 @@ export function renderDice(battle, activeHighlight) {
         if (battle.state === 'IDLE') valDisplay = '-';
         if (battle.state === 'ROLLING' && !d.locked) valDisplay = '?';
 
-        let lockIcon = d.locked && !activeHighlight ? `<div class="absolute -top-1.5 -right-1.5 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
+        let lockIconHtml = '';
+        if (d.locked && !activeHighlight) {
+            if (shackleId === 'cursedlock' && shackleMeta && d.id === shackleMeta.cursedId) {
+                // Cursed lock UI
+                lockIconHtml = `<div class="absolute -top-1.5 -right-1.5 bg-red-600 rounded-full p-0.5 shadow border border-red-300 z-20 animate-pulse"><svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-red-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>`;
+            } else {
+                // Standard lock UI
+                lockIconHtml = `<div class="absolute -top-1.5 -right-1.5 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>`;
+            }
+        }
 
         return `
         <div id="dice-element-${idx}" onclick="window.toggleLock(${idx})" class="${wrapperClass} ${extraClass}" ${displayOrderStyle}>
@@ -291,7 +300,7 @@ export function renderDice(battle, activeHighlight) {
             <div class="absolute inset-[2px] md:inset-[3px] ${innerColor} ${innerHover} ${octagonClip} flex items-center justify-center transition-colors duration-200">
                 <span class="text-2xl md:text-4xl font-black ${textColor}">${valDisplay}</span>
             </div>
-            ${lockIcon}
+            ${lockIconHtml}
         </div>`;
     }).join('');
 

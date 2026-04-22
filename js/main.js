@@ -320,6 +320,8 @@ function assignShackleForStage(levelIndex) {
             meta = { blindIndices: [] };
         } else if (selected.id === 'wither') {
             meta = { originalHp: player.hp };
+        } else if (selected.id === 'cursedlock') {
+            meta = { cursedId: null };
         }
 
         return { id: selected.id, meta: meta };
@@ -409,6 +411,9 @@ function startTurn() {
     if (stage.activeShackle === 'fatigue') {
         baseMaxRolls = Math.max(0, baseMaxRolls - 1);
     }
+    if (stage.activeShackle === 'destinychain') {
+        baseMaxRolls = 1;
+    }
 
     player.maxRolls = baseMaxRolls;
     battle.rollsLeft = player.maxRolls;
@@ -433,6 +438,16 @@ window.toggleLock = function(idx) {
     if (battle.state === 'WAIT_ACTION' && !activeHighlight) {
         if (stage.activeShackle === 'fragile') {
             return UI.showToast("⚠️ 【易碎骰子】無法鎖定骰子！");
+        }
+
+        if (stage.activeShackle === 'cursedlock' && stage.shackleMeta && battle.dice[idx].id === stage.shackleMeta.cursedId) {
+            const diceEl = document.getElementById(`dice-element-${idx}`);
+            if(diceEl) {
+                diceEl.classList.remove('shake-hard');
+                void diceEl.offsetWidth;
+                diceEl.classList.add('shake-hard');
+            }
+            return UI.showToast("⛓️ 【詛咒之鎖】無法解鎖此骰子！");
         }
 
         let willLock = !battle.dice[idx].locked;
@@ -497,6 +512,18 @@ window.executeRoll = function(isInitial = false) {
                 return UI.showToast("⚠️ 金幣不足，無法重骰！(需要 2 金幣)");
             }
         }
+
+        if (stage.activeShackle === 'rebel') {
+            let freed = 0;
+            battle.dice.forEach(d => {
+                if (d.locked && Math.random() < 0.25) {
+                    d.locked = false;
+                    freed++;
+                }
+            });
+            if (freed > 0) UI.showToast(`😡 【叛逆】發動：${freed} 顆骰子掙脫鎖定！`);
+        }
+
         battle.rollsLeft--;
     }
 
@@ -521,6 +548,23 @@ window.executeRoll = function(isInitial = false) {
         if (intervals >= 15) { // increased animation duration
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
+
+            if (!isInitial && stage.activeShackle === 'forcedshift') {
+                let lockedDice = battle.dice.filter(d => d.locked);
+                if (lockedDice.length > 0) {
+                    let target = lockedDice[Math.floor(Math.random() * lockedDice.length)];
+                    target.val = Math.floor(Math.random() * 8) + 1;
+                    battle.dice.sort((a, b) => a.val - b.val);
+                    UI.showToast(`🌀 【強制轉換】發動：已鎖定骰子數值被改變！`);
+                }
+            }
+
+            if (isInitial && stage.activeShackle === 'cursedlock' && stage.shackleMeta) {
+                let minVal = Math.min(...battle.dice.map(d => d.val));
+                let cursedDie = battle.dice.find(d => d.val === minVal);
+                cursedDie.locked = true;
+                stage.shackleMeta.cursedId = cursedDie.id;
+            }
 
             let shackleConfig = null;
             if (stage.activeShackle) {
@@ -571,7 +615,24 @@ window.fireAttack = function() {
     battle.state = 'ATTACKING';
     activeHighlight = null;
 
-    // Render dice one last time to reveal 'blind' masked dice
+    if (stage.activeShackle === 'tremor' && Math.random() < 0.10) {
+        let unlockedDice = battle.dice.filter(d => !d.locked);
+        if (unlockedDice.length > 0) {
+            let target = unlockedDice[Math.floor(Math.random() * unlockedDice.length)];
+            target.val = Math.floor(Math.random() * 8) + 1;
+            battle.dice.sort((a, b) => a.val - b.val);
+
+            let shackleConfig = null;
+            if (stage.activeShackle) {
+                shackleConfig = { id: stage.activeShackle };
+                if (stage.shackleMeta) Object.assign(shackleConfig, stage.shackleMeta);
+            }
+            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp, shackleConfig);
+            UI.showToast(`🖐️ 【手抖】發動：強制重骰了 1 顆未鎖定的骰子！`);
+        }
+    }
+
+    // Render dice one last time to reveal 'blind' masked dice and any tremor changes
     UI.renderDice(battle, activeHighlight);
 
     UI.renderControls(battle);
