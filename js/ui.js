@@ -206,6 +206,9 @@ window.showRelicInfo = function(id) {
 
 // --- 巨型八邊形骰子渲染 ---
 export function renderDice(battle, activeHighlight) {
+    let shackleId = window.getStageActiveShackle ? window.getStageActiveShackle() : null;
+    let shackleMeta = window.getShackleMeta ? window.getShackleMeta() : null;
+
     el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
         let wrapperClass = "w-11 h-11 md:w-16 md:h-16 relative mx-auto my-0.5 cursor-pointer dice-btn transition-transform duration-200";
         
@@ -214,6 +217,12 @@ export function renderDice(battle, activeHighlight) {
         let innerHover = "hover:bg-slate-600";
         let textColor = "text-white";
         let extraClass = "";
+        let displayOrderStyle = "";
+
+        // UI Hook: dizziness - random visual grid order
+        if (shackleId === 'dizziness' && shackleMeta && shackleMeta.displayOrder) {
+            displayOrderStyle = `style="order: ${shackleMeta.displayOrder[idx]};"`;
+        }
 
         if(battle.state !== 'IDLE'){
             if (battle.state === 'ROLLING' && !d.locked) {
@@ -244,12 +253,34 @@ export function renderDice(battle, activeHighlight) {
             }
         }
 
+        // UI Hook: inversion - color mapping corruption
+        if (shackleId === 'inversion' && shackleMeta && shackleMeta.colorMap && battle.state !== 'IDLE' && battle.state !== 'ROLLING') {
+            innerColor = shackleMeta.colorMap[idx % 8];
+            outerColor = shackleMeta.colorMap[(idx + 3) % 8];
+            textColor = "text-slate-900";
+        }
+
         let octagonClip = "[clip-path:polygon(29%_0%,71%_0%,100%_29%,100%_71%,71%_100%,29%_100%,0%_71%,0%_29%)]";
-        let valDisplay = (battle.state === 'IDLE') ? '-' : (battle.state === 'ROLLING' && !d.locked ? '?' : d.val);
+
+        let valDisplay = d.val;
+
+        // UI Hook: illusion - fake numbers
+        if (shackleId === 'illusion' && !d.locked && battle.state !== 'IDLE' && battle.state !== 'ROLLING') {
+            valDisplay = shackleMeta && shackleMeta.fakeNumber ? shackleMeta.fakeNumber : 8;
+        }
+
+        // UI Hook: blind - mask specific indices
+        if (shackleId === 'blind' && battle.state === 'WAIT_ACTION' && shackleMeta && shackleMeta.blindIndices && shackleMeta.blindIndices.includes(idx)) {
+            valDisplay = '?';
+        }
+
+        if (battle.state === 'IDLE') valDisplay = '-';
+        if (battle.state === 'ROLLING' && !d.locked) valDisplay = '?';
+
         let lockIcon = d.locked && !activeHighlight ? `<div class="absolute -top-1.5 -right-1.5 bg-emerald-500 rounded-full p-0.5 shadow border border-emerald-300 z-20"><svg class="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-950" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg></div>` : '';
 
         return `
-        <div id="dice-element-${idx}" onclick="window.toggleLock(${idx})" class="${wrapperClass} ${extraClass}">
+        <div id="dice-element-${idx}" onclick="window.toggleLock(${idx})" class="${wrapperClass} ${extraClass}" ${displayOrderStyle}>
             <div class="absolute inset-0 ${outerColor} ${octagonClip} transition-colors duration-200"></div>
             <div class="absolute inset-[2px] md:inset-[3px] ${innerColor} ${innerHover} ${octagonClip} flex items-center justify-center transition-colors duration-200">
                 <span class="text-2xl md:text-4xl font-black ${textColor}">${valDisplay}</span>

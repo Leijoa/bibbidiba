@@ -75,6 +75,7 @@ function unlockCollectionItem(type, id) {
 window.unlockCollectionItem = unlockCollectionItem; // Export for external usage if needed
 window.getCollection = () => collection;
 window.getStageActiveShackle = () => stage.activeShackle;
+window.getShackleMeta = () => stage.shackleMeta;
 
 // --- 存檔系統 (Save System) ---
 function saveGame() {
@@ -245,6 +246,15 @@ function assignShackleForStage(levelIndex) {
             meta = { fearType: Math.random() > 0.5 ? 'odd' : 'even' };
         } else if (selected.id === 'numberplunder') {
             meta = { targetNumber: Math.floor(Math.random() * 8) + 1 };
+        } else if (selected.id === 'illusion') {
+            meta = { fakeNumber: Math.floor(Math.random() * 8) + 1 };
+        } else if (selected.id === 'dizziness') {
+            meta = { displayOrder: [0, 1, 2, 3, 4, 5, 6, 7] };
+        } else if (selected.id === 'inversion') {
+            let colors = ['bg-slate-500', 'bg-blue-600', 'bg-pink-600', 'bg-purple-600', 'bg-teal-600', 'bg-emerald-900', 'bg-red-600', 'bg-amber-600'];
+            meta = { colorMap: colors.sort(() => Math.random() - 0.5) };
+        } else if (selected.id === 'blind') {
+            meta = { blindIndices: [] };
         }
 
         return { id: selected.id, meta: meta };
@@ -301,6 +311,10 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
                 }
 
                 setTimeout(() => {
+                    if (stage.activeShackle === 'noise') {
+                        document.body.classList.add('noise-shake', 'glitch-effect');
+                        setTimeout(() => document.body.classList.remove('noise-shake', 'glitch-effect'), 800);
+                    }
                     UI.showToast(`⚠️ 發現枷鎖！\n${sDef.name}: ${sDef.desc}${extraMsg}`);
                 }, 500);
             }
@@ -377,6 +391,11 @@ window.toggleLock = function(idx) {
         }
 
         battle.dice[idx].locked = willLock;
+
+        if (stage.activeShackle === 'dizziness' && stage.shackleMeta && stage.shackleMeta.displayOrder) {
+            stage.shackleMeta.displayOrder.sort(() => Math.random() - 0.5);
+        }
+
         saveGame();
         UI.renderDice(battle, activeHighlight);
         const diceEl = document.getElementById(`dice-element-${idx}`);
@@ -416,6 +435,11 @@ window.executeRoll = function(isInitial = false) {
     activeHighlight = null;
     battle.dice.forEach(d => { d.matchedGroups = {A:false, B:false, C:false, D:false}; });
     saveGame();
+
+    if (stage.activeShackle === 'noise') {
+        document.body.classList.add('noise-shake', 'glitch-effect');
+    }
+
     renderAll();
 
     let intervals = 0;
@@ -438,6 +462,16 @@ window.executeRoll = function(isInitial = false) {
             }
 
             battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp, shackleConfig);
+
+            if (stage.activeShackle === 'blind' && stage.shackleMeta) {
+                let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
+                unlockedIndices.sort(() => Math.random() - 0.5);
+                stage.shackleMeta.blindIndices = unlockedIndices.slice(0, 2);
+            }
+
+            if (stage.activeShackle === 'noise') {
+                document.body.classList.remove('noise-shake', 'glitch-effect');
+            }
 
             const applyMatch = (usedVals, groupName) => {
                 if(!usedVals || usedVals.length === 0) return;
@@ -467,6 +501,10 @@ window.fireAttack = function() {
     if (battle.state !== 'WAIT_ACTION') return;
     battle.state = 'ATTACKING';
     activeHighlight = null;
+
+    // Render dice one last time to reveal 'blind' masked dice
+    UI.renderDice(battle, activeHighlight);
+
     UI.renderControls(battle);
     Audio.playAttackSound();
 
