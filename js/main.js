@@ -88,7 +88,7 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
         if (lostGold > 0) {
             player.gold -= lostGold;
             UI.updateHeaderUI(player, stage);
-            UI.showToast(`🩸 【吸血鬼】發動：失去 ${lostGold} 金幣！`);
+            UI.showToast(`🩸 【吸血鬼】發動：被偷走 ${lostGold} 金幣！`);
         }
     }
 
@@ -111,17 +111,6 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
         }
     }
 
-    if (stage.activeShackle === 'mutualdestruction') {
-        let reflectedPool = actualDamage * 0.05;
-        let hpLoss = Math.floor(reflectedPool / 1000); // 1 HP per 1000 damage
-        if (hpLoss > 0) {
-            let maxSafeLoss = player.hp - 1; // Non-lethal
-            let actualLoss = Math.min(hpLoss, maxSafeLoss);
-            if (actualLoss > 0) {
-                player.hp -= actualLoss;
-                UI.updateHeaderUI(player, stage);
-                UI.showToast(`💥 【同歸於盡】發動：受到 ${actualLoss} 點反彈傷害！`);
-            } else if (hpLoss > 0 && player.hp === 1) {
                 UI.showToast(`💥 【同歸於盡】發動：血量只剩 1，免於致死反彈！`);
             }
         }
@@ -322,6 +311,9 @@ function assignShackleForStage(levelIndex) {
             meta = { originalHp: player.hp };
         } else if (selected.id === 'cursedlock') {
             meta = { cursedId: null };
+        } else if (selected.id === 'relicseal') {
+            let shuffled = [...player.relics].sort(() => 0.5 - Math.random());
+            meta = { ignoredRelics: shuffled.slice(0, 2) };
         }
         
         return { id: selected.id, meta: meta };
@@ -357,6 +349,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
     } else {
         stage.enemyHp = enemy.hp;
         stage.turnsLeft = enemy.turns;
+        stage.hasAttackedThisStage = false;
         
         let shackleAssignment = assignShackleForStage(levelIndex);
         stage.activeShackle = shackleAssignment.id;
@@ -382,14 +375,29 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
                 }
                 
                 setTimeout(() => {
-                    if (stage.activeShackle === 'noise') {
-                        document.body.classList.add('noise-shake', 'glitch-effect');
-                        setTimeout(() => document.body.classList.remove('noise-shake', 'glitch-effect'), 800);
-                    }
                     UI.showToast(`⚠️ 發現枷鎖！\n${sDef.name}: ${sDef.desc}${extraMsg}`);
                 }, 500);
             }
         }
+    }
+
+    if (stage.shackleTimer) {
+        clearTimeout(stage.shackleTimer);
+        stage.shackleTimer = null;
+    }
+
+    if (stage.activeShackle === 'thalassophobia') {
+        const triggerFear = () => {
+            if (battle.state === 'IDLE' || battle.state === 'WAIT_ACTION') {
+                let diceContainer = document.getElementById('dice-container');
+                if (diceContainer) {
+                    diceContainer.classList.add('deep-sea-anim');
+                    setTimeout(() => diceContainer.classList.remove('deep-sea-anim'), 1000);
+                }
+            }
+            stage.shackleTimer = setTimeout(triggerFear, 3000 + Math.random() * 5000);
+        };
+        stage.shackleTimer = setTimeout(triggerFear, 3000 + Math.random() * 5000);
     }
 
     UI.el.shopOverlay.classList.add('hidden');
@@ -406,6 +414,15 @@ function startTurn() {
     if (stage.turnsLeft <= 0) return gameOver("回合耗盡，未能擊敗敵人！");
     battle.state = 'IDLE';
     activeHighlight = null;
+
+    if (stage.activeShackle === 'gluttony') {
+        let healAmount = Math.floor(stage.enemyMaxHp * 0.05);
+        if (stage.enemyHp < stage.enemyMaxHp) {
+            stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
+            UI.updateEnemyUI(stage);
+            UI.showToast(`🍖 【貪吃】發動：敵人恢復 ${healAmount} HP！`);
+        }
+    }
     
     let baseMaxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2);
     if (stage.activeShackle === 'fatigue') {
@@ -449,31 +466,19 @@ window.toggleLock = function(idx) {
             }
             return UI.showToast("⛓️ 【詛咒之鎖】無法解鎖此骰子！");
         }
-        
-        let willLock = !battle.dice[idx].locked;
-        
-        if (willLock) {
-            if (stage.activeShackle === 'sticky') {
-                if (player.gold >= 1) {
-                    player.gold -= 1;
-                    UI.updateHeaderUI(player, stage);
-                } else {
-                    return UI.showToast("⚠️ 金幣不足，無法鎖定！(需要 1 金幣)");
-                }
-            } else if (stage.activeShackle === 'rusty') {
-                let hasLockedAny = battle.dice.some(d => d.locked);
-                if (!hasLockedAny && player.gold === 0) {
-                    if (player.hp > 1) {
-                        player.hp -= 1;
-                        UI.updateHeaderUI(player, stage);
-                        UI.showToast("🩸 【生鏽的鎖】扣除 1 HP！");
-                    } else {
-                        return UI.showToast("⚠️ HP 不足，無法鎖定！");
-                    }
-                }
+
+        if (stage.activeShackle === 'ultimatelock' && [2, 3, 4, 5].includes(idx)) {
+            const diceEl = document.getElementById(`dice-element-${idx}`);
+            if(diceEl) {
+                diceEl.classList.remove('shake-hard');
+                void diceEl.offsetWidth;
+                diceEl.classList.add('shake-hard');
             }
+            return UI.showToast("🔒 【終極封鎖】中間位置的骰子無法鎖定！");
         }
         
+        let willLock = !battle.dice[idx].locked;
+
         battle.dice[idx].locked = willLock;
         
         if (stage.activeShackle === 'dizziness' && stage.shackleMeta && stage.shackleMeta.displayOrder) {
@@ -504,6 +509,19 @@ window.executeRoll = function(isInitial = false) {
     if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') return;
 
     if (!isInitial) {
+        if (stage.activeShackle === 'sticky') {
+            let lockedCount = battle.dice.filter(d => d.locked).length;
+            let cost = lockedCount * 3;
+            if (cost > 0) {
+                if (player.gold >= cost) {
+                    player.gold -= cost;
+                    UI.updateHeaderUI(player, stage);
+                } else {
+                    return UI.showToast("金幣不足無法重骰！");
+                }
+            }
+        }
+
         if (stage.activeShackle === 'greedy') {
             if (player.gold >= 2) {
                 player.gold -= 2;
@@ -531,10 +549,6 @@ window.executeRoll = function(isInitial = false) {
     activeHighlight = null;
     battle.dice.forEach(d => { d.matchedGroups = {A:false, B:false, C:false, D:false}; });
     saveGame();
-    
-    if (stage.activeShackle === 'noise') {
-        document.body.classList.add('noise-shake', 'glitch-effect');
-    }
     
     renderAll();
 
@@ -574,16 +588,17 @@ window.executeRoll = function(isInitial = false) {
                 }
             }
 
-            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp, shackleConfig);
+            let activeRelics = player.relics;
+            if (stage.activeShackle === 'relicseal' && stage.shackleMeta && stage.shackleMeta.ignoredRelics) {
+                activeRelics = player.relics.filter(r => !stage.shackleMeta.ignoredRelics.includes(r));
+            }
+
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig);
 
             if (stage.activeShackle === 'blind' && stage.shackleMeta) {
                 let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
                 unlockedIndices.sort(() => Math.random() - 0.5);
                 stage.shackleMeta.blindIndices = unlockedIndices.slice(0, 2);
-            }
-            
-            if (stage.activeShackle === 'noise') {
-                document.body.classList.remove('noise-shake', 'glitch-effect');
             }
 
             const applyMatch = (usedVals, groupName) => {
@@ -627,7 +642,13 @@ window.fireAttack = function() {
                 shackleConfig = { id: stage.activeShackle };
                 if (stage.shackleMeta) Object.assign(shackleConfig, stage.shackleMeta);
             }
-            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp, shackleConfig);
+
+            let activeRelics = player.relics;
+            if (stage.activeShackle === 'relicseal' && stage.shackleMeta && stage.shackleMeta.ignoredRelics) {
+                activeRelics = player.relics.filter(r => !stage.shackleMeta.ignoredRelics.includes(r));
+            }
+
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig);
             UI.showToast(`🖐️ 【手抖】發動：強制重骰了 1 顆未鎖定的骰子！`);
         }
     }
@@ -639,8 +660,45 @@ window.fireAttack = function() {
     Audio.playAttackSound();
 
     let dmg = Math.floor(battle.scoreResult.finalScore);
+
+    if (stage.activeShackle === 'absolutebarrier' && !stage.hasAttackedThisStage) {
+        dmg = 0;
+        stage.hasAttackedThisStage = true;
+        UI.showToast("🛡️ 【絕對屏障】發動：第一次攻擊無效化！");
+    } else {
+        stage.hasAttackedThisStage = true;
+    }
+
+    if (stage.activeShackle === 'abyssgaze' && dmg > 0 && dmg < stage.enemyMaxHp * 0.20) {
+        let healAmount = dmg;
+        dmg = 0;
+        stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
+        UI.showToast(`👁️ 【深淵凝視】發動：傷害過低，轉為治療 Boss ${healAmount} HP！`);
+    }
+
     let actualDamage = Math.min(dmg, stage.enemyHp);
     stage.enemyHp -= dmg;
+
+    if (stage.activeShackle === 'healingdice') {
+        let count1 = battle.dice.filter(d => d.val === 1).length;
+        if (count1 > 0) {
+            let healAmount = Math.floor(count1 * stage.enemyMaxHp * 0.05);
+            stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
+            UI.showToast(`💉 【治癒之骰】發動：敵人恢復 ${healAmount} HP！`);
+        }
+    }
+
+    if (stage.activeShackle === 'wrath') {
+        let multiA = battle.scoreResult.tagA.multi || 0;
+        let multiB = battle.scoreResult.tagB.multi || 0;
+        let multiC = battle.scoreResult.tagC.multi || 0;
+        let multiD = battle.scoreResult.tagD.multi || 0;
+        if (multiA >= 20 || multiB >= 20 || multiC >= 20 || multiD >= 20) {
+            player.hp -= 1;
+            UI.updateHeaderUI(player, stage);
+            UI.showToast(`⚡ 【天譴】發動：觸發高倍率牌型，強制扣除 1 HP！`);
+        }
+    }
 
     if (player.relics.includes('goldendice') && battle.dice) {
         let sevens = battle.dice.filter(d => d.val === 7).length;
@@ -693,6 +751,9 @@ window.fireAttack = function() {
         let isDefeated = stage.enemyHp <= 0;
         let playerDied = applyCombatShackles(dmg, actualDamage, isDefeated);
         
+        if (player.hp <= 0) {
+            return gameOver("血量耗盡，旅程結束！");
+        }
         if (playerDied) {
             return gameOver("受到反傷，血量耗盡！");
         }
@@ -728,12 +789,27 @@ function enemyDefeated() {
         player.hp = stage.shackleMeta.originalHp;
     }
 
+    if (stage.activeShackle === 'assimilation' && player.gold > 50) {
+        player.gold = 0;
+        UI.showToast("👽 【同化】發動：超過 50 金幣，金幣強制歸零！");
+    }
+
     let baseEarn = 15;
     let turnsBonus = (stage.turnsLeft - 1) * 10;
     let extraEarn = 0;
+
+    if (stage.activeShackle === 'pickyeater') {
+        baseEarn = Math.floor(baseEarn * 0.7);
+        UI.showToast("🥦 【偏食】發動：基礎金幣獎勵減少 30%！");
+    }
+
+    let activeRelics = player.relics;
+    if (stage.activeShackle === 'relicseal' && stage.shackleMeta && stage.shackleMeta.ignoredRelics) {
+        activeRelics = player.relics.filter(r => !stage.shackleMeta.ignoredRelics.includes(r));
+    }
     
-    if (player.relics.includes('coin')) extraEarn += 15;
-    if (player.relics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
+    if (activeRelics.includes('coin')) extraEarn += 15;
+    if (activeRelics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
     
     let totalBaseEarn = baseEarn + extraEarn;
     let earn = totalBaseEarn + turnsBonus;
@@ -808,6 +884,10 @@ window.buyItem = function(idx) {
 function nextStage() { loadStage(stage.level + 1); }
 
 function recordHistory(win) {
+    if (stage.shackleTimer) {
+        clearTimeout(stage.shackleTimer);
+        stage.shackleTimer = null;
+    }
     let history = secureParseStorage(HISTORY_KEY, [], (data) => Array.isArray(data));
     let currentRecord = {
         win: win,
