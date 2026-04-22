@@ -61,10 +61,10 @@ let jsOutput = "export const SHACKLE_DB = [\n";
 lines.forEach(line => {
     let [typeStr, name, desc] = line.split(',');
     if (!typeStr) return;
-
+    
     let type = typeStr.includes('輕度') ? 'light' : 'heavy';
     let id = idMap[name] || 'unknown';
-
+    
     jsOutput += `    { id: '${id}', name: '${name}', desc: '${desc}', type: '${type}' },\n`;
 });
 
