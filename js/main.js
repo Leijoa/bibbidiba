@@ -77,6 +77,69 @@ window.getCollection = () => collection;
 window.getStageActiveShackle = () => stage.activeShackle;
 window.getShackleMeta = () => stage.shackleMeta;
 
+// --- Modular Game Loop Hooks ---
+function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
+    if (!stage.activeShackle) return false; // Returns true if player dies from recoil
+
+    let playerDied = false;
+
+    if (stage.activeShackle === 'vampire' && !isEnemyDefeated) {
+        let lostGold = Math.min(5, player.gold);
+        if (lostGold > 0) {
+            player.gold -= lostGold;
+            UI.updateHeaderUI(player, stage);
+            UI.showToast(`🩸 【吸血鬼】發動：失去 ${lostGold} 金幣！`);
+        }
+    }
+
+    if (stage.activeShackle === 'thief' && !isEnemyDefeated) {
+        let lostGold = Math.min(2, player.gold);
+        if (lostGold > 0) {
+            player.gold -= lostGold;
+            UI.updateHeaderUI(player, stage);
+            UI.showToast(`🦹 【小偷】發動：被偷走 ${lostGold} 金幣！`);
+        }
+    }
+
+    if (stage.activeShackle === 'thornarmor') {
+        let threshold = stage.enemyMaxHp * 0.10;
+        if (dmg < threshold) {
+            player.hp--;
+            UI.updateHeaderUI(player, stage);
+            UI.showToast(`🛡️ 【反傷裝甲】發動：傷害過低，受到 1 點反傷！`);
+            if (player.hp <= 0) playerDied = true;
+        }
+    }
+
+    if (stage.activeShackle === 'mutualdestruction') {
+        let reflectedPool = actualDamage * 0.05;
+        let hpLoss = Math.floor(reflectedPool / 1000); // 1 HP per 1000 damage
+        if (hpLoss > 0) {
+            let maxSafeLoss = player.hp - 1; // Non-lethal
+            let actualLoss = Math.min(hpLoss, maxSafeLoss);
+            if (actualLoss > 0) {
+                player.hp -= actualLoss;
+                UI.updateHeaderUI(player, stage);
+                UI.showToast(`💥 【同歸於盡】發動：受到 ${actualLoss} 點反彈傷害！`);
+            } else if (hpLoss > 0 && player.hp === 1) {
+                UI.showToast(`💥 【同歸於盡】發動：血量只剩 1，免於致死反彈！`);
+            }
+        }
+    }
+
+    return playerDied;
+}
+
+function applyEconomyShackles(items) {
+    if (stage.activeShackle === 'inflation') {
+        return items.map(item => ({
+            ...item,
+            price: Math.ceil(item.price * 1.2)
+        }));
+    }
+    return items;
+}
+
 // --- 存檔系統 (Save System) ---
 function saveGame() {
     let inShop = !UI.el.shopOverlay.classList.contains('hidden');
@@ -255,6 +318,8 @@ function assignShackleForStage(levelIndex) {
             meta = { colorMap: colors.sort(() => Math.random() - 0.5) };
         } else if (selected.id === 'blind') {
             meta = { blindIndices: [] };
+        } else if (selected.id === 'wither') {
+            meta = { originalHp: player.hp };
         }
 
         return { id: selected.id, meta: meta };
@@ -297,6 +362,10 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
 
         if (stage.activeShackle === 'timecompress') {
             stage.turnsLeft = 2;
+        }
+
+        if (stage.activeShackle === 'wither') {
+            player.hp = 1;
         }
 
         if (stage.activeShackle) {
@@ -509,6 +578,7 @@ window.fireAttack = function() {
     Audio.playAttackSound();
 
     let dmg = Math.floor(battle.scoreResult.finalScore);
+    let actualDamage = Math.min(dmg, stage.enemyHp);
     stage.enemyHp -= dmg;
 
     if (player.relics.includes('goldendice') && battle.dice) {
@@ -559,7 +629,14 @@ window.fireAttack = function() {
     UI.updateEnemyUI(stage);
 
     setTimeout(() => {
-        if (stage.enemyHp <= 0) {
+        let isDefeated = stage.enemyHp <= 0;
+        let playerDied = applyCombatShackles(dmg, actualDamage, isDefeated);
+
+        if (playerDied) {
+            return gameOver("受到反傷，血量耗盡！");
+        }
+
+        if (isDefeated) {
             // 如果是最後一關，直接觸發勝利
             if (stage.level === ENEMY_DB.length - 1) {
                 gameWin();
@@ -568,15 +645,6 @@ window.fireAttack = function() {
             }
         }
         else {
-            if (stage.activeShackle === 'vampire') {
-                let lostGold = Math.min(5, player.gold);
-                if (lostGold > 0) {
-                    player.gold -= lostGold;
-                    UI.updateHeaderUI(player, stage);
-                    UI.showToast(`🩸 【吸血鬼】發動：失去 ${lostGold} 金幣！`);
-                }
-            }
-
             stage.turnsLeft--;
             if (stage.turnsLeft <= 0) {
                 player.hp--;
@@ -595,6 +663,10 @@ window.fireAttack = function() {
 
 // --- 商店與關卡結算 ---
 function enemyDefeated() {
+    if (stage.activeShackle === 'wither' && stage.shackleMeta && stage.shackleMeta.originalHp) {
+        player.hp = stage.shackleMeta.originalHp;
+    }
+
     let baseEarn = 15;
     let turnsBonus = (stage.turnsLeft - 1) * 10;
     let extraEarn = 0;
@@ -650,7 +722,7 @@ window.rerollShop = function(isInitial = false) {
         UI.updateHeaderUI(player, stage);
     }
     let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
-    shopItems = available;
+    shopItems = applyEconomyShackles(available);
     UI.renderShopItems(shopItems, player);
     saveGame();
 };
@@ -713,6 +785,10 @@ function gameOver(reason) {
 }
 
 function gameWin() {
+    if (stage.activeShackle === 'wither' && stage.shackleMeta && stage.shackleMeta.originalHp) {
+        player.hp = stage.shackleMeta.originalHp;
+    }
+
     clearSave();
     recordHistory(true);
     UI.el.endOverlay.classList.remove('hidden');

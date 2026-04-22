@@ -112,7 +112,13 @@ export function updateHeaderUI(player, stage) {
         let m = ((infiniteLevel - 1) % 3) + 1;
         el.stageInfo.innerText = `無限塔 ${n}-${m}`;
     }
-    el.playerHp.innerText = `${player.hp}/3`;
+
+    let maxHp = 3;
+    if (window.getStageActiveShackle && window.getStageActiveShackle() === 'wither') {
+        maxHp = 1;
+    }
+
+    el.playerHp.innerText = `${player.hp}/${maxHp}`;
     el.playerGold.innerText = player.gold;
 }
 
