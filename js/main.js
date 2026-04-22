@@ -115,6 +115,15 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
         }
     }
 
+    if (stage.activeShackle === 'mutualdestruction') {
+        let recoil = Math.floor(dmg * 0.05);
+        if (recoil > 0) {
+            player.hp -= recoil;
+            UI.updateHeaderUI(player, stage);
+            UI.showToast(`💥 【同歸於盡】發動：受到 ${recoil} 點反傷！`);
+            if (player.hp <= 0) {
+                player.hp = 1;
+                UI.updateHeaderUI(player, stage);
                 UI.showToast(`💥 【同歸於盡】發動：血量只剩 1，免於致死反彈！`);
             }
         }
