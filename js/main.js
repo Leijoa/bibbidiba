@@ -6,7 +6,7 @@ import * as Audio from './audio.js';
 
 // --- 遊戲狀態 ---
 let player = { hp: 3, gold: 0, relics: [], maxRolls: 2 };
-let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null };
+let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
 let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} })), rollsLeft: 0, scoreResult: null };
 let shopItems = [];
 let shopRerollsUsed = 0;
@@ -86,7 +86,8 @@ function saveGame() {
             enemyMaxHp: stage.enemyMaxHp,
             enemyHp: stage.enemyHp,
             turnsLeft: stage.turnsLeft,
-            activeShackle: stage.activeShackle
+            activeShackle: stage.activeShackle,
+            shackleMeta: stage.shackleMeta
         },
         battle: {
             state: battle.state,
@@ -111,6 +112,7 @@ function loadGame() {
         if (parsed.shop && parsed.shop.active) {
             stage.level = parsed.stage.level;
             stage.activeShackle = parsed.stage.activeShackle || null;
+            stage.shackleMeta = parsed.stage.shackleMeta || null;
             let enemy = getEnemy(stage.level);
             stage.enemyMaxHp = enemy.hp;
             stage.enemyHp = 0; // 已經擊敗
@@ -237,9 +239,17 @@ function assignShackleForStage(levelIndex) {
     if (shackleType) {
         let candidates = SHACKLE_DB.filter(s => s.type === shackleType);
         let selected = candidates[Math.floor(Math.random() * candidates.length)];
-        return selected.id;
+
+        let meta = null;
+        if (selected.id === 'parityfear') {
+            meta = { fearType: Math.random() > 0.5 ? 'odd' : 'even' };
+        } else if (selected.id === 'numberplunder') {
+            meta = { targetNumber: Math.floor(Math.random() * 8) + 1 };
+        }
+
+        return { id: selected.id, meta: meta };
     }
-    return null;
+    return { id: null, meta: null };
 }
 
 function loadStage(levelIndex, isLoad = false, parsedData = null) {
@@ -252,6 +262,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
         stage.enemyHp = parsedData.stage.enemyHp ?? enemy.hp;
         stage.turnsLeft = parsedData.stage.turnsLeft ?? enemy.turns;
         stage.activeShackle = parsedData.stage.activeShackle || null;
+        stage.shackleMeta = parsedData.stage.shackleMeta || null;
 
         if (parsedData.player && parsedData.player.isInfiniteMode !== undefined) {
             player.isInfiniteMode = parsedData.player.isInfiniteMode;
@@ -269,7 +280,10 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
     } else {
         stage.enemyHp = enemy.hp;
         stage.turnsLeft = enemy.turns;
-        stage.activeShackle = assignShackleForStage(levelIndex);
+
+        let shackleAssignment = assignShackleForStage(levelIndex);
+        stage.activeShackle = shackleAssignment.id;
+        stage.shackleMeta = shackleAssignment.meta;
 
         if (stage.activeShackle === 'timecompress') {
             stage.turnsLeft = 2;
@@ -279,8 +293,15 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
             unlockCollectionItem('shackle', stage.activeShackle);
             let sDef = SHACKLE_DB.find(s => s.id === stage.activeShackle);
             if (sDef) {
+                let extraMsg = "";
+                if (stage.activeShackle === 'parityfear') {
+                    extraMsg = `\n(本局目標：${stage.shackleMeta.fearType === 'odd' ? '奇數' : '偶數'})`;
+                } else if (stage.activeShackle === 'numberplunder') {
+                    extraMsg = `\n(本局目標數字：${stage.shackleMeta.targetNumber})`;
+                }
+
                 setTimeout(() => {
-                    UI.showToast(`⚠️ 發現枷鎖！\n${sDef.name}: ${sDef.desc}`);
+                    UI.showToast(`⚠️ 發現枷鎖！\n${sDef.name}: ${sDef.desc}${extraMsg}`);
                 }, 500);
             }
         }
@@ -408,7 +429,15 @@ window.executeRoll = function(isInitial = false) {
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
 
-            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp, stage.activeShackle);
+            let shackleConfig = null;
+            if (stage.activeShackle) {
+                shackleConfig = { id: stage.activeShackle };
+                if (stage.shackleMeta) {
+                    Object.assign(shackleConfig, stage.shackleMeta);
+                }
+            }
+
+            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp, shackleConfig);
 
             const applyMatch = (usedVals, groupName) => {
                 if(!usedVals || usedVals.length === 0) return;

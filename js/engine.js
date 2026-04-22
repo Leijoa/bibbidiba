@@ -3,29 +3,101 @@
 
 const relicBaseVals = { 1: 10, 2: 10, 3: 11, 4: 11, 5: 11, 6: 11, 7: 12, 8: 12 };
 
-export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, activeShackleId = null) {
+// --- Modular Shackle Hooks ---
+const ShackleHooks = {
+    blackhole: {
+        preDice: (dice) => dice.map(d => ({ ...d, val: d.val === 8 ? 1 : d.val }))
+    },
+    numberplunder: {
+        filterDice: (d, meta) => d.val !== meta.targetNumber
+    },
+    parityfear: {
+        modifyBase: (d, meta, ctx) => {
+            if (meta.fearType === 'odd' && d.val % 2 !== 0) return { baseVal: 0, multi: 0 };
+            if (meta.fearType === 'even' && d.val % 2 === 0) return { baseVal: 0, multi: 0 };
+            return null; // Fallback to default
+        }
+    },
+    isolated: {
+        postCalc: (res) => {
+            if (res.tagA.name !== '無') res.tagA.multi /= 2.0;
+            res.globalNotes.push('【孤立無援】發動: A區倍率減半。');
+        }
+    },
+    ordercollapse: {
+        postCalc: (res) => {
+            res.tagB = { name: '無', multi: 1.0, used: [] };
+            res.globalNotes.push('【秩序崩壞】發動: B區倍率強制失效。');
+        }
+    },
+    chaoslaw: {
+        postCalc: (res) => {
+            let temp = { ...res.tagA };
+            res.tagA = { ...res.tagB };
+            res.tagB = temp;
+            res.globalNotes.push('【混沌法則】發動: A、B區計分表對調。');
+        }
+    },
+    banality: {
+        postCalc: (res) => {
+            if (res.tagD.name !== '無') res.tagD.multi = 1.0;
+            res.globalNotes.push('【平庸之惡】發動: D區倍率強制為 1.0。');
+        }
+    }
+};
+
+function applyShacklePostHooks(scoreResult, shackleConfig) {
+    if (!shackleConfig) return;
+
+    // Some shackles just need notes pushed if they operated in pre-hooks
+    if (shackleConfig.id === 'blackhole') scoreResult.globalNotes.push('【黑洞】發動: 所有的 8 變成 1。');
+    if (shackleConfig.id === 'parityfear') scoreResult.globalNotes.push(`【奇/偶數恐懼】發動: ${shackleConfig.fearType === 'odd' ? '奇數' : '偶數'}點數歸零。`);
+    if (shackleConfig.id === 'numberplunder') scoreResult.globalNotes.push(`【數字掠奪】發動: 數字 ${shackleConfig.targetNumber} 視為廢牌。`);
+
+    let hookDef = ShackleHooks[shackleConfig.id];
+    if (hookDef && hookDef.postCalc) {
+        hookDef.postCalc(scoreResult, shackleConfig);
+    }
+}
+
+export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, shackleConfig = null) {
+    let workingDice = [...dice];
+
+    // --- Shackle Pre-Hooks ---
+    if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].preDice) {
+        workingDice = ShackleHooks[shackleConfig.id].preDice(workingDice, shackleConfig);
+    }
+
+    if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].filterDice) {
+        workingDice = workingDice.filter(d => ShackleHooks[shackleConfig.id].filterDice(d, shackleConfig));
+    }
+
     let counts = new Array(9).fill(0);
-    dice.forEach(d => counts[d.val]++);
+    workingDice.forEach(d => counts[d.val]++);
 
     let totalBase = 0;
 
-    dice.forEach(d => {
+    workingDice.forEach(d => {
         let multi = 1;
         let v = d.val;
-        let baseVal = v; // 預設底盤點數為骰面數字
+        let baseVal = v;
 
-        // 基礎點數計算
-        if (playerRelics.includes(`b${v}`)) {
-            baseVal = relicBaseVals[v];
+        let hookResult = null;
+        if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].modifyBase) {
+            hookResult = ShackleHooks[shackleConfig.id].modifyBase(d, shackleConfig, { relicBaseVals, playerRelics });
         }
 
-        // 小小、中中、大大的平衡倍率
-        if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 5.0;
-        if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4.5;
-        if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 4.0;
-
-        if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 2.5;
-        if (v % 2 === 0 && playerRelics.includes('even')) multi *= 2.5;
+        if (hookResult) {
+            baseVal = hookResult.baseVal;
+            multi = hookResult.multi;
+        } else {
+            if (playerRelics.includes(`b${v}`)) baseVal = relicBaseVals[v];
+            if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 5.0;
+            if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4.5;
+            if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 4.0;
+            if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 2.5;
+            if (v % 2 === 0 && playerRelics.includes('even')) multi *= 2.5;
+        }
 
         totalBase += (baseVal * multi);
     });
@@ -150,10 +222,6 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     else if (maxFreq >= 3) tagA = { name: '三同', multi: 2.5, used: getFreqVals(3) };
     else if (maxFreq >= 2) tagA = { name: '對子', multi: 1.5, used: getFreqVals(2) };
 
-    if (activeShackleId === 'isolated' && tagA.name !== '無') {
-        tagA.multi /= 2.0;
-    }
-
     // --- 判斷 B 區 ---
     let tagB = { name: '無', multi: 1.0, used: [] };
     let tempUsed;
@@ -217,27 +285,20 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     let orderUsed = [];
     if (oddCount >= orderReq) {
-        dice.forEach(d => { if(d.val % 2 !== 0) orderUsed.push(d.val); });
+        workingDice.forEach(d => { if(d.val % 2 !== 0) orderUsed.push(d.val); });
     } else if (evenCount >= orderReq) {
-        dice.forEach(d => { if(d.val % 2 === 0) orderUsed.push(d.val); });
+        workingDice.forEach(d => { if(d.val % 2 === 0) orderUsed.push(d.val); });
     }
 
-    if (counts[1] + counts[8] === 8) tagD = { name: '兩極', multi: 30.0, used: dice.map(d=>d.val) };
+    if (counts[1] + counts[8] === 8 && workingDice.length === 8) tagD = { name: '兩極', multi: 30.0, used: workingDice.map(d=>d.val) };
     else if (oddCount >= orderReq || evenCount >= orderReq) tagD = { name: '絕對秩序', multi: 8.0, used: orderUsed };
-    else if (freqs.length === 8) tagD = { name: '全異', multi: 2.5, used: dice.map(d=>d.val) };
-    else if (counts[1] === 0 && counts[8] === 0) tagD = { name: '中庸之道', multi: 2.0, used: dice.map(d=>d.val) };
-
-    if (activeShackleId === 'banality' && tagD.name !== '無') {
-        tagD.multi = 1.0;
-    }
+    else if (freqs.length === 8 && workingDice.length === 8) tagD = { name: '全異', multi: 2.5, used: workingDice.map(d=>d.val) };
+    else if (counts[1] === 0 && counts[8] === 0) tagD = { name: '中庸之道', multi: 2.0, used: workingDice.map(d=>d.val) };
 
     // --- 總乘區計算 ---
     let globalMulti = 1.0;
     let globalNotes = [];
     let baseABCD = 1.0;
-
-    if (activeShackleId === 'isolated') globalNotes.push('【孤立無援】發動: A區倍率減半。');
-    if (activeShackleId === 'banality') globalNotes.push('【平庸之惡】發動: D區倍率強制為 1.0。');
 
     if (playerRelics.includes('order')) {
         baseABCD = (tagA.multi + tagB.multi) * tagC.multi * tagD.multi;
@@ -279,10 +340,14 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         globalNotes.push(`剩餘資源加成 (剩 ${rollsLeft} 次) x${rerollMulti.toFixed(1)}`);
     }
 
-    let finalMultiplier = baseABCD * globalMulti;
-    let finalScore = totalBase * finalMultiplier;
-
-    return {
-        totalBase, tagA, tagB, tagC, tagD, globalMulti, globalNotes, finalMultiplier, finalScore
+    let result = {
+        totalBase, tagA, tagB, tagC, tagD, globalMulti, globalNotes, finalMultiplier: 1.0, finalScore: 0
     };
+
+    applyShacklePostHooks(result, shackleConfig);
+
+    result.finalMultiplier = (playerRelics.includes('order') ? (result.tagA.multi + result.tagB.multi) * result.tagC.multi * result.tagD.multi : result.tagA.multi * result.tagB.multi * result.tagC.multi * result.tagD.multi) * result.globalMulti;
+    result.finalScore = result.totalBase * result.finalMultiplier;
+
+    return result;
 }
