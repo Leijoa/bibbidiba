@@ -50,14 +50,77 @@ export const ENEMY_DB = [
     { name: '創世神 (最終Boss)', hp: 500000, turns: 5 },
 ];
 
+export const SHACKLE_DB = [
+    { id: 'blind', name: '【盲眼】', desc: '隨機覆蓋 2 顆骰子面值為「？」，點擊攻擊時才揭曉。', type: 'light' },
+    { id: 'bluff', name: '【虛張聲勢】', desc: '隱藏畫面中央的「預估造成傷害」數字。', type: 'light' },
+    { id: 'illusion', name: '【幻象】', desc: '盤面所有未鎖定的骰子視覺上顯示為相同數字。', type: 'light' },
+    { id: 'thalassophobia', name: '【深海恐懼】', desc: '盤面的骰子數值會不定時閃爍消失 1 秒。', type: 'light' },
+    { id: 'inversion', name: '【顛倒是非】', desc: '骰子的顏色樣式隨機錯亂（例如 1 變成紅底）。', type: 'light' },
+    { id: 'dizziness', name: '【暈眩】', desc: '每次鎖定/解鎖骰子，盤面上所有骰子位置大洗牌。', type: 'light' },
+    { id: 'noise', name: '【噪音】', desc: '螢幕在重骰時劇烈晃動，伴隨雜亂音效。', type: 'light' },
+    { id: 'amnesia', name: '【健忘】', desc: '隱藏本局戰鬥中的歷史最高傷害與牌型紀錄提示。', type: 'light' },
+    { id: 'sticky', name: '【黏稠液體】', desc: '鎖定骰子需支付 1 枚金幣（金幣不足無法鎖定）。', type: 'light' },
+    { id: 'greedy', name: '【貪婪稅】', desc: '點擊「重骰」需額外消耗 2 枚金幣。', type: 'light' },
+    { id: 'vampire', name: '【吸血鬼】', desc: '敵人回合結束時若未死，偷取玩家 5 枚金幣。', type: 'light' },
+    { id: 'thief', name: '【小偷】', desc: '玩家若未在當前攻擊擊敗敵人，額外失去 2 枚金幣。', type: 'light' },
+    { id: 'inflation', name: '【通膨】', desc: '擊敗此敵人後的下一間商店，所有物品價格提升 20%。', type: 'light' },
+    { id: 'assimilation', name: '【同化】', desc: '戰鬥結束時若金幣 > 50，超出部分強制歸零。', type: 'light' },
+    { id: 'rusty', name: '【生鏽的鎖】', desc: '每回合首次鎖定骰子，若金幣為 0 則扣除 1 HP。', type: 'light' },
+    { id: 'rebel', name: '【叛逆】', desc: '點擊重骰時，已鎖定的骰子有 25% 機率「掙脫」並重骰。', type: 'light' },
+    { id: 'tremor', name: '【手抖】', desc: '攻擊結算時，有 10% 機率強制重骰 1 顆未鎖定的骰子。', type: 'light' },
+    { id: 'ironwall', name: '【鐵壁】', desc: '免疫所有低於 1,000 點的單次傷害（傷害歸零）。', type: 'light' },
+    { id: 'gluttony', name: '【貪吃】', desc: '敵人每回合開始時，自動恢復自身最大 HP 的 5%。', type: 'light' },
+    { id: 'healingdice', name: '【治癒之骰】', desc: '結算時盤面每有一顆「1」，敵人恢復 200 點 HP。', type: 'light' },
+    { id: 'pickyeater', name: '【偏食】', desc: '擊敗該敵人掉落的基礎金幣獎勵減少 30%。', type: 'light' },
+    { id: 'shortcircuit', name: '【短路】', desc: '最終總倍率（Global Multiplier）固定減少 0.5x。', type: 'light' },
+    { id: 'badluck', name: '【霉運】', desc: '結算時盤面每有一顆「1」，最終倍率扣除 0.1x。', type: 'light' },
+    { id: 'drowning', name: '【沉溺】', desc: '骰子點數「4」和「5」的基礎點數歸零。', type: 'light' },
+    { id: 'lonely', name: '【孤立】', desc: '盤面上沒有湊成任何牌型的「散牌」，不提供基礎點數。', type: 'light' },
+    { id: 'cursedlock', name: '【詛咒之鎖】', desc: '每回合強制鎖定 1 顆點數最小的骰子，且無法解鎖。', type: 'heavy' },
+    { id: 'fragile', name: '【易碎骰子】', desc: '本局戰鬥中完全停用「鎖定」功能，每次皆 8 顆全換。', type: 'heavy' },
+    { id: 'fatigue', name: '【沉重疲勞】', desc: '玩家的初始最大重骰次數直接減 1。', type: 'heavy' },
+    { id: 'destinychain', name: '【命運枷鎖】', desc: '玩家每回合最高只能重骰 1 次（無視遺物加成）。', type: 'heavy' },
+    { id: 'ultimatelock', name: '【終極封鎖】', desc: '盤面正中間的 4 顆骰子位置永遠無法被鎖定。', type: 'heavy' },
+    { id: 'forcedshift', name: '【強制轉換】', desc: '每次重骰結束後，系統隨機將 1 顆「已鎖定」骰子變更數值。', type: 'heavy' },
+    { id: 'parityfear', name: '【奇/偶數恐懼】', desc: '盤面上所有的奇數（或偶數）基礎點數歸零，且不觸發遺物倍率。', type: 'heavy' },
+    { id: 'numberplunder', name: '【數字掠奪】', desc: '開局指定一個數字（如 7），本局擲出該數字皆視為廢牌，不計入牌型。', type: 'heavy' },
+    { id: 'isolated', name: '【孤立無援】', desc: 'A 區（同數頻率）的所有倍率強制減半。', type: 'heavy' },
+    { id: 'ordercollapse', name: '【秩序崩壞】', desc: 'B 區（順子連號）的倍率判定完全失效。', type: 'heavy' },
+    { id: 'banality', name: '【平庸之惡】', desc: 'D 區（極端盤面）的所有特殊倍率強制失效。', type: 'heavy' },
+    { id: 'chaoslaw', name: '【混沌法則】', desc: 'A 區（同數）與 B 區（順子）的倍率計算表互相對調。', type: 'heavy' },
+    { id: 'sealeddoor', name: '【封印之門】', desc: '盤面必須包含「對子」以上的同數牌型，否則本次攻擊傷害歸零。', type: 'heavy' },
+    { id: 'blackhole', name: '【黑洞】', desc: '骰子點數「8」在攻擊結算時會強制被吸走，變成「1」。', type: 'heavy' },
+    { id: 'hardcap', name: '【上限鎖死】', desc: '單次攻擊的最終倍率（Final Multiplier）最高無法超過 x10.0。', type: 'heavy' },
+    { id: 'relicseal', name: '【遺物封印】', desc: '戰鬥期間，隨機使玩家背包中的 2 個遺物效果暫停運作。', type: 'heavy' },
+    { id: 'oblivion', name: '【忘卻】', desc: '無視所有來自遺物的「基礎點數」加成（如大一到大八）。', type: 'heavy' },
+    { id: 'exploitation', name: '【剝削】', desc: '所有遺物的觸發倍率效果強制減半（例如 x3.0 變 x1.5）。', type: 'heavy' },
+    { id: 'wrath', name: '【天譴】', desc: '若玩家觸發「八重奏」或「大滿貫」等頂級牌型，強制扣除 1 HP。', type: 'heavy' },
+    { id: 'timecompress', name: '【時間壓縮】', desc: '該關卡的限制回合數強制改為只有 2 回合。', type: 'heavy' },
+    { id: 'thornarmor', name: '【反傷裝甲】', desc: '若單回合傷害低於敵人最大 HP 的 10%，玩家受 1 HP 反傷。', type: 'heavy' },
+    { id: 'absolutebarrier', name: '【絕對屏障】', desc: '本局戰鬥中的「第一次攻擊」強制無效（造成 0 點傷害）。', type: 'heavy' },
+    { id: 'abyssgaze', name: '【深淵凝視】', desc: '若單次攻擊未打掉 Boss 20% 最大 HP，該次傷害轉為治療 Boss。', type: 'heavy' },
+    { id: 'wither', name: '【枯萎】', desc: '本局戰鬥玩家最大 HP 視為 1（受傷即死）。', type: 'heavy' },
+    { id: 'mutualdestruction', name: '【同歸於盡】', desc: '敵人會將受到的 5% 傷害反彈給玩家，但不會導致玩家死亡（最少剩 1 HP）。', type: 'heavy' }
+];
+
 export function getEnemy(levelIndex) {
     if (levelIndex < ENEMY_DB.length) {
         return ENEMY_DB[levelIndex];
     } else {
         let baseHp = ENEMY_DB[ENEMY_DB.length - 1].hp;
         let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
+
+        // n-m format
+        let n = Math.floor((infiniteLevel - 1) / 3) + 1;
+        let m = ((infiniteLevel - 1) % 3) + 1;
+
         let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
-        return { name: `無限塔第 ${infiniteLevel} 層`, hp: hp, turns: 5 };
+
+        let name = `無限塔 ${n}-${m}`;
+        if (m === 3) name += ' (Boss)';
+        else if (m === 2) name += ' (菁英)';
+
+        return { name: name, hp: hp, turns: 5 };
     }
 }
 
