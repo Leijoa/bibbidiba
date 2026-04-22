@@ -1,5 +1,5 @@
 // js/ui.js
-import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB } from './data.js';
+import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, getEnemy } from './data.js';
 
 // 緩存 DOM 元素
 export const el = {
@@ -97,15 +97,32 @@ export function renderRulesDB() {
 
 // --- 更新 UI 狀態 ---
 export function updateHeaderUI(player, stage) {
-    el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
+    if (stage.level < ENEMY_DB.length) {
+        el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
+    } else {
+        let infiniteLevel = stage.level - ENEMY_DB.length + 1;
+        el.stageInfo.innerText = `無限塔 第 ${infiniteLevel} 層`;
+    }
     el.playerHp.innerText = `${player.hp}/3`;
     el.playerGold.innerText = player.gold;
 }
 
 export function updateEnemyUI(stage) {
-    let enemy = ENEMY_DB[stage.level];
+    let enemy = getEnemy(stage.level);
     el.enemyName.innerText = `⚔️ ${enemy.name}`;
-    if(stage.level === 2) el.enemyName.classList.replace('text-red-300', 'text-purple-400');
+
+    el.enemyName.className = "text-xl font-bold flex-1";
+    if (stage.level >= ENEMY_DB.length) {
+        el.enemyName.classList.add("text-fuchsia-400");
+    } else if (stage.level === 4) {
+        el.enemyName.classList.add("text-amber-400");
+    } else if (stage.level === 3) {
+        el.enemyName.classList.add("text-purple-400");
+    } else if (stage.level === 2) {
+        el.enemyName.classList.add("text-rose-400");
+    } else {
+        el.enemyName.classList.add("text-slate-200");
+    }
     
     el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 次發動攻擊次數`;
     let pct = Math.max(0, (stage.enemyHp / stage.enemyMaxHp) * 100);

@@ -1,5 +1,5 @@
 // js/main.js
-import { RELIC_DB, ENEMY_DB } from './data.js';
+import { RELIC_DB, ENEMY_DB, getEnemy } from './data.js';
 import { calculateEngineScore } from './engine.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
@@ -132,17 +132,6 @@ function initTitleScreen() {
 function initNewGame() {
     player = { hp: 3, gold: 20, relics: [], maxRolls: 2, highestDamage: 0, highestDamageCombo: '', isInfiniteMode: false };
     loadStage(0);
-}
-
-function getEnemy(levelIndex) {
-    if (levelIndex < ENEMY_DB.length) {
-        return ENEMY_DB[levelIndex];
-    } else {
-        let baseHp = ENEMY_DB[ENEMY_DB.length - 1].hp;
-        let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
-        let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
-        return { name: `無限塔第 ${infiniteLevel} 層`, hp: hp, turns: 5 };
-    }
 }
 
 function loadStage(levelIndex, isLoad = false, parsedData = null) {

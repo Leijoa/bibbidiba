@@ -50,6 +50,17 @@ export const ENEMY_DB = [
     { name: '創世神 (最終Boss)', hp: 500000, turns: 5 },
 ];
 
+export function getEnemy(levelIndex) {
+    if (levelIndex < ENEMY_DB.length) {
+        return ENEMY_DB[levelIndex];
+    } else {
+        let baseHp = ENEMY_DB[ENEMY_DB.length - 1].hp;
+        let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
+        let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
+        return { name: `無限塔第 ${infiniteLevel} 層`, hp: hp, turns: 5 };
+    }
+}
+
 export const RULE_DB = {
     groupA: [
         { name: '八重奏', desc: '8顆相同數字', multi: 'x50.0' },
