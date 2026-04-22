@@ -127,7 +127,7 @@ function applyShacklePostHooks(scoreResult, shackleConfig, workingDice, baseCont
     }
 }
 
-export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, shackleConfig = null) {
+export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, shackleConfig = null, isInitialRoll = false, turnsLeft = 0) {
     let workingDice = [...dice];
 
     // --- Shackle Pre-Hooks ---
@@ -144,6 +144,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     let totalBase = 0;
     let baseContributions = {};
+    let globalNotes = [];
 
     let isExploited = shackleConfig && shackleConfig.id === 'exploitation';
 
@@ -151,6 +152,11 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         let multi = 1;
         let v = d.val;
         let baseVal = v; 
+
+        if (playerRelics.includes('doubleedge')) {
+            if (v === 2) baseVal = 20;
+            if (v === 3) baseVal = 0;
+        }
 
         let hookResult = null;
         if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].modifyBase) {
@@ -165,8 +171,8 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
                 baseVal = relicBaseVals[v];
             }
             if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= (isExploited ? 2.5 : 5.0);
-            if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= (isExploited ? 2.25 : 4.5);
-            if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= (isExploited ? 2.0 : 4.0);
+            if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= (isExploited ? 1.5 : 3.0);
+            if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= (isExploited ? 1.0 : 2.0);
             if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= (isExploited ? 1.25 : 2.5);
             if (v % 2 === 0 && playerRelics.includes('even')) multi *= (isExploited ? 1.25 : 2.5);
         }
@@ -175,6 +181,20 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         baseContributions[d.id] = contribution;
         totalBase += contribution;
     });
+
+
+    let freqs = counts.slice(1).filter(c => c > 0);
+    if (playerRelics.includes('arithmetic')) {
+        let uniqueCount = freqs.length;
+        totalBase += uniqueCount * 8;
+        globalNotes.push(`【等差數列】 +${uniqueCount * 8} 基礎點數`);
+    }
+
+    if (playerRelics.includes('luckyseven') && counts[7] > 0) {
+        let extra = counts[7] * 77;
+        totalBase += extra;
+        globalNotes.push(`【幸運七】 +${extra} 基礎點數`);
+    }
 
     // --- 陣列配對輔助函式 ---
     function getFreqVals(req1, req2 = 0) {
@@ -294,7 +314,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     else if (maxFreq >= 5) tagA = { name: '五同', multi: 6.0, used: getFreqVals(5) };
     else if (maxFreq >= 4) tagA = { name: '四同', multi: 4.5, used: getFreqVals(4) };
     else if (maxFreq >= 3) tagA = { name: '三同', multi: 2.5, used: getFreqVals(3) };
-    else if (maxFreq >= 2) tagA = { name: '對子', multi: 1.5, used: getFreqVals(2) };
+    else if (maxFreq >= 2) { tagA = { name: '對子', multi: 1.5, used: getFreqVals(2) }; if (playerRelics.includes('doubles')) tagA.multi *= (isExploited ? 1.5 : 2.0); }
 
     // --- 判斷 B 區 ---
     let tagB = { name: '無', multi: 1.0, used: [] };
@@ -320,6 +340,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         tagB = { name: '三連順', multi: 2.0, used: tempUsed };
     }
 
+    if (tagB.name !== '無' && playerRelics.includes('straightfan')) { tagB.multi += (isExploited ? 1.0 : 2.0); }
     // --- 判斷 C 區 ---
     let tagC = { name: '無', multi: 1.0, used: [] };
     
@@ -344,14 +365,14 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     } else if ((tempUsed = getFreqVals(3, 2))) {
         tagC = { name: '小葫蘆', multi: 3.5, used: tempUsed };
     } else if ((tempUsed = getPairsVals(3))) {
-        tagC = { name: '三對子', multi: 3.0, used: tempUsed };
+        tagC = { name: '三對子', multi: 3.0, used: tempUsed }; if (playerRelics.includes('doubles')) tagC.multi *= (isExploited ? 1.5 : 2.0);
     } else if ((tempUsed = getPairsVals(2))) {
-        tagC = { name: '雙對子', multi: 2.0, used: tempUsed };
+        tagC = { name: '雙對子', multi: 2.0, used: tempUsed }; if (playerRelics.includes('doubles')) tagC.multi *= (isExploited ? 1.5 : 2.0);
     }
 
     // --- 判斷 D 區 ---
     let tagD = { name: '無', multi: 1.0, used: [] };
-    let freqs = counts.slice(1).filter(c => c > 0);
+    freqs = counts.slice(1).filter(c => c > 0);
 
     let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
     let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
@@ -369,9 +390,45 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     else if (freqs.length === 8 && workingDice.length === 8) tagD = { name: '全異', multi: 2.5, used: workingDice.map(d=>d.val) };
     else if (counts[1] === 0 && counts[8] === 0) tagD = { name: '中庸之道', multi: 2.0, used: workingDice.map(d=>d.val) };
 
+
+    if (playerRelics.includes('hodgepodge') && tagA.name !== '無' && tagB.name !== '無' && tagC.name !== '無') {
+        totalBase += 100;
+        globalNotes.push('【大雜燴】發動: A、B、C 區同時觸發，+100 基礎點數。');
+    }
+
+    if (playerRelics.includes('sixsmooth') && counts[6] > 0) {
+        let usedIds = new Set();
+        let markUsed = (usedArr) => {
+            let availableDice = [...workingDice];
+            usedArr.forEach(val => {
+                let idx = availableDice.findIndex(d => d.val === val && !usedIds.has(d.id));
+                if (idx !== -1) {
+                    usedIds.add(availableDice[idx].id);
+                    availableDice.splice(idx, 1);
+                }
+            });
+        };
+        markUsed(tagA.used);
+        markUsed(tagB.used);
+        markUsed(tagC.used);
+        markUsed(tagD.used);
+
+        let scatterAdded = 0;
+        workingDice.forEach(d => {
+            if (!usedIds.has(d.id)) {
+                let originalContribution = baseContributions[d.id] || 0;
+                totalBase -= originalContribution;
+                totalBase += 15;
+                scatterAdded++;
+            }
+        });
+        if (scatterAdded > 0) {
+            globalNotes.push(`【六六大順】發動: ${scatterAdded} 顆散牌變為 15 點計算。`);
+        }
+    }
+
     // --- 總乘區計算 ---
     let globalMulti = 1.0;
-    let globalNotes = [];
     let baseABCD = 1.0;
 
     if (shackleConfig && shackleConfig.id === 'oblivion') globalNotes.push('【忘卻】發動: 無視遺物基礎點數。');
@@ -416,6 +473,54 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         globalNotes.push(`【孤注一擲】 x${amt.toFixed(2)}`);
     }
 
+
+    if (playerRelics.includes('flicker') && tagA.name === '對子' && tagB.name === '無' && tagC.name === '無' && tagD.name === '無') {
+        globalMulti += (isExploited ? 1.5 : 3.0);
+        globalNotes.push(`【凡人微光】 +${(isExploited ? 1.5 : 3.0).toFixed(1)}x`);
+    }
+
+    if (playerRelics.includes('fivebless') && counts[5] > 0) {
+        let amt = counts[5] * 0.2;
+        globalMulti += (isExploited ? amt/2 : amt);
+        globalNotes.push(`【五福臨門】 +${(isExploited ? amt/2 : amt).toFixed(1)}x`);
+    }
+
+    if (playerRelics.includes('fourdeath') && counts[4] === 4) {
+        let amt = isExploited ? 2.0 : 4.0;
+        globalMulti *= amt;
+        globalNotes.push(`【四死如歸】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('oneshot') && isInitialRoll) {
+        let amt = isExploited ? 1.5 : 3.0;
+        globalMulti *= amt;
+        globalNotes.push(`【一發入魂】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('extremist') && tagD.name !== '無') {
+        let amt = isExploited ? 1.25 : 1.5;
+        tagD.multi *= amt;
+        globalNotes.push(`【極端份子】 D區 x${amt.toFixed(2)}`);
+    }
+
+    if (playerRelics.includes('rebel') && shackleConfig) {
+        let amt = isExploited ? 1.25 : 1.5;
+        globalMulti *= amt;
+        globalNotes.push(`【反抗軍】 x${amt.toFixed(2)}`);
+    }
+
+    if (playerRelics.includes('royalflush') && tagA.name !== '無' && tagB.name !== '無') {
+        let amt = isExploited ? 1.5 : 2.0;
+        globalMulti *= amt;
+        globalNotes.push(`【同花順】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('brink') && turnsLeft === 1) {
+        let amt = isExploited ? 1.25 : 2.5;
+        globalMulti *= amt;
+        globalNotes.push(`【極限拉扯】 x${amt.toFixed(2)}`);
+    }
+
     let rerollMulti = 1.0 + (rollsLeft * 0.5);
     if (rollsLeft > 0) {
         globalMulti *= rerollMulti;
@@ -430,6 +535,11 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     result.finalMultiplier = (playerRelics.includes('order') ? (result.tagA.multi + result.tagB.multi) * result.tagC.multi * result.tagD.multi : result.tagA.multi * result.tagB.multi * result.tagC.multi * result.tagD.multi) * result.globalMulti;
     
+    if (playerRelics.includes('mediocre') && result.finalMultiplier < 5.0) {
+        result.finalMultiplier = 5.0;
+        result.globalNotes.push('【平庸之善】發動: 總倍率提升至 x5.0。');
+    }
+
     if (shackleConfig && shackleConfig.id === 'hardcap') {
         if (result.finalMultiplier > 10.0) {
             result.finalMultiplier = 10.0;

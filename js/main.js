@@ -105,6 +105,10 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
         let threshold = stage.enemyMaxHp * 0.10;
         if (dmg < threshold) {
             player.hp--;
+            if (player.relics.includes('berserker')) {
+                player.berserkerBonus = (player.berserkerBonus || 0) + 1;
+                UI.showToast("💢 【越戰越勇】發動：永久增加 1 次重骰次數！");
+            }
             UI.updateHeaderUI(player, stage);
             UI.showToast(`🛡️ 【反傷裝甲】發動：傷害過低，受到 1 點反傷！`);
             if (player.hp <= 0) playerDied = true;
@@ -120,20 +124,29 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
 }
 
 function applyEconomyShackles(items) {
+    let result = items;
     if (stage.activeShackle === 'inflation') {
-        return items.map(item => ({
+        result = result.map(item => ({
             ...item,
             price: Math.ceil(item.price * 1.2)
         }));
     }
-    return items;
+    if (player.relics.includes('vip')) {
+        result = result.map(item => ({
+            ...item,
+            price: Math.floor(item.price * 0.8)
+        }));
+    }
+    return result;
 }
 
 // --- 存檔系統 (Save System) ---
 function saveGame() {
     let inShop = !UI.el.shopOverlay.classList.contains('hidden');
     const saveData = {
-        player,
+        player: {
+            ...player
+        },
         stage: {
             level: stage.level,
             enemyMaxHp: stage.enemyMaxHp,
@@ -509,6 +522,15 @@ window.executeRoll = function(isInitial = false) {
     if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') return;
 
     if (!isInitial) {
+        if (player.relics.includes('piggybank')) {
+            if (player.gold >= 1) {
+                player.gold -= 1;
+                UI.updateHeaderUI(player, stage);
+            } else {
+                return UI.showToast("⚠️ 金幣不足！【存錢筒】每次重骰需支付 1 枚金幣。");
+            }
+        }
+
         if (stage.activeShackle === 'sticky') {
             let lockedCount = battle.dice.filter(d => d.locked).length;
             let cost = lockedCount * 3;
@@ -542,7 +564,11 @@ window.executeRoll = function(isInitial = false) {
             if (freed > 0) UI.showToast(`😡 【叛逆】發動：${freed} 顆骰子掙脫鎖定！`);
         }
         
-        battle.rollsLeft--;
+        if (player.relics.includes('balance') && battle.rollsLeft === player.maxRolls) {
+            UI.showToast("⚖️ 【動態平衡】發動：首次重骰不消耗次數！");
+        } else {
+            battle.rollsLeft--;
+        }
     }
     
     battle.state = 'ROLLING';
@@ -593,7 +619,8 @@ window.executeRoll = function(isInitial = false) {
                 activeRelics = player.relics.filter(r => !stage.shackleMeta.ignoredRelics.includes(r));
             }
 
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig);
+            let isInitialRoll = (battle.rollsLeft === player.maxRolls);
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft);
 
             if (stage.activeShackle === 'blind' && stage.shackleMeta) {
                 let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
@@ -648,7 +675,8 @@ window.fireAttack = function() {
                 activeRelics = player.relics.filter(r => !stage.shackleMeta.ignoredRelics.includes(r));
             }
 
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig);
+            let isInitialRoll = (battle.rollsLeft === player.maxRolls);
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft);
             UI.showToast(`🖐️ 【手抖】發動：強制重骰了 1 顆未鎖定的骰子！`);
         }
     }
@@ -659,7 +687,12 @@ window.fireAttack = function() {
     UI.renderControls(battle);
     Audio.playAttackSound();
 
-    let dmg = Math.floor(battle.scoreResult.finalScore);
+    let finalDamage = Math.floor(battle.scoreResult.finalScore);
+    if (player.relics.includes('dragonslayer') && (stage.level % 5 === 4 || stage.level === ENEMY_DB.length - 1)) {
+        finalDamage = Math.floor(finalDamage * 1.5);
+        UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
+    }
+    let dmg = finalDamage;
 
     if (stage.activeShackle === 'absolutebarrier' && !stage.hasAttackedThisStage) {
         dmg = 0;
@@ -752,10 +785,12 @@ window.fireAttack = function() {
         let playerDied = applyCombatShackles(dmg, actualDamage, isDefeated);
         
         if (player.hp <= 0) {
-            return gameOver("血量耗盡，旅程結束！");
+            playerTakesFatalDamage("血量耗盡，旅程結束！");
+            if (player.hp <= 0) return;
         }
         if (playerDied) {
-            return gameOver("受到反傷，血量耗盡！");
+            playerTakesFatalDamage("受到反傷，血量耗盡！");
+            if (player.hp <= 0) return;
         }
 
         if (isDefeated) {
@@ -770,7 +805,14 @@ window.fireAttack = function() {
             stage.turnsLeft--;
             if (stage.turnsLeft <= 0) {
                 player.hp--;
-                if (player.hp <= 0) gameOver("血量耗盡，旅程結束！");
+                if (player.relics.includes('berserker')) {
+                    player.berserkerBonus = (player.berserkerBonus || 0) + 1;
+                    UI.showToast("💢 【越戰越勇】發動：永久增加 1 次重骰次數！");
+                }
+                if (player.hp <= 0) {
+                    playerTakesFatalDamage("血量耗盡，旅程結束！");
+                    if (player.hp <= 0) return;
+                }
                 else {
                     UI.showToast(`⚠️ 未在回合內擊殺！\n扣除 1 HP，重新挑戰！`, () => {
                         stage.turnsLeft = getEnemy(stage.level).turns;
@@ -785,6 +827,12 @@ window.fireAttack = function() {
 
 // --- 商店與關卡結算 ---
 function enemyDefeated() {
+    let isEliteOrBoss = (stage.level % 5 === 4 || stage.level === ENEMY_DB.length - 1);
+    if (player.relics.includes('firstaid') && isEliteOrBoss && player.hp < 3) {
+        player.hp++;
+        UI.showToast("🚑 【急救包】發動：恢復 1 點 HP！");
+    }
+
     if (stage.activeShackle === 'wither' && stage.shackleMeta && stage.shackleMeta.originalHp) {
         player.hp = stage.shackleMeta.originalHp;
     }
@@ -797,6 +845,17 @@ function enemyDefeated() {
     let baseEarn = 15;
     let turnsBonus = (stage.turnsLeft - 1) * 10;
     let extraEarn = 0;
+
+    if (player.relics.includes('piggybank')) {
+        extraEarn += 5;
+        UI.showToast("🐷 【存錢筒】發動：獲得 5 枚金幣！");
+    }
+
+    let enemy = getEnemy(stage.level);
+    if (player.relics.includes('bounty') && stage.turnsLeft === enemy.turns) {
+        extraEarn += 20;
+        UI.showToast("🎯 【賞金獵人】發動：1 回合內秒殺，額外獲得 20 金幣！");
+    }
 
     if (stage.activeShackle === 'pickyeater') {
         baseEarn = Math.floor(baseEarn * 0.7);
@@ -841,6 +900,7 @@ function openShop() {
     UI.el.shopOverlay.classList.remove('hidden');
     UI.el.shopOverlay.classList.add('flex');
     shopRerollsUsed = 0;
+    window.itemsBoughtThisScreen = 0;
     UI.updateShopRerollBtn(shopRerollsUsed);
     UI.el.shopGold.innerText = player.gold;
     UI.updateHeaderUI(player, stage);
@@ -849,15 +909,20 @@ function openShop() {
 
 window.rerollShop = function(isInitial = false) {
     if (!isInitial) {
+        if (player.relics.includes('scavenger') && window.itemsBoughtThisScreen === 0) {
+            player.gold += 3;
+            UI.showToast("🗑️ 【拾荒者】發動：未購買任何物品，獲得 3 金幣！");
+        }
+
         let cost = shopRerollsUsed === 0 ? 0 : 3;
         if (player.gold < cost) return UI.showToast("⚠️ 金幣不足！");
         player.gold -= cost;
         shopRerollsUsed++;
         UI.updateShopRerollBtn(shopRerollsUsed);
         UI.el.shopGold.innerText = player.gold;
-        // ★ 修復：同步更新頂部資訊列的金幣
         UI.updateHeaderUI(player, stage);
     }
+    window.itemsBoughtThisScreen = 0;
     let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
     shopItems = applyEconomyShackles(available);
     UI.renderShopItems(shopItems, player);
@@ -870,6 +935,7 @@ window.buyItem = function(idx) {
         Audio.playBuySound();
         player.gold -= r.price;
         player.relics.push(r.id);
+        window.itemsBoughtThisScreen++;
         unlockCollectionItem('relic', r.id);
         shopItems.splice(idx, 1);
         UI.el.shopGold.innerText = player.gold;
