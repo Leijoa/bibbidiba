@@ -235,7 +235,7 @@ window.executeRoll = function(isInitial = false) {
         intervals++;
         UI.renderDice(battle, activeHighlight);
 
-        if (intervals >= 25) { // increased animation duration
+        if (intervals >= 15) { // increased animation duration
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
 
@@ -262,7 +262,7 @@ window.executeRoll = function(isInitial = false) {
             saveGame();
             renderAll();
         }
-    }, 45);
+    }, 25);
 };
 
 window.fireAttack = function() {

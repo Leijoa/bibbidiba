@@ -42,7 +42,7 @@ function playTone(freq, type, duration, vol=0.1) {
 export function playRollSound() {
     if (!soundEnabled) return;
     // Rapid tick for rolling
-    playTone(600 + Math.random()*200, 'square', 0.05, 0.05);
+    playTone(600 + Math.random()*200, 'square', 0.02, 0.05);
 }
 
 export function playAttackSound() {
