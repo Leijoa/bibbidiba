@@ -45,21 +45,6 @@ body {
   40%, 60% { transform: translate3d(6px, 2px, 0); }
 }
 
-.noise-shake { animation: noiseShake 0.1s linear infinite; }
-@keyframes noiseShake {
-  0% { transform: translate(2px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(0px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(2px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(2px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
-}
-
 .glitch-effect { filter: hue-rotate(90deg) contrast(200%) saturate(150%); }
 
 .flash-red-anim { animation: flashRed 0.5s ease-out forwards; }
@@ -77,4 +62,10 @@ body {
 @keyframes toastIn {
   0% { opacity: 0; transform: translate(-50%, -30%) scale(0.8); }
   100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.deep-sea-anim { animation: deepSeaFade 1s linear forwards; }
+@keyframes deepSeaFade {
+  0%, 100% { opacity: 1; }
+  10%, 90% { opacity: 0; }
 }

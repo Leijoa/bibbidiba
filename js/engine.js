@@ -101,6 +101,14 @@ const ShackleHooks = {
                 res.globalNotes.push(`【孤立】發動: 散牌不計入基礎點數。`);
             }
         }
+    },
+    sealeddoor: {
+        postCalc: (res) => {
+            if (res.tagA.name === '無') {
+                res.globalMulti = 0;
+                res.globalNotes.push('【封印之門】發動: 沒有對子，傷害歸零。');
+            }
+        }
     }
 };
 
