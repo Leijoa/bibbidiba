@@ -8,7 +8,6 @@ export const RARITY = {
 };
 
 export const RELIC_DB = [
-    // 基礎點數類 (Rarity 1)
     { id: 'b1', name: '【大一】', desc: '1 以 10 點計算', price: 10, rarity: 1 },
     { id: 'b2', name: '【大二】', desc: '2 以 10 點計算', price: 10, rarity: 1 },
     { id: 'b3', name: '【大三】', desc: '3 以 11 點計算', price: 10, rarity: 1 },
@@ -17,29 +16,46 @@ export const RELIC_DB = [
     { id: 'b6', name: '【大六】', desc: '6 以 11 點計算', price: 10, rarity: 1 },
     { id: 'b7', name: '【大七】', desc: '7 以 12 點計算', price: 10, rarity: 1 },
     { id: 'b8', name: '【大八】', desc: '8 以 12 點計算', price: 10, rarity: 1 },
-    
-    // 區段倍率類 (Rarity 2)
-    { id: 'small', name: '【小小】', desc: '1,2,3 的點數倍率*5', price: 15, rarity: 2 },
-    { id: 'mid', name: '【中中】', desc: '4,5 的點數倍率*4.5', price: 15, rarity: 2 },
-    { id: 'big', name: '【大大】', desc: '6,7,8 的點數倍率*4', price: 15, rarity: 2 },
-    
-    // 條件倍率類 (Rarity 3)
-    { id: 'odd', name: '【奇數】', desc: '奇數點數倍率*2.5', price: 25, rarity: 3 },
-    { id: 'even', name: '【偶數】', desc: '偶數點數倍率*2.5', price: 25, rarity: 3 },
-    { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +15', price: 20, rarity: 3 },
-    { id: 'order', name: '【寬容】', desc: '只要七顆奇數或偶數就會發動絕對秩序牌型', price: 25, rarity: 3 },
-    { id: 'allin', name: '【孤注一擲】', desc: '當玩家 HP 只剩 1 時，最終傷害 x2.5', price: 30, rarity: 3 },
-    
-    // 其他新增遺物
+    { id: 'scavenger', name: '【拾荒者】', desc: '在商店點擊「刷新商店」時，若當前畫面沒有購買任何物品就離開，獲得 3 金幣。', price: 10, rarity: 1 },
+    { id: 'small', name: '【小小】', desc: '1, 2, 3 的點數倍率 * 5', price: 15, rarity: 2 },
+    { id: 'mid', name: '【中中】', desc: '4, 5 的點數倍率 * 3', price: 15, rarity: 2 },
+    { id: 'big', name: '【大大】', desc: '6, 7, 8 的點數倍率 * 2', price: 15, rarity: 2 },
+    { id: 'piggybank', name: '【存錢筒】', desc: '每次擊敗敵人獲得 5 枚金幣，但你在戰鬥中每次點擊「重骰」需支付 1 枚金幣。', price: 15, rarity: 2 },
+    { id: 'flicker', name: '【凡人微光】', desc: '若結算時 A 區最高牌型只有「對子」（且無 C、D 區），最終倍率強制 +3.0x。', price: 15, rarity: 2 },
     { id: 'laststand', name: '【破釜沉舟】', desc: '當剩餘重骰次數為 0 時，最終結算傷害 x1.5', price: 20, rarity: 2 },
-    { id: 'investor', name: '【投資達人】', desc: '戰鬥結算時，每持有 10 枚金幣，就額外獲得 1 枚金幣利息', price: 25, rarity: 2 },
     { id: 'highlow', name: '【高低差】', desc: '只要盤面同時存在 1 和 8，總傷害 x1.5', price: 20, rarity: 2 },
-
-    // 傳說類 (Rarity 4)
+    { id: 'hodgepodge', name: '【大雜燴】', desc: '若盤面結算時同時觸發了 A 區、B 區、C 區的有效牌型，總基礎點數額外 +100。', price: 20, rarity: 2 },
+    { id: 'doubles', name: '【雙打冠軍】', desc: '「對子」、「雙對子」、「三對子」的倍率強制翻倍。', price: 20, rarity: 2 },
+    { id: 'fivebless', name: '【五福臨門】', desc: '盤面上每有一顆 5，最終總倍率增加 +0.2x。', price: 20, rarity: 2 },
+    { id: 'mediocre', name: '【平庸之善】', desc: '若你的結算倍率低於 x5.0，強制將總倍率提升至 x5.0。', price: 20, rarity: 2 },
+    { id: 'investor', name: '【投資達人】', desc: '戰鬥結算時，每持有 10 枚金幣，就額外獲得 1 枚金幣利息', price: 25, rarity: 2 },
+    { id: 'arithmetic', name: '【等差數列】', desc: '盤面上每多一種「不同的數字」，最終結算的基礎點數總和 +8。', price: 25, rarity: 2 },
+    { id: 'bounty', name: '【賞金獵人】', desc: '若能在「1 回合內」秒殺敵人，額外獲得 20 金幣。', price: 25, rarity: 2 },
+    { id: 'coin', name: '【幸運金幣】', desc: '結算時獲得金幣 +15', price: 20, rarity: 3 },
+    { id: 'doubleedge', name: '【雙面刃】', desc: '盤面上所有的 2 基礎點數以 20 計算，但所有的 3 基礎點數歸零。', price: 20, rarity: 3 },
+    { id: 'odd', name: '【奇數】', desc: '奇數點數倍率 * 2.5', price: 25, rarity: 3 },
+    { id: 'even', name: '【偶數】', desc: '偶數點數倍率 * 2.5', price: 25, rarity: 3 },
+    { id: 'sixsmooth', name: '【六六大順】', desc: '只要盤面上有 6，所有「散牌」（未湊成牌型的骰子）基礎點數強制以 15 點計算。', price: 25, rarity: 3 },
+    { id: 'order', name: '【寬容】', desc: '只要七顆奇數或偶數就會發動絕對秩序牌型', price: 30, rarity: 3 },
+    { id: 'allin', name: '【孤注一擲】', desc: '當玩家 HP 只剩 1 時，最終傷害 x2.5', price: 30, rarity: 3 },
+    { id: 'brink', name: '【極限拉扯】', desc: '若發動攻擊時，剩餘發動攻擊次數（turnsLeft）剛好為 1，最終傷害 x2.5。', price: 30, rarity: 3 },
+    { id: 'straightfan', name: '【順子愛好者】', desc: '只要觸發 B 區（順子連號）的任何牌型，該牌型倍率額外 +2.0。', price: 30, rarity: 3 },
+    { id: 'fourdeath', name: '【四死如歸】', desc: '只要盤面上「剛好」有四顆 4，總倍率 x4.0。', price: 30, rarity: 3 },
+    { id: 'vip', name: '【VIP會員】', desc: '商店內所有遺物的價格降低 20%（向下取整）。', price: 30, rarity: 3 },
+    { id: 'oneshot', name: '【一發入魂】', desc: '若發動攻擊時「完全沒有消耗過重骰次數」，最終總倍率 x3.0。', price: 35, rarity: 3 },
+    { id: 'extremist', name: '【極端份子】', desc: 'D 區（極端盤面）的所有結算倍率 x1.5。', price: 35, rarity: 3 },
+    { id: 'luckyseven', name: '【幸運七】', desc: '盤面上每有一顆 7，結算時基礎點數額外 +77。', price: 35, rarity: 3 },
+    { id: 'rebel', name: '【反抗軍】', desc: '若本關卡存在任何「枷鎖」，最終總倍率 x1.5。', price: 35, rarity: 3 },
+    { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +2', price: 40, rarity: 4 },
+    { id: 'goldendice', name: '【黃金骰子】', desc: '每次發動攻擊時，盤面每有一顆 7，立即獲得 3 金幣', price: 40, rarity: 4 },
+    { id: 'balance', name: '【動態平衡】', desc: '每回合的「第一次重骰」不消耗重骰次數。', price: 45, rarity: 4 },
     { id: 'pansy', name: '【雷爪獅的祝福】', desc: '場上有 1 時總傷害 x3', price: 50, rarity: 4 },
     { id: 'pongo', name: '【捧夠的祝福】', desc: '場上有 8 時總傷害 x3', price: 50, rarity: 4 },
-    { id: 'refresh', name: '【刷新幣】', desc: '初始重骰次數 +2', price: 35, rarity: 4 },
-    { id: 'goldendice', name: '【黃金骰子】', desc: '每次發動攻擊時，盤面上每有一顆 7，立即獲得 3 金幣', price: 40, rarity: 4 },
+    { id: 'firstaid', name: '【急救包】', desc: '每次擊敗【菁英怪】或【Boss】時，若 HP 不滿，恢復 1 點 HP。', price: 50, rarity: 4 },
+    { id: 'royalflush', name: '【同花順】', desc: '若本次攻擊「同時」觸發了 A 區（同數）與 B 區（順子），總倍率 x2.0。', price: 50, rarity: 4 },
+    { id: 'berserker', name: '【越戰越勇】', desc: '每次因回合耗盡或反傷扣除 1 HP 時，永久增加 1 次初始重骰次數。', price: 55, rarity: 4 },
+    { id: 'dragonslayer', name: '【屠龍者】', desc: '面對「Boss」或「菁英怪」時，總傷害 x1.5。', price: 60, rarity: 4 },
+    { id: 'bankrupt', name: '【破財消災】', desc: '承受致命傷害時，若金幣 ≥ 100，扣除【所有金幣】並保留 1 HP（每局限一次）。', price: 70, rarity: 4 },
 ];
 
 export const ENEMY_DB = [
