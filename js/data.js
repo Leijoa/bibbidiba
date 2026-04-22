@@ -109,17 +109,17 @@ export function getEnemy(levelIndex) {
     } else {
         let baseHp = ENEMY_DB[ENEMY_DB.length - 1].hp;
         let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
-
+        
         // n-m format
         let n = Math.floor((infiniteLevel - 1) / 3) + 1;
         let m = ((infiniteLevel - 1) % 3) + 1;
-
+        
         let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
-
+        
         let name = `無限塔 ${n}-${m}`;
         if (m === 3) name += ' (Boss)';
         else if (m === 2) name += ' (菁英)';
-
+        
         return { name: name, hp: hp, turns: 5 };
     }
 }

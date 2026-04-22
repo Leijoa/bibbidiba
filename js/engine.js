@@ -11,6 +11,12 @@ const ShackleHooks = {
     numberplunder: {
         filterDice: (d, meta) => d.val !== meta.targetNumber
     },
+    drowning: {
+        modifyBase: (d, meta, ctx) => {
+            if (d.val === 4 || d.val === 5) return { baseVal: 0, multi: 1 };
+            return null;
+        }
+    },
     parityfear: {
         modifyBase: (d, meta, ctx) => {
             if (meta.fearType === 'odd' && d.val % 2 !== 0) return { baseVal: 0, multi: 0 };
@@ -43,20 +49,73 @@ const ShackleHooks = {
             if (res.tagD.name !== '無') res.tagD.multi = 1.0;
             res.globalNotes.push('【平庸之惡】發動: D區倍率強制為 1.0。');
         }
+    },
+    shortcircuit: {
+        postCalc: (res) => {
+            res.globalMulti = Math.max(1.0, res.globalMulti - 0.5);
+            res.globalNotes.push('【短路】發動: 總倍率 -0.5x。');
+        }
+    },
+    badluck: {
+        postCalc: (res, meta, ctx) => {
+            let count1 = ctx.workingDice.filter(d => d.val === 1).length;
+            if (count1 > 0) {
+                res.globalMulti = Math.max(1.0, res.globalMulti - (count1 * 0.1));
+                res.globalNotes.push(`【霉運】發動: 扣除 ${count1 * 0.1}x 總倍率。`);
+            }
+        }
+    },
+    lonely: {
+        postCalc: (res, meta, ctx) => {
+            let usedIds = new Set();
+            
+            // Reconstruct used ids from matched values.
+            // Because used arrays just contain numbers, we have to match them greedily back to dice.
+            let availableDice = [...ctx.workingDice];
+            
+            const markUsed = (usedVals) => {
+                if (!usedVals) return;
+                usedVals.forEach(v => {
+                    let idx = availableDice.findIndex(d => d.val === v);
+                    if (idx !== -1) {
+                        usedIds.add(availableDice[idx].id);
+                        availableDice.splice(idx, 1);
+                    }
+                });
+            };
+
+            markUsed(res.tagA.used);
+            markUsed(res.tagB.used);
+            markUsed(res.tagC.used);
+            markUsed(res.tagD.used);
+
+            let penalty = 0;
+            ctx.workingDice.forEach(d => {
+                if (!usedIds.has(d.id)) {
+                    penalty += ctx.baseContributions[d.id] || 0;
+                }
+            });
+
+            if (penalty > 0) {
+                res.totalBase = Math.max(0, res.totalBase - penalty);
+                res.globalNotes.push(`【孤立】發動: 散牌不計入基礎點數。`);
+            }
+        }
     }
 };
 
-function applyShacklePostHooks(scoreResult, shackleConfig) {
+function applyShacklePostHooks(scoreResult, shackleConfig, workingDice, baseContributions) {
     if (!shackleConfig) return;
-
+    
     // Some shackles just need notes pushed if they operated in pre-hooks
     if (shackleConfig.id === 'blackhole') scoreResult.globalNotes.push('【黑洞】發動: 所有的 8 變成 1。');
     if (shackleConfig.id === 'parityfear') scoreResult.globalNotes.push(`【奇/偶數恐懼】發動: ${shackleConfig.fearType === 'odd' ? '奇數' : '偶數'}點數歸零。`);
     if (shackleConfig.id === 'numberplunder') scoreResult.globalNotes.push(`【數字掠奪】發動: 數字 ${shackleConfig.targetNumber} 視為廢牌。`);
-
+    if (shackleConfig.id === 'drowning') scoreResult.globalNotes.push(`【沉溺】發動: 4 和 5 點數歸零。`);
+    
     let hookDef = ShackleHooks[shackleConfig.id];
     if (hookDef && hookDef.postCalc) {
-        hookDef.postCalc(scoreResult, shackleConfig);
+        hookDef.postCalc(scoreResult, shackleConfig, { workingDice, baseContributions });
     }
 }
 
@@ -67,7 +126,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].preDice) {
         workingDice = ShackleHooks[shackleConfig.id].preDice(workingDice, shackleConfig);
     }
-
+    
     if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].filterDice) {
         workingDice = workingDice.filter(d => ShackleHooks[shackleConfig.id].filterDice(d, shackleConfig));
     }
@@ -76,11 +135,14 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     workingDice.forEach(d => counts[d.val]++);
 
     let totalBase = 0;
+    let baseContributions = {};
+
+    let isExploited = shackleConfig && shackleConfig.id === 'exploitation';
 
     workingDice.forEach(d => {
         let multi = 1;
         let v = d.val;
-        let baseVal = v;
+        let baseVal = v; 
 
         let hookResult = null;
         if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].modifyBase) {
@@ -91,15 +153,19 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
             baseVal = hookResult.baseVal;
             multi = hookResult.multi;
         } else {
-            if (playerRelics.includes(`b${v}`)) baseVal = relicBaseVals[v];
-            if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= 5.0;
-            if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= 4.5;
-            if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= 4.0;
-            if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= 2.5;
-            if (v % 2 === 0 && playerRelics.includes('even')) multi *= 2.5;
+            if (playerRelics.includes(`b${v}`) && (!shackleConfig || shackleConfig.id !== 'oblivion')) {
+                baseVal = relicBaseVals[v];
+            }
+            if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= (isExploited ? 2.5 : 5.0);
+            if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= (isExploited ? 2.25 : 4.5);
+            if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= (isExploited ? 2.0 : 4.0);
+            if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= (isExploited ? 1.25 : 2.5);
+            if (v % 2 === 0 && playerRelics.includes('even')) multi *= (isExploited ? 1.25 : 2.5);
         }
 
-        totalBase += (baseVal * multi);
+        let contribution = baseVal * multi;
+        baseContributions[d.id] = contribution;
+        totalBase += contribution;
     });
 
     // --- 陣列配對輔助函式 ---
@@ -300,6 +366,9 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     let globalNotes = [];
     let baseABCD = 1.0;
 
+    if (shackleConfig && shackleConfig.id === 'oblivion') globalNotes.push('【忘卻】發動: 無視遺物基礎點數。');
+    if (isExploited) globalNotes.push('【剝削】發動: 遺物倍率減半。');
+
     if (playerRelics.includes('order')) {
         baseABCD = (tagA.multi + tagB.multi) * tagC.multi * tagD.multi;
         globalNotes.push('【寬容】發動: 絕對秩序只要七顆即可發動。');
@@ -309,29 +378,34 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     // ★ 更新：【雷爪獅的祝福】條件改為場上有 1
     if (playerRelics.includes('pansy') && counts[1] > 0) {
-        globalMulti *= 3.0;
-        globalNotes.push('【雷爪獅的祝福】 x3.0');
+        let amt = isExploited ? 1.5 : 3.0;
+        globalMulti *= amt;
+        globalNotes.push(`【雷爪獅的祝福】 x${amt.toFixed(1)}`);
     }
 
     // ★ 新增：【捧夠的祝福】條件為場上有 8
     if (playerRelics.includes('pongo') && counts[8] > 0) {
-        globalMulti *= 3.0;
-        globalNotes.push('【捧夠的祝福】 x3.0');
+        let amt = isExploited ? 1.5 : 3.0;
+        globalMulti *= amt;
+        globalNotes.push(`【捧夠的祝福】 x${amt.toFixed(1)}`);
     }
 
     if (playerRelics.includes('highlow') && counts[1] > 0 && counts[8] > 0) {
-        globalMulti *= 1.5;
-        globalNotes.push('【高低差】 x1.5');
+        let amt = isExploited ? 1.25 : 1.5;
+        globalMulti *= amt;
+        globalNotes.push(`【高低差】 x${amt.toFixed(2)}`);
     }
 
     if (playerRelics.includes('laststand') && rollsLeft === 0) {
-        globalMulti *= 1.5;
-        globalNotes.push('【破釜沉舟】 x1.5');
+        let amt = isExploited ? 1.25 : 1.5;
+        globalMulti *= amt;
+        globalNotes.push(`【破釜沉舟】 x${amt.toFixed(2)}`);
     }
 
     if (playerRelics.includes('allin') && playerHp === 1) {
-        globalMulti *= 2.5;
-        globalNotes.push('【孤注一擲】 x2.5');
+        let amt = isExploited ? 1.25 : 2.5;
+        globalMulti *= amt;
+        globalNotes.push(`【孤注一擲】 x${amt.toFixed(2)}`);
     }
 
     let rerollMulti = 1.0 + (rollsLeft * 0.5);
@@ -344,9 +418,17 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         totalBase, tagA, tagB, tagC, tagD, globalMulti, globalNotes, finalMultiplier: 1.0, finalScore: 0
     };
 
-    applyShacklePostHooks(result, shackleConfig);
+    applyShacklePostHooks(result, shackleConfig, workingDice, baseContributions);
 
     result.finalMultiplier = (playerRelics.includes('order') ? (result.tagA.multi + result.tagB.multi) * result.tagC.multi * result.tagD.multi : result.tagA.multi * result.tagB.multi * result.tagC.multi * result.tagD.multi) * result.globalMulti;
+    
+    if (shackleConfig && shackleConfig.id === 'hardcap') {
+        if (result.finalMultiplier > 10.0) {
+            result.finalMultiplier = 10.0;
+            result.globalNotes.push('【上限鎖死】發動: 總倍率鎖死為 x10.0。');
+        }
+    }
+    
     result.finalScore = result.totalBase * result.finalMultiplier;
 
     return result;

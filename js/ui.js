@@ -112,24 +112,24 @@ export function updateHeaderUI(player, stage) {
         let m = ((infiniteLevel - 1) % 3) + 1;
         el.stageInfo.innerText = `無限塔 ${n}-${m}`;
     }
-
+    
     let maxHp = 3;
     if (window.getStageActiveShackle && window.getStageActiveShackle() === 'wither') {
         maxHp = 1;
     }
-
+    
     el.playerHp.innerText = `${player.hp}/${maxHp}`;
     el.playerGold.innerText = player.gold;
 }
 
 export function updateEnemyUI(stage) {
     let enemy = getEnemy(stage.level);
-
+    
     let shackleHtml = '';
     if (stage.activeShackle) {
         shackleHtml = `<span onclick="window.showShackleInfo('${stage.activeShackle}')" class="ml-2 bg-slate-700/80 hover:bg-slate-600 text-[10px] md:text-xs text-amber-300 px-1.5 py-0.5 rounded cursor-pointer border border-amber-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 枷鎖</span>`;
     }
-
+    
     el.enemyName.innerHTML = `⚔️ ${enemy.name}${shackleHtml}`;
 
     el.enemyName.className = "text-xl font-bold flex-1 flex items-center";
@@ -267,9 +267,9 @@ export function renderDice(battle, activeHighlight) {
         }
 
         let octagonClip = "[clip-path:polygon(29%_0%,71%_0%,100%_29%,100%_71%,71%_100%,29%_100%,0%_71%,0%_29%)]";
-
+        
         let valDisplay = d.val;
-
+        
         // UI Hook: illusion - fake numbers
         if (shackleId === 'illusion' && !d.locked && battle.state !== 'IDLE' && battle.state !== 'ROLLING') {
             valDisplay = shackleMeta && shackleMeta.fakeNumber ? shackleMeta.fakeNumber : 8;
@@ -575,6 +575,6 @@ export function renderCollectionModal(tab) {
         });
         html += `</div>`;
     }
-
+    
     el.collectionContent.innerHTML = html;
 }
