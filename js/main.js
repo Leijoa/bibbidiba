@@ -6,13 +6,75 @@ import * as Audio from './audio.js';
 
 // --- 遊戲狀態 ---
 let player = { hp: 3, gold: 0, relics: [], maxRolls: 2 };
-let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0 };
+let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null };
 let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} })), rollsLeft: 0, scoreResult: null };
 let shopItems = [];
 let shopRerollsUsed = 0;
 let activeHighlight = null;
 const SAVE_KEY = 'bibbidiba_save_v30';
 const HISTORY_KEY = 'bibbidiba_history_v30';
+const COLLECTION_KEY = 'bibbidiba_collection_v35';
+
+// 收集冊狀態
+let collection = {
+    hands: [],
+    relics: [],
+    shackles: []
+};
+
+// --- 安全存儲解析 (Secure Storage Parsing) ---
+function secureParseStorage(key, fallbackValue, validatorFn = null) {
+    try {
+        const data = localStorage.getItem(key);
+        if (!data) return fallbackValue;
+
+        const parsed = JSON.parse(data);
+
+        // Basic type check to prevent prototype pollution or non-object evaluation
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed) !== Array.isArray(fallbackValue)) {
+            console.warn(`[Security] Invalid structure for ${key}, falling back to default.`);
+            return fallbackValue;
+        }
+
+        // Custom validation (schema checking) if provided
+        if (validatorFn && !validatorFn(parsed)) {
+             console.warn(`[Security] Validation failed for ${key}, falling back to default.`);
+             return fallbackValue;
+        }
+
+        return parsed;
+    } catch (e) {
+        console.error(`[Security] JSON parse error for ${key}:`, e);
+        return fallbackValue;
+    }
+}
+
+function loadCollection() {
+    collection = secureParseStorage(COLLECTION_KEY, { hands: [], relics: [], shackles: [] }, (data) => {
+        return Array.isArray(data.hands) && Array.isArray(data.relics) && Array.isArray(data.shackles);
+    });
+}
+
+function saveCollection() {
+    localStorage.setItem(COLLECTION_KEY, JSON.stringify(collection));
+}
+
+function unlockCollectionItem(type, id) {
+    if (type === 'hand' && !collection.hands.includes(id)) {
+        collection.hands.push(id);
+        saveCollection();
+    } else if (type === 'relic' && !collection.relics.includes(id)) {
+        collection.relics.push(id);
+        saveCollection();
+    } else if (type === 'shackle' && !collection.shackles.includes(id)) {
+        collection.shackles.push(id);
+        saveCollection();
+    }
+}
+
+window.unlockCollectionItem = unlockCollectionItem; // Export for external usage if needed
+window.getCollection = () => collection;
+window.getStageActiveShackle = () => stage.activeShackle;
 
 // --- 存檔系統 (Save System) ---
 function saveGame() {
@@ -23,7 +85,8 @@ function saveGame() {
             level: stage.level,
             enemyMaxHp: stage.enemyMaxHp,
             enemyHp: stage.enemyHp,
-            turnsLeft: stage.turnsLeft
+            turnsLeft: stage.turnsLeft,
+            activeShackle: stage.activeShackle
         },
         battle: {
             state: battle.state,
@@ -37,14 +100,17 @@ function saveGame() {
 }
 
 function loadGame() {
-    const data = localStorage.getItem(SAVE_KEY);
-    if (data) {
-        const parsed = JSON.parse(data);
+    const parsed = secureParseStorage(SAVE_KEY, null, (data) => {
+        return data && typeof data.player === 'object' && typeof data.stage === 'object' && typeof data.battle === 'object';
+    });
+
+    if (parsed) {
         player = parsed.player;
         UI.el.titleScreen.classList.add('hidden');
 
         if (parsed.shop && parsed.shop.active) {
             stage.level = parsed.stage.level;
+            stage.activeShackle = parsed.stage.activeShackle || null;
             let enemy = getEnemy(stage.level);
             stage.enemyMaxHp = enemy.hp;
             stage.enemyHp = 0; // 已經擊敗
@@ -95,11 +161,32 @@ function initTitleScreen() {
 
     if (UI.el.btnHistory && UI.el.historyModal && UI.el.btnCloseHistory) {
         UI.el.btnHistory.onclick = () => {
-            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            let history = secureParseStorage(HISTORY_KEY, [], (data) => Array.isArray(data));
             UI.renderHistoryModal(history);
             UI.el.historyModal.classList.remove('hidden');
         };
         UI.el.btnCloseHistory.onclick = () => UI.el.historyModal.classList.add('hidden');
+    }
+
+    if (UI.el.btnCollection && UI.el.collectionModal && UI.el.btnCloseCollection) {
+        let currentTab = 'hands';
+        const updateTabUI = () => {
+            UI.el.tabHands.className = currentTab === 'hands' ? "flex-1 py-2 text-sm font-bold text-emerald-400 bg-slate-800 transition-colors border-b-2 border-emerald-500" : "flex-1 py-2 text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors border-b-2 border-transparent";
+            UI.el.tabRelics.className = currentTab === 'relics' ? "flex-1 py-2 text-sm font-bold text-emerald-400 bg-slate-800 transition-colors border-b-2 border-emerald-500" : "flex-1 py-2 text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors border-b-2 border-transparent";
+            UI.el.tabShackles.className = currentTab === 'shackles' ? "flex-1 py-2 text-sm font-bold text-emerald-400 bg-slate-800 transition-colors border-b-2 border-emerald-500" : "flex-1 py-2 text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors border-b-2 border-transparent";
+            UI.renderCollectionModal(currentTab);
+        };
+
+        UI.el.btnCollection.onclick = () => {
+            currentTab = 'hands';
+            updateTabUI();
+            UI.el.collectionModal.classList.remove('hidden');
+        };
+        UI.el.btnCloseCollection.onclick = () => UI.el.collectionModal.classList.add('hidden');
+
+        UI.el.tabHands.onclick = () => { currentTab = 'hands'; updateTabUI(); };
+        UI.el.tabRelics.onclick = () => { currentTab = 'relics'; updateTabUI(); };
+        UI.el.tabShackles.onclick = () => { currentTab = 'shackles'; updateTabUI(); };
     }
 
     UI.el.shopRerollBtn.onclick = () => window.rerollShop(false);
@@ -129,9 +216,30 @@ function initTitleScreen() {
     }
 }
 
+import { SHACKLE_DB } from './data.js';
+
 function initNewGame() {
     player = { hp: 3, gold: 20, relics: [], maxRolls: 2, highestDamage: 0, highestDamageCombo: '', isInfiniteMode: false };
     loadStage(0);
+}
+
+function assignShackleForStage(levelIndex) {
+    let shackleType = null;
+    if (levelIndex < ENEMY_DB.length) {
+        if (levelIndex === 2) shackleType = 'light';
+        else if (levelIndex === 4) shackleType = 'heavy';
+    } else {
+        let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
+        let m = ((infiniteLevel - 1) % 3) + 1;
+        shackleType = (m === 3) ? 'heavy' : 'light';
+    }
+
+    if (shackleType) {
+        let candidates = SHACKLE_DB.filter(s => s.type === shackleType);
+        let selected = candidates[Math.floor(Math.random() * candidates.length)];
+        return selected.id;
+    }
+    return null;
 }
 
 function loadStage(levelIndex, isLoad = false, parsedData = null) {
@@ -143,6 +251,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
     if (isLoad && parsedData && parsedData.stage) {
         stage.enemyHp = parsedData.stage.enemyHp ?? enemy.hp;
         stage.turnsLeft = parsedData.stage.turnsLeft ?? enemy.turns;
+        stage.activeShackle = parsedData.stage.activeShackle || null;
 
         if (parsedData.player && parsedData.player.isInfiniteMode !== undefined) {
             player.isInfiniteMode = parsedData.player.isInfiniteMode;
@@ -160,6 +269,21 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
     } else {
         stage.enemyHp = enemy.hp;
         stage.turnsLeft = enemy.turns;
+        stage.activeShackle = assignShackleForStage(levelIndex);
+
+        if (stage.activeShackle === 'timecompress') {
+            stage.turnsLeft = 2;
+        }
+
+        if (stage.activeShackle) {
+            unlockCollectionItem('shackle', stage.activeShackle);
+            let sDef = SHACKLE_DB.find(s => s.id === stage.activeShackle);
+            if (sDef) {
+                setTimeout(() => {
+                    UI.showToast(`⚠️ 發現枷鎖！\n${sDef.name}: ${sDef.desc}`);
+                }, 500);
+            }
+        }
     }
 
     UI.el.shopOverlay.classList.add('hidden');
@@ -176,7 +300,13 @@ function startTurn() {
     if (stage.turnsLeft <= 0) return gameOver("回合耗盡，未能擊敗敵人！");
     battle.state = 'IDLE';
     activeHighlight = null;
-    player.maxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2);
+
+    let baseMaxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2);
+    if (stage.activeShackle === 'fatigue') {
+        baseMaxRolls = Math.max(0, baseMaxRolls - 1);
+    }
+
+    player.maxRolls = baseMaxRolls;
     battle.rollsLeft = player.maxRolls;
     battle.dice = battle.dice.map((d, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} }));
     battle.scoreResult = null;
@@ -197,7 +327,35 @@ function renderAll() {
 // --- 註冊給 UI onclick 呼叫的全域函式 ---
 window.toggleLock = function(idx) {
     if (battle.state === 'WAIT_ACTION' && !activeHighlight) {
-        battle.dice[idx].locked = !battle.dice[idx].locked;
+        if (stage.activeShackle === 'fragile') {
+            return UI.showToast("⚠️ 【易碎骰子】無法鎖定骰子！");
+        }
+
+        let willLock = !battle.dice[idx].locked;
+
+        if (willLock) {
+            if (stage.activeShackle === 'sticky') {
+                if (player.gold >= 1) {
+                    player.gold -= 1;
+                    UI.updateHeaderUI(player, stage);
+                } else {
+                    return UI.showToast("⚠️ 金幣不足，無法鎖定！(需要 1 金幣)");
+                }
+            } else if (stage.activeShackle === 'rusty') {
+                let hasLockedAny = battle.dice.some(d => d.locked);
+                if (!hasLockedAny && player.gold === 0) {
+                    if (player.hp > 1) {
+                        player.hp -= 1;
+                        UI.updateHeaderUI(player, stage);
+                        UI.showToast("🩸 【生鏽的鎖】扣除 1 HP！");
+                    } else {
+                        return UI.showToast("⚠️ HP 不足，無法鎖定！");
+                    }
+                }
+            }
+        }
+
+        battle.dice[idx].locked = willLock;
         saveGame();
         UI.renderDice(battle, activeHighlight);
         const diceEl = document.getElementById(`dice-element-${idx}`);
@@ -221,7 +379,18 @@ window.executeRoll = function(isInitial = false) {
     if (!isInitial && battle.rollsLeft <= 0) return;
     if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') return;
 
-    if (!isInitial) battle.rollsLeft--;
+    if (!isInitial) {
+        if (stage.activeShackle === 'greedy') {
+            if (player.gold >= 2) {
+                player.gold -= 2;
+                UI.updateHeaderUI(player, stage);
+            } else {
+                return UI.showToast("⚠️ 金幣不足，無法重骰！(需要 2 金幣)");
+            }
+        }
+        battle.rollsLeft--;
+    }
+
     battle.state = 'ROLLING';
     activeHighlight = null;
     battle.dice.forEach(d => { d.matchedGroups = {A:false, B:false, C:false, D:false}; });
@@ -239,7 +408,7 @@ window.executeRoll = function(isInitial = false) {
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
 
-            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp);
+            battle.scoreResult = calculateEngineScore(battle.dice, player.relics, battle.rollsLeft, player.hp, stage.activeShackle);
 
             const applyMatch = (usedVals, groupName) => {
                 if(!usedVals || usedVals.length === 0) return;
@@ -288,12 +457,18 @@ window.fireAttack = function() {
     if (dmg > (player.highestDamage || 0)) {
         player.highestDamage = dmg;
         let combos = [];
-        if (battle.scoreResult.tagA.name !== '無') combos.push(battle.scoreResult.tagA.name);
-        if (battle.scoreResult.tagB.name !== '無') combos.push(battle.scoreResult.tagB.name);
-        if (battle.scoreResult.tagC.name !== '無') combos.push(battle.scoreResult.tagC.name);
-        if (battle.scoreResult.tagD.name !== '無') combos.push(battle.scoreResult.tagD.name);
+        if (battle.scoreResult.tagA.name !== '無') { combos.push(battle.scoreResult.tagA.name); }
+        if (battle.scoreResult.tagB.name !== '無') { combos.push(battle.scoreResult.tagB.name); }
+        if (battle.scoreResult.tagC.name !== '無') { combos.push(battle.scoreResult.tagC.name); }
+        if (battle.scoreResult.tagD.name !== '無') { combos.push(battle.scoreResult.tagD.name); }
         player.highestDamageCombo = combos.join(' + ') || '無';
     }
+
+    // Always unlock hands regardless of highest damage
+    if (battle.scoreResult.tagA.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagA.name);
+    if (battle.scoreResult.tagB.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagB.name);
+    if (battle.scoreResult.tagC.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagC.name);
+    if (battle.scoreResult.tagD.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagD.name);
 
     UI.el.battleArea.classList.remove('shake-hard');
     void UI.el.battleArea.offsetWidth;
@@ -326,6 +501,15 @@ window.fireAttack = function() {
             }
         }
         else {
+            if (stage.activeShackle === 'vampire') {
+                let lostGold = Math.min(5, player.gold);
+                if (lostGold > 0) {
+                    player.gold -= lostGold;
+                    UI.updateHeaderUI(player, stage);
+                    UI.showToast(`🩸 【吸血鬼】發動：失去 ${lostGold} 金幣！`);
+                }
+            }
+
             stage.turnsLeft--;
             if (stage.turnsLeft <= 0) {
                 player.hp--;
@@ -333,6 +517,7 @@ window.fireAttack = function() {
                 else {
                     UI.showToast(`⚠️ 未在回合內擊殺！\n扣除 1 HP，重新挑戰！`, () => {
                         stage.turnsLeft = getEnemy(stage.level).turns;
+                        if (stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
                         startTurn();
                     });
                 }
@@ -366,6 +551,7 @@ function enemyDefeated() {
         if (availableForShop.length > 0) {
             let randomRelic = availableForShop[Math.floor(Math.random() * availableForShop.length)];
             player.relics.push(randomRelic.id);
+            unlockCollectionItem('relic', randomRelic.id);
             UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
             return;
         }
@@ -408,6 +594,7 @@ window.buyItem = function(idx) {
         Audio.playBuySound();
         player.gold -= r.price;
         player.relics.push(r.id);
+        unlockCollectionItem('relic', r.id);
         shopItems.splice(idx, 1);
         UI.el.shopGold.innerText = player.gold;
         // ★ 修復：同步更新頂部資訊列的金幣
@@ -421,7 +608,7 @@ window.buyItem = function(idx) {
 function nextStage() { loadStage(stage.level + 1); }
 
 function recordHistory(win) {
-    let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    let history = secureParseStorage(HISTORY_KEY, [], (data) => Array.isArray(data));
     let currentRecord = {
         win: win,
         isInfiniteMode: player.isInfiniteMode,
@@ -479,4 +666,5 @@ function gameWin() {
 }
 
 // 啟動遊戲
+loadCollection();
 initTitleScreen();

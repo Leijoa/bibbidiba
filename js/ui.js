@@ -1,5 +1,5 @@
 // js/ui.js
-import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, getEnemy } from './data.js';
+import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, SHACKLE_DB, getEnemy } from './data.js';
 
 // 緩存 DOM 元素
 export const el = {
@@ -35,7 +35,14 @@ export const el = {
     historyModal: document.getElementById('history-modal'),
     historyContent: document.getElementById('history-content'),
     btnCloseHistory: document.getElementById('btn-close-history'),
-    endStats: document.getElementById('end-stats')
+    endStats: document.getElementById('end-stats'),
+    btnCollection: document.getElementById('btn-collection'),
+    collectionModal: document.getElementById('collection-modal'),
+    btnCloseCollection: document.getElementById('btn-close-collection'),
+    collectionContent: document.getElementById('collection-content'),
+    tabHands: document.getElementById('tab-hands'),
+    tabRelics: document.getElementById('tab-relics'),
+    tabShackles: document.getElementById('tab-shackles')
 };
 
 if (document.getElementById('btn-rules')) {
@@ -101,7 +108,9 @@ export function updateHeaderUI(player, stage) {
         el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
     } else {
         let infiniteLevel = stage.level - ENEMY_DB.length + 1;
-        el.stageInfo.innerText = `無限塔 第 ${infiniteLevel} 層`;
+        let n = Math.floor((infiniteLevel - 1) / 3) + 1;
+        let m = ((infiniteLevel - 1) % 3) + 1;
+        el.stageInfo.innerText = `無限塔 ${n}-${m}`;
     }
     el.playerHp.innerText = `${player.hp}/3`;
     el.playerGold.innerText = player.gold;
@@ -109,9 +118,15 @@ export function updateHeaderUI(player, stage) {
 
 export function updateEnemyUI(stage) {
     let enemy = getEnemy(stage.level);
-    el.enemyName.innerText = `⚔️ ${enemy.name}`;
 
-    el.enemyName.className = "text-xl font-bold flex-1";
+    let shackleHtml = '';
+    if (stage.activeShackle) {
+        shackleHtml = `<span onclick="window.showShackleInfo('${stage.activeShackle}')" class="ml-2 bg-slate-700/80 hover:bg-slate-600 text-[10px] md:text-xs text-amber-300 px-1.5 py-0.5 rounded cursor-pointer border border-amber-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 枷鎖</span>`;
+    }
+
+    el.enemyName.innerHTML = `⚔️ ${enemy.name}${shackleHtml}`;
+
+    el.enemyName.className = "text-xl font-bold flex-1 flex items-center";
     if (stage.level >= ENEMY_DB.length) {
         el.enemyName.classList.add("text-fuchsia-400");
     } else if (stage.level === 4) {
@@ -129,6 +144,25 @@ export function updateEnemyUI(stage) {
     el.enemyHpBar.style.width = `${pct}%`;
     el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
 }
+
+window.showShackleInfo = function(id) {
+    let s = SHACKLE_DB.find(x => x.id === id);
+    if(s) {
+        let container = document.createElement('div');
+        let nameSpan = document.createElement('span');
+        nameSpan.className = s.type === 'heavy' ? "text-red-400 font-black" : "text-amber-400 font-black";
+        nameSpan.textContent = s.name;
+
+        let descSpan = document.createElement('span');
+        descSpan.className = "text-sm md:text-lg text-slate-200 mt-2 block";
+        descSpan.textContent = s.desc;
+
+        container.appendChild(nameSpan);
+        container.appendChild(descSpan);
+
+        showToast(container);
+    }
+};
 
 // --- ★ 任務4：遺物點擊顯示說明 ---
 export function renderInventory(player) {
@@ -297,13 +331,19 @@ export function renderScore(battle, activeHighlight) {
     `;
 
     if (el.finalScoreValue) {
-        el.finalScoreValue.innerText = Math.floor(res.finalScore).toLocaleString();
-        if(res.finalMultiplier > 50) {
-            el.finalScoreValue.classList.add('text-amber-300');
-            el.finalScoreValue.classList.remove('text-white');
-        } else {
+        if (window.getStageActiveShackle && window.getStageActiveShackle() === 'bluff') {
+            el.finalScoreValue.innerText = '???';
             el.finalScoreValue.classList.add('text-white');
             el.finalScoreValue.classList.remove('text-amber-300');
+        } else {
+            el.finalScoreValue.innerText = Math.floor(res.finalScore).toLocaleString();
+            if(res.finalMultiplier > 50) {
+                el.finalScoreValue.classList.add('text-amber-300');
+                el.finalScoreValue.classList.remove('text-white');
+            } else {
+                el.finalScoreValue.classList.add('text-white');
+                el.finalScoreValue.classList.remove('text-amber-300');
+            }
         }
     }
 }
@@ -405,4 +445,90 @@ export function renderEndGameStats(highestDamage, highestDamageCombo, relics) {
             </div>
         </div>
     `;
+}
+
+// --- 收集冊渲染 ---
+export function renderCollectionModal(tab) {
+    const coll = window.getCollection ? window.getCollection() : { hands: [], relics: [], shackles: [] };
+    let html = '';
+
+    if (tab === 'hands') {
+        const groups = [
+            { key: 'groupA', title: '【A區】同數頻率' },
+            { key: 'groupB', title: '【B區】順子連號' },
+            { key: 'groupC', title: '【C區】複合牌型' },
+            { key: 'groupD', title: '【D區】極端盤面' }
+        ];
+        groups.forEach(g => {
+            html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-2 mb-1 border-b border-slate-700 pb-1">${g.title}</h3>`;
+            html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">`;
+            RULE_DB[g.key].forEach(rule => {
+                const unlocked = coll.hands.includes(rule.name);
+                const nameStr = unlocked ? `${rule.name} <span class="text-emerald-400 text-xs ml-1">✅</span>` : `???`;
+                const descStr = unlocked ? rule.desc : '未解鎖';
+                const opacity = unlocked ? 'opacity-100' : 'opacity-50 grayscale';
+                html += `
+                <div class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700 ${opacity}">
+                    <div>
+                        <div class="text-sm md:text-base font-bold text-slate-200">${nameStr}</div>
+                        <div class="text-[10px] md:text-sm text-slate-400">${descStr}</div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        });
+    } else if (tab === 'relics') {
+        html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">`;
+        RELIC_DB.forEach(r => {
+            const unlocked = coll.relics.includes(r.id);
+            if (unlocked) {
+                let style = RARITY[r.rarity] || RARITY[1];
+                html += `
+                <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-sm md:text-base font-black ${style.color}">${r.name} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
+                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-300 font-bold">${r.desc}</p>
+                </div>`;
+            } else {
+                html += `
+                <div class="bg-slate-900 p-2 rounded-xl border border-slate-700 flex flex-col justify-between relative overflow-hidden opacity-50">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-sm md:text-base font-black text-slate-500">???</h3>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 font-bold">未解鎖遺物</p>
+                </div>`;
+            }
+        });
+        html += `</div>`;
+    } else if (tab === 'shackles') {
+        html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">`;
+        SHACKLE_DB.forEach(s => {
+            const unlocked = coll.shackles.includes(s.id);
+            if (unlocked) {
+                let colorClass = s.type === 'heavy' ? "text-red-400" : "text-amber-400";
+                let typeLabel = s.type === 'heavy' ? "重度" : "輕度";
+                html += `
+                <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-sm md:text-base font-black ${colorClass}">${s.name} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
+                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-500 font-bold">${typeLabel}</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-300 font-bold">${s.desc}</p>
+                </div>`;
+            } else {
+                html += `
+                <div class="bg-slate-900 p-2 rounded-xl border border-slate-700 flex flex-col justify-between relative overflow-hidden opacity-50">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-sm md:text-base font-black text-slate-500">???</h3>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 font-bold">未解鎖枷鎖</p>
+                </div>`;
+            }
+        });
+        html += `</div>`;
+    }
+
+    el.collectionContent.innerHTML = html;
 }

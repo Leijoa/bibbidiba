@@ -3,7 +3,7 @@
 
 const relicBaseVals = { 1: 10, 2: 10, 3: 11, 4: 11, 5: 11, 6: 11, 7: 12, 8: 12 };
 
-export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3) {
+export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, activeShackleId = null) {
     let counts = new Array(9).fill(0);
     dice.forEach(d => counts[d.val]++);
 
@@ -150,6 +150,10 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     else if (maxFreq >= 3) tagA = { name: '三同', multi: 2.5, used: getFreqVals(3) };
     else if (maxFreq >= 2) tagA = { name: '對子', multi: 1.5, used: getFreqVals(2) };
 
+    if (activeShackleId === 'isolated' && tagA.name !== '無') {
+        tagA.multi /= 2.0;
+    }
+
     // --- 判斷 B 區 ---
     let tagB = { name: '無', multi: 1.0, used: [] };
     let tempUsed;
@@ -223,10 +227,17 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     else if (freqs.length === 8) tagD = { name: '全異', multi: 2.5, used: dice.map(d=>d.val) };
     else if (counts[1] === 0 && counts[8] === 0) tagD = { name: '中庸之道', multi: 2.0, used: dice.map(d=>d.val) };
 
+    if (activeShackleId === 'banality' && tagD.name !== '無') {
+        tagD.multi = 1.0;
+    }
+
     // --- 總乘區計算 ---
     let globalMulti = 1.0;
     let globalNotes = [];
     let baseABCD = 1.0;
+
+    if (activeShackleId === 'isolated') globalNotes.push('【孤立無援】發動: A區倍率減半。');
+    if (activeShackleId === 'banality') globalNotes.push('【平庸之惡】發動: D區倍率強制為 1.0。');
 
     if (playerRelics.includes('order')) {
         baseABCD = (tagA.multi + tagB.multi) * tagC.multi * tagD.multi;

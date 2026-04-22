@@ -50,14 +50,40 @@ export const ENEMY_DB = [
     { name: '創世神 (最終Boss)', hp: 500000, turns: 5 },
 ];
 
+export const SHACKLE_DB = [
+    // 輕度枷鎖 (Light Shackles)
+    { id: 'bluff', name: '【虛張聲勢】', desc: '結算時隱藏預估造成的最終傷害數值。', type: 'light' },
+    { id: 'sticky', name: '【黏稠液體】', desc: '每次鎖定骰子時，必須花費 1 金幣。', type: 'light' },
+    { id: 'greedy', name: '【貪婪稅】', desc: '每次重骰需額外花費 2 金幣。', type: 'light' },
+    { id: 'vampire', name: '【吸血鬼】', desc: '如果在敵方回合結束時仍未將其擊敗，失去 5 金幣。', type: 'light' },
+    { id: 'rusty', name: '【生鏽的鎖】', desc: '每回合的第一次鎖定，如果金幣為 0，則扣除 1 HP。', type: 'light' },
+
+    // 重度枷鎖 (Heavy Shackles)
+    { id: 'fragile', name: '【易碎骰子】', desc: '完全無法使用鎖定功能。', type: 'heavy' },
+    { id: 'fatigue', name: '【沉重疲勞】', desc: '玩家的最大重骰次數 - 1。', type: 'heavy' },
+    { id: 'isolated', name: '【孤立無援】', desc: 'A區 (同數頻率) 的倍率減半。', type: 'heavy' },
+    { id: 'banality', name: '【平庸之惡】', desc: 'D區 (極端盤面) 的倍率強制為 1.0。', type: 'heavy' },
+    { id: 'timecompress', name: '【時間壓縮】', desc: '此關卡的限制回合強制縮減為 2 回合。', type: 'heavy' }
+];
+
 export function getEnemy(levelIndex) {
     if (levelIndex < ENEMY_DB.length) {
         return ENEMY_DB[levelIndex];
     } else {
         let baseHp = ENEMY_DB[ENEMY_DB.length - 1].hp;
         let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
+
+        // n-m format
+        let n = Math.floor((infiniteLevel - 1) / 3) + 1;
+        let m = ((infiniteLevel - 1) % 3) + 1;
+
         let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
-        return { name: `無限塔第 ${infiniteLevel} 層`, hp: hp, turns: 5 };
+
+        let name = `無限塔 ${n}-${m}`;
+        if (m === 3) name += ' (Boss)';
+        else if (m === 2) name += ' (菁英)';
+
+        return { name: name, hp: hp, turns: 5 };
     }
 }
 

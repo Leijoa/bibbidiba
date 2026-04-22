@@ -25,6 +25,9 @@
       <button id="btn-new-game" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(217,119,6,0.4)] text-lg">
         開始新遊戲
       </button>
+      <button id="btn-collection" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.4)] text-lg">
+        📖 收集冊
+      </button>
       <button id="btn-history" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(147,51,234,0.4)] text-lg">
         歷史牌局
       </button>
@@ -73,9 +76,9 @@
   </div>
 
   <main class="flex-grow flex flex-col lg:flex-row gap-1 overflow-hidden relative" id="main-container">
-    
+
     <div id="battle-area" class="flex-1 flex flex-col gap-1 overflow-y-auto">
-      
+
       <div class="bg-slate-800 p-1.5 md:p-3 rounded-lg border border-slate-700 shrink-0 relative shadow-md">
         <div class="flex justify-between items-center mb-1">
           <h2 class="text-sm md:text-lg font-bold text-red-300 flex items-center gap-1" id="enemy-name">⚔️ 史萊姆</h2>
@@ -104,13 +107,13 @@
           <div id="controls-container" class="flex flex-col gap-1 w-14 md:w-24 shrink-0 justify-center"></div>
         </div>
       </div>
-      
+
       <div id="inventory-container-old" class="hidden"></div>
     </div>
 
     <div id="score-area" class="w-full lg:w-80 bg-slate-800 p-1.5 md:p-3 rounded-lg border border-slate-700 flex flex-col shrink-0 shadow-md relative z-20">
       <div id="score-display"></div>
-      
+
       <div id="owned-relics-area" class="mt-1 border-t border-slate-700 pt-1 flex-grow overflow-y-auto">
           <div class="text-[9px] text-slate-500 font-bold mb-1 px-1">🎒 已持有遺物</div>
           <div id="inventory-grid" class="flex flex-wrap gap-1"></div>
@@ -138,7 +141,7 @@
       <div id="end-stats" class="flex flex-col gap-2 mb-6 text-sm md:text-base text-slate-300"></div>
       <button id="btn-restart" class="bg-white hover:bg-slate-200 text-slate-900 font-black py-3 px-8 rounded-full transition-transform hover:scale-105 active:scale-95 text-base shadow-xl mb-4">回到標題畫面</button>
       <button id="btn-infinite" class="hidden bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-8 rounded-full transition-transform hover:scale-105 active:scale-95 text-base shadow-xl mb-4">進入無限塔</button>
-      
+
       <div class="flex flex-col items-center text-slate-500 text-[10px] md:text-xs font-bold mt-2">
         <div class="flex gap-2">
           <span>作者:雷爪獅</span>
@@ -156,6 +159,21 @@
         <button id="btn-close-history" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
       </div>
       <div class="p-2 md:p-4 overflow-y-auto flex-grow text-xs md:text-sm flex flex-col gap-2" id="history-content"></div>
+    </div>
+  </div>
+
+  <div id="collection-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[80] flex items-center justify-center p-2 backdrop-blur-sm">
+    <div class="bg-slate-800 border-2 border-slate-600 rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-2 md:p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900 shrink-0">
+        <h2 class="text-base md:text-xl font-black text-emerald-400 flex items-center gap-2">📖 收集冊</h2>
+        <button id="btn-close-collection" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+      </div>
+      <div class="flex border-b border-slate-700 bg-slate-900 shrink-0">
+        <button id="tab-hands" class="flex-1 py-2 text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 active-tab transition-colors border-b-2 border-emerald-500">牌型</button>
+        <button id="tab-relics" class="flex-1 py-2 text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors border-b-2 border-transparent">遺物</button>
+        <button id="tab-shackles" class="flex-1 py-2 text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors border-b-2 border-transparent">枷鎖</button>
+      </div>
+      <div class="p-2 md:p-4 overflow-y-auto flex-grow text-xs md:text-sm flex flex-col gap-2" id="collection-content"></div>
     </div>
   </div>
 
