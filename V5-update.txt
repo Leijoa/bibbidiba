@@ -1,0 +1,333 @@
+接下來又要大改版了!V5版大更新
+
+1.所有版本的部分改成V5
+
+2.新增「遺物融合（Relic Fusion）」。且在收集冊加入此表。融合過後的遺物稀有度都視為「再生」
+
+商店 UI 修改： 當玩家持有材料 A 且商店出現材料 B 時，材料 B 應顯示「可融合」特效。購買後直接移除材料 A 並獲得融合遺物。
+在商店或是敵人掉落遺物的階段。只要獲得遺物的當下，湊齊融合條件，遺物就會自動融合!
+
+融合遺物名稱,融合材料 (A + B),覺醒成長效果 (Scaling Effect)
+1.【萬物之源】,【大一】+【大二】,"1, 2 的點數隨關卡層數(E)成長。公式：15+(E×2.5)。"
+2.【中流砥柱】,【大四】+【大五】,"4, 5 的點數倍率為 3x。每擊破一隻敵人，此倍率永久增加 +0.2x。"
+3.【登峰造極】,【大七】+【大八】,"7, 8 點數隨「目前持有的金幣」成長（每 20 金幣，基礎點數 +5）。"
+4.【微縮星雲】,【大三】+【小小】,"1, 2, 3 的倍率隨「目前無標籤骰子數」成長（每有一顆散牌，倍率 +1.0x）。"
+5.【六道輪迴】,【大六】+【六六大順】,散牌點數基礎為 20。盤面上每多一顆 6，此數值隨關卡層數(E)額外增加。
+6.【回收領主】,【拾荒者】+【VIP會員】,刷新商店不花錢。且每次點擊刷新，該局全域傷害永久 +1%。
+7.【五福中天】,【中中】+【五福臨門】,"4, 5 的倍率隨「5 的出現次數」累計成長。每出現過一次 5，倍率 +0.05x。"
+8.【黃金守財奴】,【存錢筒】+【投資達人】,取消重骰扣錢。每回合結束時，根據持有金幣獲得「複利」傷害加成。
+9.【等差死神】,【等差數列】+【四死如歸】,每多一種數字，點數總和隨關卡層數(E)成長（+8×E）。
+10.【帝國遺產】,【賞金獵人】+【幸運金幣】,戰鬥金幣獎勵隨「總累積金幣」成長（每賺過 1000 金，傷害 +20%）。
+11.【血色聖戰】,【雙面刃】+【幸運七】,2 的點數為 30。且每失去 1 點 HP，所有骰子基礎點數永久 +10。
+12.【混沌原力】,【奇數】+【偶數】,奇偶共生：若盤面 4 奇 4 偶，倍率隨「已擁有的遺物數量」成長。
+13.【天秤之極】,【寬容】+【極端份子】,絕對秩序門檻降至 6。倍率隨「已損生命值」成長（1 HP 時倍率翻 3 倍）。
+14.【孤傲戰神】,【孤注一擲】+【高低差】,若同時存在 1 和 8，傷害隨關卡層數(E)指數成長（1.5E）。
+15.【一念永恆】,【極限拉扯】+【一發入魂】,最後一擊且為無標籤時，傷害乘上「剩餘重骰次數的平方」。
+16.【微光聖戰】,【凡人微光】+【雙打冠軍】,弱勢牌型（對子）倍率隨「對戰回合數」成長。戰鬥拖越久，傷害越高。
+17.【凡骨奇蹟】,【大雜燴】+【平庸之善】,無標籤時，傷害隨「目前解鎖的牌型數量」成長。
+18.【泰坦之握】,【大大】+【破釜沉舟】,"6, 7, 8 基礎點數隨關卡層數(E)翻倍。對 Boss 傷害隨關卡額外增幅。"
+19.【無限數列】,【順子愛好者】+【反抗軍】,順子倍率隨擊殺數成長。
+
+
+
+3.請將牌型表中每種牌型依照倍率加上稀有度(普通、稀有、史詩、傳說)。例如'八重奏', '七同', '大滿貫', '雙子星', '兩極'為傳說牌型
+
+並將 data.js 中 SHACKLE_DB 裡 wrath（天譴）的 desc 修改為：
+'若結算時觸發傳說牌型，強制扣除 1 HP。'
+
+4.【程式修改需求】修復【破財消災】被反傷裝甲「連殺」的 Bug
+
+在 main.js 的 fireAttack 函式中，大約在結算反傷與死亡判定那裡（setTimeout 內部），程式寫了兩次死亡檢查，導致復活的玩家會因為過期的 playerDied 變數被二次擊殺。
+
+請將原本的這段程式碼：
+
+JavaScript
+if (player.hp <= 0) {
+    playerTakesFatalDamage("血量耗盡，旅程結束！");
+    if (player.hp <= 0) return;
+}
+if (playerDied) {
+    playerTakesFatalDamage("受到反傷，血量耗盡！");
+    if (player.hp <= 0) return;
+}
+合併並替換為以下寫法：
+
+JavaScript
+// 統一依據當下的真實 HP 進行一次性判定
+if (player.hp <= 0) {
+    // 根據 playerDied 來決定死因文字
+    let deathReason = playerDied ? "受到反傷，血量耗盡！" : "血量耗盡，旅程結束！";
+    playerTakesFatalDamage(deathReason);
+    
+    // 如果經過急救（破財消災）後 HP 仍然 <= 0，才中斷後續邏輯
+    if (player.hp <= 0) return; 
+}
+
+5.📝 給 Jules 的開發規格書：《比比丟八》10 層擴充與節奏重製
+Jules，我們對遊戲的整體節奏與經濟系統進行了大幅度的重構。目前的遊戲將擴充為 10 層，並且固定每回合只有 3 次攻擊機會，這會讓玩家的成型過程更平滑且刺激。以下是需要實作的具體細節：
+
+1. 🩸 關卡與敵人血量重構 (ENEMY_DB)
+請將 data.js 中的 ENEMY_DB 替換為以下陣列。注意所有的 turns 都已統一固定為 3。
+這包含了前期、中期、後期各一隻菁英怪，以及最後的 Boss。
+
+JavaScript
+// data.js
+export const ENEMY_DB = [
+    { name: '史萊姆', hp: 1000, turns: 3 },                  // Stage 1 (Index 0)
+    { name: '哥布林', hp: 2500, turns: 3 },                  // Stage 2 (Index 1)
+    { name: '巨石傀儡 (菁英)', hp: 6000, turns: 3 },           // Stage 3 (Index 2)
+    { name: '幽暗衛士', hp: 12000, turns: 3 },               // Stage 4 (Index 3)
+    { name: '吸血鬼男爵', hp: 25000, turns: 3 },             // Stage 5 (Index 4)
+    { name: '深淵魔龍 (菁英)', hp: 55000, turns: 3 },          // Stage 6 (Index 5)
+    { name: '墮落天使', hp: 100000, turns: 3 },              // Stage 7 (Index 6)
+    { name: '虛空行者', hp: 200000, turns: 3 },              // Stage 8 (Index 7)
+    { name: '混沌騎士 (菁英)', hp: 320000, turns: 3 },         // Stage 9 (Index 8)
+    { name: '創世神 (最終Boss)', hp: 500000, turns: 3 },     // Stage 10 (Index 9)
+];
+2. 💰 經濟系統：動態金幣與菁英懸賞
+因為關卡變多，為了避免後期金幣通膨，我們改變了基礎金幣的算法，並增加了打贏菁英/Boss 的懸賞獎金。
+請在 main.js 的 enemyDefeated() 函式中，修改金幣計算邏輯：
+
+JavaScript
+// main.js -> enemyDefeated() 內部
+
+// 1. 動態基礎金幣：起步 10，每層遞增 2
+let baseEarn = 10 + (stage.level * 2);
+
+// 2. 菁英/Boss 懸賞判定 (Index 2, 5, 8, 9)
+let isEliteOrBoss = [2, 5, 8, 9].includes(stage.level);
+if (isEliteOrBoss) {
+    baseEarn += 15; // 額外獲得 15 金幣懸賞
+}
+
+// 3. 回合紅利 (不變，極速擊殺依然給錢)
+let turnsBonus = (stage.turnsLeft - 1) * 10;
+3. 🎁 菁英遺物掉落與商店流程銜接
+我們希望玩家打敗所有的菁英怪（第 3、6、9 層）都能獲得一個免費的隨機遺物，而且領完遺物後要繼續進商店消費剛賺到的錢。
+請替換 enemyDefeated() 底部的結算導向邏輯：
+
+JavaScript
+// main.js -> enemyDefeated() 底部
+
+let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id));
+let nextStep = availableForShop.length === 0 ? nextStage : openShop;
+let isElite = [2, 5, 8].includes(stage.level);
+
+if (isElite && availableForShop.length > 0) {
+    // 隨機抽選免費遺物
+    let randomRelic = availableForShop[Math.floor(Math.random() * availableForShop.length)];
+    player.relics.push(randomRelic.id);
+    unlockCollectionItem('relic', randomRelic.id);
+    
+    // 重新過濾商店可用遺物（排除剛拿到手的）
+    availableForShop = availableForShop.filter(r => r.id !== randomRelic.id);
+    // 確保領完遺物後，下一步是進入商店 (除非遺物已被搬空)
+    nextStep = availableForShop.length === 0 ? nextStage : openShop;
+    
+    UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+} else {
+    // 一般怪物結算
+    UI.showToast(`🎉 擊敗了 ${enemyName}！\n${goldMessage}`, nextStep);
+}
+4. ⚔️ 連動修正：遺物【屠龍者】的判定更新
+因為菁英怪與 Boss 的關卡層數（index）改變了，請順手在 main.js 的 fireAttack() 中更新【屠龍者】的觸發條件，確保倍率加成能在對的時間生效：
+
+JavaScript
+// main.js -> fireAttack() 內部
+if (player.relics.includes('dragonslayer') && [2, 5, 8, 9].includes(stage.level)) {
+    finalDamage = Math.floor(finalDamage * 1.5);
+    UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
+}
+}
+
+
+
+6.🎨 給 Jules 的視覺與反饋優化 Specs (Bibbidiba Polish)
+Jules，為了提升遊戲的「爽快感」與「策略直覺」，我們需要增加以下幾項 UI/VFX 表現。這部分主要涉及 CSS 類名切換與簡單的動態組件：
+
+1. 🎲 骰子組件：右上角「動態基礎點數」標籤
+實作需求：在 Dice 組件的右上角，增加一個絕對定位（Absolute）的小型 Badge。
+
+顯示內容：目前該數值代表的 基礎點數（Base Points）。
+
+動態邏輯：
+
+預設值：顯示骰子面值（例如：骰子 1 顯示 1）。
+
+加成值：如果玩家擁有對應遺物（如 【大一】），該數字應立即更新為 10。
+
+視覺表現：
+
+當數值被遺物改變時（例如由 1 變 10），建議給數字加一個 黃金色的文字陰影（Text-glow） 或不同的背景顏色，提醒玩家此數值已被強化。
+
+Jules 邏輯參考：currentBaseVal = player.relics.includes('b' + die.val) ? RELIC_BASE_VALS[die.val] : die.val;
+
+2. 💎 遺物清單：即時激活狀態（Live Activation Feedback）
+實作需求：根據目前盤面的骰子數值，動態切換遺物圖示的亮度或濾鏡。
+
+視覺表現：
+
+未發動（Deactivated）：當盤面不滿足該遺物條件時，圖示設為 filter: grayscale(100%) brightness(0.6)（灰色、黯淡）。
+
+發動中（Activated）：當盤面滿足條件（如擁有 【小小】 且場上有 1, 2 或 3），圖示回覆正常顏色並加上一個 外發光（Outer Glow） 效果。
+
+觸發時機：每次 executeRoll 完成（骰子停止後）以及每次玩家點擊「鎖定/解鎖」時，重新計算一次遺物發亮狀態。
+
+Jules 範例邏輯：
+
+JavaScript
+// 檢查遺物【小小】(Small) 是否該發光
+const isSmallActive = dice.some(d => [1, 2, 3].includes(d.val));
+relicElement.className = isSmallActive ? "relic-glow" : "relic-dim";
+3. 💥 戰鬥打擊感（Combat Juice）
+頓幀（Hitstop）：當 finalDamage 超過敵人血量 20% 時，在 fireAttack 執行傷害動畫前，讓 requestAnimationFrame 暫停 100ms。
+
+傷害數字（Damage Pop）：目前的 -12,345 數字，請加上以下 CSS 動畫：
+
+0%: scale(0.5), opacity: 0
+
+20%: scale(1.2), opacity: 1
+
+100%: translateY(-50px), opacity: 0
+
+全螢幕紅閃：攻擊瞬間，UI.el.hitFlash 除了解除 hidden，請加上極短暫的 blur(2px) 濾鏡，模擬強大衝擊導致的視覺模糊。
+
+4. ✨ 牌型共鳴（Combination Synergy）
+實作需求：當玩家湊到 A/B/C/D 區牌型時，參與該牌型的骰子邊框應亮起對應顏色。
+
+顏色定義：
+
+A 區（同數）：藍光
+
+B 區（順子）：綠光
+
+C 區（組合）：紫光
+
+D 區（極端）：金光
+
+實作方式：你可以在渲染骰子時，根據 dice.matchedGroups 的 Boolean 值來掛載對應的 CSS class。
+
+📝 給 Jules 的實作建議小結
+Jules，最核心的改動是 骰子組件的 props 需要增加一個 basePoints，以及 遺物組件需要一個 isActive 的 Boolean 狀態。
+
+
+
+
+7.📝 給 Jules 的開發規格書：《比比丟八》靈魂奉獻系統 (Meta-progression)
+Jules，我們要為遊戲加入局外永久升級系統！玩家在戰鬥中擊敗強敵可以獲得「靈魂」，並在首頁的「靈魂奉獻」選單中消耗靈魂來強化初始機體。以下是需要實作的資料結構與邏輯串接：
+
+1. 💾 資料結構與儲存 (Data & Storage)
+我們需要一個獨立的 LocalStorage Key 來存玩家的靈魂與升級進度（因為不能跟單局存檔混在一起）。請在 main.js 頂部加入：
+
+JavaScript
+// main.js -> 頂部變數區
+const META_KEY = 'bibbidiba_meta_v1';
+let metaData = {
+    souls: 0,
+    upgrades: {
+        hp: 0,         // 等級 0~2 (+1 最大生命)
+        discount: 0,   // 等級 0~3 (-2 商店金幣)
+        startGold: 0,  // 等級 0~3 (+10 初始金幣)
+        rerolls: 0     // 等級 0~2 (+1 初始重骰)
+    }
+};
+
+// 新增讀取與儲存函式
+function loadMetaData() {
+    metaData = secureParseStorage(META_KEY, metaData, (data) => typeof data.souls === 'number');
+}
+function saveMetaData() {
+    localStorage.setItem(META_KEY, JSON.stringify(metaData));
+}
+
+// 記得在啟動遊戲時呼叫 loadMetaData();
+2. 👻 靈魂獲取邏輯 (Gain Souls)
+在玩家打贏菁英或 Boss 時，給予靈魂並存檔。請在 main.js 的 enemyDefeated() 與 gameWin() 中加入結算邏輯：
+
+JavaScript
+// main.js -> enemyDefeated() 內部，結算金幣的下方加入：
+
+let isElite = [2, 5, 8].includes(stage.level);
+let isBoss = stage.level === 9; // 第10層的Boss
+let earnedSouls = 0;
+
+if (isElite) earnedSouls = 1;
+if (isBoss) earnedSouls = 5;
+
+if (earnedSouls > 0) {
+    metaData.souls += earnedSouls;
+    saveMetaData();
+}
+
+// 修改掉落 Toast 訊息，把靈魂資訊加進去
+let soulMsg = earnedSouls > 0 ? `\n👻 獲得 ${earnedSouls} 個靈魂！` : '';
+// ... 將 soulMsg 塞進後續的 UI.showToast 顯示中
+3. 🛠️ 升級能力實裝 (Apply Upgrades)
+玩家點的技能樹，必須在「開始新遊戲」以及「進商店」時生效。
+
+A. 初始數值強化 (在 initNewGame 修改)
+
+JavaScript
+function initNewGame() {
+    // 讀取升級等級並加上對應數值
+    let startHp = 3 + (metaData.upgrades.hp * 1);
+    let startGold = 20 + (metaData.upgrades.startGold * 10);
+    let startRerolls = 2 + (metaData.upgrades.rerolls * 1);
+
+    player = { 
+        hp: startHp, 
+        gold: startGold, 
+        relics: [], 
+        maxRolls: startRerolls, 
+        highestDamage: 0, 
+        highestDamageCombo: '', 
+        isInfiniteMode: false 
+    };
+    loadStage(0);
+}
+B. 商店打折 (在 applyEconomyShackles 修改)
+
+JavaScript
+function applyEconomyShackles(items) {
+    let result = items;
+    // 局外升級的折扣 (每級 -2 元)
+    let discount = metaData.upgrades.discount * 2;
+    
+    result = result.map(item => ({
+        ...item,
+        // 確保打折後價格最低為 1 元，且應用原有的通膨或 VIP 計算
+        price: Math.max(1, item.price - discount) 
+    }));
+    
+    // ... 原本的 inflation 跟 vip 邏輯接在後面
+    return result;
+}
+4. 🎨 UI/UX 實作需求：首頁的【靈魂奉獻】選單
+Jules，請在 titleScreen 增加一個按鈕 「👻 靈魂奉獻」，點擊後打開一個 Modal（覆蓋層）。
+
+UI 佈局建議：
+
+頂部：顯示「目前持有靈魂：X 👻」。
+
+清單：列出 4 個升級項目，每個項目需要顯示：
+
+Icon / 名稱（例如：❤️ 體魄鍛鍊）
+
+效果說明（例如：最大 HP +1）
+
+進度條 / 點圈（例如：[🟢] [⚫] 代表 1/2 級）
+
+升級按鈕（顯示所需靈魂，例如「花費 10 👻」。若靈魂不足或已滿級，按鈕 disabled 並變灰）。
+
+點擊邏輯：當玩家點擊升級時，扣除 metaData.souls，對應的 metaData.upgrades 數值 +1，然後呼叫 saveMetaData() 並重新渲染這個 Modal。
+
+💡 企劃的平衡性小建議
+身為企劃，我設定了這四個維度的強化，對應不同的流派節奏：
+
++1 最大HP (上限2)： 提高容錯率，搭配【越戰越勇】或【天譴】更有餘裕。
+
+-2 商店金幣 (上限3)： 總共 -6 元，讓前期買遺物成型的速度大幅提升。
+
++10 初始金幣 (上限3)： 總共開局多 30 元，第一關打完就能立刻買兩個普通/稀有遺物。
+
++1 初始重骰 (上限2)： 總共多 2 次重骰，直接拉高前期湊牌型的穩定度。
