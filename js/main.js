@@ -982,6 +982,19 @@ function recordHistory(win) {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
+
+function playerTakesFatalDamage(reason) {
+    if (player.relics.includes('bankrupt') && player.gold >= 100) {
+        player.gold = 0;
+        player.hp = 1;
+        player.relics = player.relics.filter(r => r !== 'bankrupt');
+        UI.updateHeaderUI(player, stage);
+        UI.showToast("🛡️ 【破財消災】發動：扣除所有金幣並保留 1 HP！（遺物已消耗）");
+        return;
+    }
+    gameOver(reason);
+}
+
 function gameOver(reason) {
     clearSave();
     recordHistory(false);
