@@ -438,7 +438,7 @@ function startTurn() {
     activeHighlight = null;
 
     if (stage.activeShackle === 'gluttony') {
-        let healAmount = Math.floor(stage.enemyMaxHp * 0.05);
+        let healAmount = Math.floor(stage.enemyMaxHp * 0.03);
         if (stage.enemyHp < stage.enemyMaxHp) {
             stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
             UI.updateEnemyUI(stage);
@@ -556,7 +556,7 @@ window.executeRoll = function(isInitial = false) {
 
         if (stage.activeShackle === 'sticky') {
             let lockedCount = battle.dice.filter(d => d.locked).length;
-            let cost = lockedCount * 3;
+            let cost = lockedCount * 1;
             if (cost > 0) {
                 if (player.gold >= cost) {
                     player.gold -= cost;
@@ -579,7 +579,7 @@ window.executeRoll = function(isInitial = false) {
         if (stage.activeShackle === 'rebel') {
             let freed = 0;
             battle.dice.forEach(d => {
-                if (d.locked && Math.random() < 0.25) {
+                if (d.locked && Math.random() < 0.15) {
                     d.locked = false;
                     freed++;
                 }
@@ -737,9 +737,9 @@ window.fireAttack = function() {
     stage.enemyHp -= dmg;
 
     if (stage.activeShackle === 'healingdice') {
-        let count1 = battle.dice.filter(d => d.val === 1).length;
-        if (count1 > 0) {
-            let healAmount = Math.floor(count1 * stage.enemyMaxHp * 0.05);
+        let count2 = battle.dice.filter(d => d.val === 2).length;
+        if (count2 > 0) {
+            let healAmount = Math.floor(count2 * stage.enemyMaxHp * 0.03);
             stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
             UI.showToast(`💉 【治癒之骰】發動：敵人恢復 ${healAmount} HP！`);
         }

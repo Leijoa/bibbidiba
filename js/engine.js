@@ -13,7 +13,7 @@ const ShackleHooks = {
     },
     drowning: {
         modifyBase: (d, meta, ctx) => {
-            if (d.val === 4 || d.val === 5) return { baseVal: 0, multi: 1 };
+            if (d.val === 5) return { baseVal: 0, multi: 1 };
             return null;
         }
     },
@@ -119,7 +119,7 @@ function applyShacklePostHooks(scoreResult, shackleConfig, workingDice, baseCont
     if (shackleConfig.id === 'blackhole') scoreResult.globalNotes.push('【黑洞】發動: 所有的 8 變成 1。');
     if (shackleConfig.id === 'parityfear') scoreResult.globalNotes.push(`【奇/偶數恐懼】發動: ${shackleConfig.fearType === 'odd' ? '奇數' : '偶數'}點數歸零。`);
     if (shackleConfig.id === 'numberplunder') scoreResult.globalNotes.push(`【數字掠奪】發動: 數字 ${shackleConfig.targetNumber} 視為廢牌。`);
-    if (shackleConfig.id === 'drowning') scoreResult.globalNotes.push(`【沉溺】發動: 4 和 5 點數歸零。`);
+    if (shackleConfig.id === 'drowning') scoreResult.globalNotes.push(`【沉溺】發動: 5 點數歸零。`);
     
     let hookDef = ShackleHooks[shackleConfig.id];
     if (hookDef && hookDef.postCalc) {
