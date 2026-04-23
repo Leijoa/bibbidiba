@@ -166,7 +166,7 @@ export function updateEnemyUI(stage) {
     el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 次發動攻擊次數`;
     let pct = Math.max(0, (stage.enemyHp / stage.enemyMaxHp) * 100);
     el.enemyHpBar.style.width = `${pct}%`;
-    el.enemyHpText.innerText = `${Math.floor(stage.enemyHp)} / ${stage.enemyMaxHp}`;
+    el.enemyHpText.innerText = `${Math.floor(stage.enemyHp).toLocaleString()} / ${stage.enemyMaxHp.toLocaleString()}`;
 }
 
 window.showShackleInfo = function(id) {
