@@ -322,18 +322,12 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     if (counts.slice(1,9).every(c => c>=1)) {
         tagB = { name: '大滿貫', multi: 25.0, used: [1,2,3,4,5,6,7,8] };
-    } else if ((tempUsed = exactPartitionVals([...counts], 3))) {
-        tagB = { name: '三龍會', multi: 12.0, used: tempUsed };
     } else if ((tempUsed = extractVals([7]))) {
         tagB = { name: '七連順', multi: 10.0, used: tempUsed };
     } else if ((tempUsed = extractVals([6]))) {
         tagB = { name: '六連順', multi: 6.0, used: tempUsed };
-    } else if ((tempUsed = extractVals([4, 4]))) {
-        tagB = { name: '雙順', multi: 6.0, used: tempUsed };
     } else if ((tempUsed = extractVals([5]))) {
         tagB = { name: '五連順', multi: 3.5, used: tempUsed };
-    } else if ((tempUsed = extractVals([3, 3]))) {
-        tagB = { name: '雙三連順', multi: 3.0, used: tempUsed };
     } else if ((tempUsed = extractVals([4]))) {
         tagB = { name: '四連順', multi: 2.5, used: tempUsed };
     } else if ((tempUsed = extractVals([3]))) {
@@ -343,31 +337,74 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     if (tagB.name !== '無' && playerRelics.includes('straightfan')) { tagB.multi += (isExploited ? 1.0 : 2.0); }
     // --- 判斷 C 區 ---
     let tagC = { name: '無', multi: 1.0, used: [] };
-    
+    let candidates = [];
+
+    const priorityOrder = [
+        '平胡', '碰碰胡', '三龍會', '雙四連順',
+        '雙子星', '葫蘆', '豪華四對子', '經典四對子', '中葫蘆',
+        '順碰交響曲', '雙三連順', '雙三同', '小葫蘆',
+        '三對子', '雙對子'
+    ];
+
+    if ((tempUsed = checkAllChowsVals(counts))) {
+        candidates.push({ name: '平胡', multi: 6.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('平胡') });
+    }
+    if ((tempUsed = checkAllPongsVals(counts))) {
+        candidates.push({ name: '碰碰胡', multi: 5.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('碰碰胡') });
+    }
+    if ((tempUsed = exactPartitionVals([...counts], 3))) {
+        candidates.push({ name: '三龍會', multi: 12.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('三龍會') });
+    }
+    if ((tempUsed = extractVals([4, 4]))) {
+        candidates.push({ name: '雙四連順', multi: 10.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('雙四連順') });
+    }
     if ((tempUsed = getFreqVals(4, 4))) {
-        tagC = { name: '雙子星', multi: 20.0, used: tempUsed };
-    } else if ((tempUsed = getFreqVals(5, 3))) {
-        tagC = { name: '葫蘆', multi: 15.0, used: tempUsed };
-    } else if ((tempUsed = getStrictPairsVals(4))) {
-        tagC = { name: '經典四對子', multi: 10.0, used: tempUsed };
-    } else if ((tempUsed = getPairsVals(4))) {
-        tagC = { name: '豪華四對子', multi: 15.0, used: tempUsed };
-    } else if ((tempUsed = getFreqVals(4, 3))) {
-        tagC = { name: '中葫蘆', multi: 8.0, used: tempUsed };
-    } else if ((tempUsed = checkAllChowsVals(counts))) {
-        tagC = { name: '平胡', multi: 6.0, used: tempUsed };
-    } else if ((tempUsed = checkAllPongsVals(counts))) {
-        tagC = { name: '碰碰胡', multi: 5.0, used: tempUsed };
-    } else if ((tempUsed = checkChowPongVals(counts))) {
-        tagC = { name: '順碰交響曲', multi: 4.0, used: tempUsed };
-    } else if ((tempUsed = getFreqVals(3, 3))) {
-        tagC = { name: '雙三同', multi: 3.5, used: tempUsed };
-    } else if ((tempUsed = getFreqVals(3, 2))) {
-        tagC = { name: '小葫蘆', multi: 3.5, used: tempUsed };
-    } else if ((tempUsed = getPairsVals(3))) {
-        tagC = { name: '三對子', multi: 3.0, used: tempUsed }; if (playerRelics.includes('doubles')) tagC.multi *= (isExploited ? 1.5 : 2.0);
-    } else if ((tempUsed = getPairsVals(2))) {
-        tagC = { name: '雙對子', multi: 2.0, used: tempUsed }; if (playerRelics.includes('doubles')) tagC.multi *= (isExploited ? 1.5 : 2.0);
+        candidates.push({ name: '雙子星', multi: 20.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('雙子星') });
+    }
+    if ((tempUsed = getFreqVals(5, 3))) {
+        candidates.push({ name: '葫蘆', multi: 15.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('葫蘆') });
+    }
+    if ((tempUsed = getPairsVals(4))) {
+        candidates.push({ name: '豪華四對子', multi: 15.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('豪華四對子') });
+    }
+    if ((tempUsed = getStrictPairsVals(4))) {
+        candidates.push({ name: '經典四對子', multi: 10.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('經典四對子') });
+    }
+    if ((tempUsed = getFreqVals(4, 3))) {
+        candidates.push({ name: '中葫蘆', multi: 8.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('中葫蘆') });
+    }
+    if ((tempUsed = checkChowPongVals(counts))) {
+        candidates.push({ name: '順碰交響曲', multi: 4.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('順碰交響曲') });
+    }
+    if ((tempUsed = extractVals([3, 3]))) {
+        candidates.push({ name: '雙三連順', multi: 4.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('雙三連順') });
+    }
+    if ((tempUsed = getFreqVals(3, 3))) {
+        candidates.push({ name: '雙三同', multi: 3.5, used: tempUsed, priorityIndex: priorityOrder.indexOf('雙三同') });
+    }
+    if ((tempUsed = getFreqVals(3, 2))) {
+        candidates.push({ name: '小葫蘆', multi: 3.5, used: tempUsed, priorityIndex: priorityOrder.indexOf('小葫蘆') });
+    }
+    if ((tempUsed = getPairsVals(3))) {
+        let candidate = { name: '三對子', multi: 3.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('三對子') };
+        if (playerRelics.includes('doubles')) candidate.multi *= (isExploited ? 1.5 : 2.0);
+        candidates.push(candidate);
+    }
+    if ((tempUsed = getPairsVals(2))) {
+        let candidate = { name: '雙對子', multi: 2.0, used: tempUsed, priorityIndex: priorityOrder.indexOf('雙對子') };
+        if (playerRelics.includes('doubles')) candidate.multi *= (isExploited ? 1.5 : 2.0);
+        candidates.push(candidate);
+    }
+
+    if (candidates.length > 0) {
+        candidates.sort((a, b) => {
+            if (b.multi !== a.multi) {
+                return b.multi - a.multi;
+            }
+            return a.priorityIndex - b.priorityIndex;
+        });
+        let topCandidate = candidates[0];
+        tagC = { name: topCandidate.name, multi: topCandidate.multi, used: topCandidate.used };
     }
 
     // --- 判斷 D 區 ---

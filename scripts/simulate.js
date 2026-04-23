@@ -21,7 +21,9 @@ function assignShackleForStage(levelIndex, playerRelics) {
 
 class GameSimulation {
     constructor() {
-        this.player = { hp: 3, gold: 20, relics: [], maxRolls: 2, isInfiniteMode: false };
+        const strategies = ['pairs', 'straights', 'mixed'];
+        const selectedStrategy = strategies[Math.floor(Math.random() * strategies.length)];
+        this.player = { hp: 3, gold: 20, relics: [], maxRolls: 2, isInfiniteMode: false, strategy: selectedStrategy };
         this.stage = { level: 0, enemyHp: 0, enemyMaxHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
         this.battle = { dice: [], rollsLeft: 0, scoreResult: null };
         this.metrics = {
@@ -145,16 +147,32 @@ class GameSimulation {
     aiLockLogic() {
         if (this.stage.activeShackle === 'fragile') return;
 
-        let counts = Array(9).fill(0);
-        this.battle.dice.forEach(d => counts[d.val]++);
+        if (this.player.strategy === 'straights') {
+            let lockedVals = new Set();
+            this.battle.dice.forEach(d => {
+                if (!lockedVals.has(d.val)) {
+                    d.locked = true;
+                    lockedVals.add(d.val);
+                } else {
+                    d.locked = false;
+                }
+            });
+        } else if (this.player.strategy === 'pairs') {
+            let counts = Array(9).fill(0);
+            this.battle.dice.forEach(d => counts[d.val]++);
 
-        this.battle.dice.forEach(d => {
-            let willLock = false;
-            // slightly smarter logic to get higher win rate
-            if (counts[d.val] >= 2) willLock = true;
-            else if (d.val >= 6) willLock = true;
-            d.locked = willLock;
-        });
+            this.battle.dice.forEach(d => {
+                let willLock = false;
+                if (counts[d.val] >= 2) willLock = true;
+                else if (d.val >= 6) willLock = true;
+                d.locked = willLock;
+            });
+        } else {
+            // Mixed strategy: randomize per turn or just lock 6,7,8
+            this.battle.dice.forEach(d => {
+                d.locked = d.val >= 6;
+            });
+        }
     }
 
     fireAttack() {
@@ -237,13 +255,21 @@ report += `Crashes: ${agg.crashes}\n`;
 report += `Win Rate (Beat Stage 5): ${((agg.wins / TOTAL_RUNS) * 100).toFixed(2)}%\n\n`;
 
 report += `===== SHACKLE DEATH RATES (Top 10) =====\n`;
-let sortedShackles = Object.entries(agg.shackleDeaths).sort((a,b) => b[1] - a[1]).slice(0, 10);
-for (let [s, count] of sortedShackles) {
+let allShacklesSorted = Object.entries(agg.shackleDeaths).sort((a,b) => b[1] - a[1]);
+let topShackles = allShacklesSorted.slice(0, 10);
+for (let [s, count] of topShackles) {
     let shackleName = SHACKLE_DB.find(x => x.id === s)?.name || s;
     report += `${shackleName}: ${count} deaths\n`;
 }
 
-report += `\n===== RELIC PICK VS WIN RATE (Top 15 Win Rates with >1000 picks) =====\n`;
+report += `\n===== SHACKLE DEATH RATES (Bottom 10) =====\n`;
+let bottomShackles = allShacklesSorted.filter(x => x[1] > 0).slice(-10).reverse();
+for (let [s, count] of bottomShackles) {
+    let shackleName = SHACKLE_DB.find(x => x.id === s)?.name || s;
+    report += `${shackleName}: ${count} deaths\n`;
+}
+
+report += `\n===== RELIC PICK VS WIN RATE (Top 15 Win Rates) =====\n`;
 let relicStats = [];
 for (let r in agg.relicPicks) {
     if (agg.relicPicks[r] > 10) {
@@ -251,7 +277,14 @@ for (let r in agg.relicPicks) {
         relicStats.push({ id: r, winRate: wr, picks: agg.relicPicks[r] });
     }
 }
-relicStats.sort((a,b) => b.winRate - a.winRate).slice(0, 15).forEach(rs => {
+relicStats.sort((a,b) => b.winRate - a.winRate);
+relicStats.slice(0, 15).forEach(rs => {
+    let relicName = RELIC_DB.find(x => x.id === rs.id)?.name || rs.id;
+    report += `${relicName} - Picked: ${rs.picks}, Win Rate: ${(rs.winRate * 100).toFixed(2)}%\n`;
+});
+
+report += `\n===== RELIC PICK VS WIN RATE (Bottom 15 Win Rates) =====\n`;
+relicStats.slice(-15).reverse().forEach(rs => {
     let relicName = RELIC_DB.find(x => x.id === rs.id)?.name || rs.id;
     report += `${relicName} - Picked: ${rs.picks}, Win Rate: ${(rs.winRate * 100).toFixed(2)}%\n`;
 });
