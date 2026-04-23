@@ -255,13 +255,21 @@ report += `Crashes: ${agg.crashes}\n`;
 report += `Win Rate (Beat Stage 5): ${((agg.wins / TOTAL_RUNS) * 100).toFixed(2)}%\n\n`;
 
 report += `===== SHACKLE DEATH RATES (Top 10) =====\n`;
-let sortedShackles = Object.entries(agg.shackleDeaths).sort((a,b) => b[1] - a[1]).slice(0, 10);
-for (let [s, count] of sortedShackles) {
+let allShacklesSorted = Object.entries(agg.shackleDeaths).sort((a,b) => b[1] - a[1]);
+let topShackles = allShacklesSorted.slice(0, 10);
+for (let [s, count] of topShackles) {
     let shackleName = SHACKLE_DB.find(x => x.id === s)?.name || s;
     report += `${shackleName}: ${count} deaths\n`;
 }
 
-report += `\n===== RELIC PICK VS WIN RATE (Top 15 Win Rates with >1000 picks) =====\n`;
+report += `\n===== SHACKLE DEATH RATES (Bottom 10) =====\n`;
+let bottomShackles = allShacklesSorted.filter(x => x[1] > 0).slice(-10).reverse();
+for (let [s, count] of bottomShackles) {
+    let shackleName = SHACKLE_DB.find(x => x.id === s)?.name || s;
+    report += `${shackleName}: ${count} deaths\n`;
+}
+
+report += `\n===== RELIC PICK VS WIN RATE (Top 15 Win Rates) =====\n`;
 let relicStats = [];
 for (let r in agg.relicPicks) {
     if (agg.relicPicks[r] > 10) {
@@ -269,7 +277,14 @@ for (let r in agg.relicPicks) {
         relicStats.push({ id: r, winRate: wr, picks: agg.relicPicks[r] });
     }
 }
-relicStats.sort((a,b) => b.winRate - a.winRate).slice(0, 15).forEach(rs => {
+relicStats.sort((a,b) => b.winRate - a.winRate);
+relicStats.slice(0, 15).forEach(rs => {
+    let relicName = RELIC_DB.find(x => x.id === rs.id)?.name || rs.id;
+    report += `${relicName} - Picked: ${rs.picks}, Win Rate: ${(rs.winRate * 100).toFixed(2)}%\n`;
+});
+
+report += `\n===== RELIC PICK VS WIN RATE (Bottom 15 Win Rates) =====\n`;
+relicStats.slice(-15).reverse().forEach(rs => {
     let relicName = RELIC_DB.find(x => x.id === rs.id)?.name || rs.id;
     report += `${relicName} - Picked: ${rs.picks}, Win Rate: ${(rs.winRate * 100).toFixed(2)}%\n`;
 });
