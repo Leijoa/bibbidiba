@@ -197,10 +197,18 @@ export function renderInventory(player) {
     }
     let sortedRelics = [...player.relics].sort((a,b) => RELIC_DB.find(x=>x.id===b).rarity - RELIC_DB.find(x=>x.id===a).rarity);
     
+    let isNoise = window.getStageActiveShackle && window.getStageActiveShackle() === 'noise';
+
     el.inventoryGrid.innerHTML = sortedRelics.map(id => {
+        if (isNoise) {
+            return `
+            <div onclick="window.showToast('🔇 【噪音】干擾，無法查看遺物效果！')" class="bg-slate-700/50 px-2 py-1 rounded-full border border-slate-500 shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform active:scale-95">
+                <span class="text-[10px] md:text-xs font-black text-slate-400 whitespace-nowrap">????</span>
+            </div>`;
+        }
+
         let r = RELIC_DB.find(x => x.id === id);
         let style = RARITY[r.rarity];
-        // 加入 onclick 呼叫全域的 showRelicInfo
         return `
         <div onclick="window.showRelicInfo('${r.id}')" class="${style.bg} px-2 py-1 rounded-full border ${style.border} shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform active:scale-95">
             <span class="text-[10px] md:text-xs font-black ${style.color} whitespace-nowrap">${r.name}</span>
@@ -353,7 +361,9 @@ export function renderScore(battle, activeHighlight) {
         return;
     }
     let res = battle.scoreResult;
-    let notesHtml = res.globalNotes.map(n => `<span class="text-[9px] text-amber-400 bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-900/50 font-bold whitespace-nowrap">${n}</span>`).join('');
+    let isAmnesia = window.getStageActiveShackle && window.getStageActiveShackle() === 'amnesia';
+
+    let notesHtml = res.globalNotes.map(n => `<span class="text-[9px] text-amber-400 bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-900/50 font-bold whitespace-nowrap">${isAmnesia ? '???' : n}</span>`).join('');
 
     let getBoxStyle = (group, tag) => {
         if(tag.name === '無') return 'text-slate-500 border-slate-700/50 opacity-40 bg-slate-900/50';

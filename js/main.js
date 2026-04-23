@@ -516,6 +516,19 @@ window.toggleLock = function(idx) {
                 return UI.showToast("🔒 【上限鎖死】最多只能鎖定 4 顆骰子！");
             }
         }
+        
+        if (willLock && stage.activeShackle === 'rusty') {
+            let currentLocks = battle.dice.filter(d => d.locked).length;
+            if (currentLocks >= 6) {
+                const diceEl = document.getElementById(`dice-element-${idx}`);
+                if(diceEl) {
+                    diceEl.classList.remove('shake-hard');
+                    void diceEl.offsetWidth;
+                    diceEl.classList.add('shake-hard');
+                }
+                return UI.showToast("🔒 【生鏽的鎖】最多只能鎖定 6 顆骰子！");
+            }
+        }
 
         battle.dice[idx].locked = willLock;
         
@@ -719,6 +732,11 @@ window.fireAttack = function() {
         UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
     }
     let dmg = finalDamage;
+
+    if (stage.activeShackle === 'ironwall') {
+        dmg = Math.floor(dmg * 0.8);
+        UI.showToast("🛡️ 【鐵壁】發動：最終傷害減少 20%！");
+    }
 
     if (stage.activeShackle === 'absolutebarrier' && !stage.hasAttackedThisStage) {
         dmg = 0;
