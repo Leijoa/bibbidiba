@@ -446,7 +446,7 @@ function startTurn() {
         }
     }
     
-    let baseMaxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2);
+    let baseMaxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2) + (player.berserkerBonus || 0);
     if (stage.activeShackle === 'fatigue') {
         baseMaxRolls = Math.max(0, baseMaxRolls - 1);
     }
