@@ -11,7 +11,6 @@ const idMap = {
     '【顛倒是非】': 'inversion',
     '【暈眩】': 'dizziness',
     '【噪音】': 'noise',
-    '【健忘】': 'amnesia',
     '【黏稠液體】': 'sticky',
     '【貪婪稅】': 'greedy',
     '【吸血鬼】': 'vampire',
