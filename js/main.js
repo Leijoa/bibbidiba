@@ -168,7 +168,8 @@ function saveGame() {
             state: battle.state,
             dice: battle.dice,
             rollsLeft: battle.rollsLeft,
-            scoreResult: battle.scoreResult
+            scoreResult: battle.scoreResult,
+            balanceUsedThisTurn: battle.balanceUsedThisTurn
         },
         shop: inShop ? { active: true, items: shopItems, rerolls: shopRerollsUsed } : { active: false }
     };
@@ -199,7 +200,7 @@ function loadGame() {
             renderAll();
             UI.el.shopOverlay.classList.remove('hidden');
             UI.el.shopOverlay.classList.add('flex');
-            UI.updateShopRerollBtn(shopRerollsUsed);
+            UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'));
             UI.el.shopGold.innerText = player.gold;
             UI.renderShopItems(shopItems, player);
         } else {
@@ -367,6 +368,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
             battle.dice = parsedData.battle.dice || battle.dice;
             battle.rollsLeft = parsedData.battle.rollsLeft;
             battle.scoreResult = parsedData.battle.scoreResult;
+            battle.balanceUsedThisTurn = parsedData.battle.balanceUsedThisTurn || false;
         }
     } else {
         stage.enemyHp = enemy.hp;
@@ -931,24 +933,25 @@ function openShop() {
     UI.el.shopOverlay.classList.add('flex');
     shopRerollsUsed = 0;
     window.itemsBoughtThisScreen = 0;
-    UI.updateShopRerollBtn(shopRerollsUsed);
+    UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'));
     UI.el.shopGold.innerText = player.gold;
     UI.updateHeaderUI(player, stage);
     window.rerollShop(true);
 }
 
 window.rerollShop = function(isInitial = false) {
+    let hasScavenger = player.relics.includes('scavenger');
     if (!isInitial) {
-        if (player.relics.includes('scavenger') && window.itemsBoughtThisScreen === 0) {
-            player.gold += 3;
-            UI.showToast("🗑️ 【拾荒者】發動：未購買任何物品，獲得 3 金幣！");
+        let cost = 0;
+        if (shopRerollsUsed > 0) {
+            cost = 3 + (shopRerollsUsed - 1);
+            if (hasScavenger) cost = Math.max(1, cost - 2);
         }
-
-        let cost = shopRerollsUsed === 0 ? 0 : 3;
+        
         if (player.gold < cost) return UI.showToast("⚠️ 金幣不足！");
         player.gold -= cost;
         shopRerollsUsed++;
-        UI.updateShopRerollBtn(shopRerollsUsed);
+        UI.updateShopRerollBtn(shopRerollsUsed, hasScavenger);
         UI.el.shopGold.innerText = player.gold;
         UI.updateHeaderUI(player, stage);
     }
