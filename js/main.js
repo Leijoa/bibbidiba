@@ -456,6 +456,7 @@ function startTurn() {
     
     player.maxRolls = baseMaxRolls;
     battle.rollsLeft = player.maxRolls;
+    battle.balanceUsedThisTurn = false;
     battle.dice = battle.dice.map((d, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} }));
     battle.scoreResult = null;
     saveGame();
@@ -500,6 +501,19 @@ window.toggleLock = function(idx) {
         }
         
         let willLock = !battle.dice[idx].locked;
+
+        if (willLock && stage.activeShackle === 'hardcap') {
+            let currentLocks = battle.dice.filter(d => d.locked).length;
+            if (currentLocks >= 4) {
+                const diceEl = document.getElementById(`dice-element-${idx}`);
+                if(diceEl) {
+                    diceEl.classList.remove('shake-hard');
+                    void diceEl.offsetWidth;
+                    diceEl.classList.add('shake-hard');
+                }
+                return UI.showToast("🔒 【上限鎖死】最多只能鎖定 4 顆骰子！");
+            }
+        }
 
         battle.dice[idx].locked = willLock;
         
@@ -573,8 +587,9 @@ window.executeRoll = function(isInitial = false) {
             if (freed > 0) UI.showToast(`😡 【叛逆】發動：${freed} 顆骰子掙脫鎖定！`);
         }
         
-        if (player.relics.includes('balance') && battle.rollsLeft === player.maxRolls) {
+        if (player.relics.includes('balance') && battle.rollsLeft === player.maxRolls && !battle.balanceUsedThisTurn) {
             UI.showToast("⚖️ 【動態平衡】發動：首次重骰不消耗次數！");
+            battle.balanceUsedThisTurn = true;
         } else {
             battle.rollsLeft--;
         }
