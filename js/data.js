@@ -16,7 +16,7 @@ export const RELIC_DB = [
     { id: 'b6', name: '【大六】', desc: '6 以 11 點計算', price: 10, rarity: 1 },
     { id: 'b7', name: '【大七】', desc: '7 以 12 點計算', price: 10, rarity: 1 },
     { id: 'b8', name: '【大八】', desc: '8 以 12 點計算', price: 10, rarity: 1 },
-    { id: 'scavenger', name: '【拾荒者】', desc: '在商店點擊「刷新商店」時，若當前畫面沒有購買任何物品就離開，獲得 3 金幣。', price: 10, rarity: 1 },
+    { id: 'scavenger', name: '【拾荒者】', desc: '在商店刷新商品的價格-2金幣。第一次免費以外，最低1金幣。', price: 10, rarity: 1 },
     { id: 'small', name: '【小小】', desc: '1, 2, 3 的點數倍率 * 5', price: 15, rarity: 2 },
     { id: 'mid', name: '【中中】', desc: '4, 5 的點數倍率 * 3', price: 15, rarity: 2 },
     { id: 'big', name: '【大大】', desc: '6, 7, 8 的點數倍率 * 2', price: 15, rarity: 2 },

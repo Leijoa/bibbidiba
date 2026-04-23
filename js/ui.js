@@ -438,12 +438,20 @@ export function renderShopItems(shopItems, player) {
     if(shopItems.length === 0) el.shopItemsContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 py-6 font-bold text-base">商店已經被你買空了！</div>`;
 }
 
-export function updateShopRerollBtn(shopRerollsUsed) {
-    if (shopRerollsUsed === 0) {
+export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false) {
+    let cost = 0;
+    if (shopRerollsUsed > 0) {
+        cost = 3 + (shopRerollsUsed - 1); // 1st = 0, 2nd = 3, 3rd = 4, 4th = 5...
+        if (hasScavenger) {
+            cost = Math.max(1, cost - 2); // Scavenger discounts by 2, minimum 1
+        }
+    }
+
+    if (cost === 0) {
         el.shopRerollBtn.innerHTML = "🆓 免費刷新";
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
     } else {
-        el.shopRerollBtn.innerHTML = "🔄 刷新商店 (3 金幣)";
+        el.shopRerollBtn.innerHTML = `🔄 刷新商店 (${cost} 金幣)`;
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-slate-900 active:border-b-0 active:translate-y-1";
     }
 }
