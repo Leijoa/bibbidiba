@@ -836,6 +836,12 @@ window.fireAttack = function() {
                 if (player.hp <= 0) {
                     playerTakesFatalDamage("血量耗盡，旅程結束！");
                     if (player.hp <= 0) return;
+                    // IF we are here, playerTakesFatalDamage rescued the player (hp is now 1)
+                    UI.showToast(`⚠️ 未在回合內擊殺！\n破財消災發動，重新挑戰！`, () => {
+                        stage.turnsLeft = getEnemy(stage.level).turns;
+                        if (stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
+                        startTurn();
+                    });
                 }
                 else {
                     UI.showToast(`⚠️ 未在回合內擊殺！\n扣除 1 HP，重新挑戰！`, () => {
