@@ -1,65 +1,65 @@
 ===== BIBBIDIBA V4 SIMULATION REPORT (100k runs extrapolated from full 100k simulation) =====
 Total Runs Simulated: 100000
 Crashes: 0
-Win Rate (Beat Stage 5): 0.03%
+Win Rate (Beat Stage 5): 0.90%
 
 ===== SHACKLE DEATH RATES (Top 10) =====
-【沉溺】: 1140 deaths
-【短路】: 1067 deaths
-【孤立】: 986 deaths
-【健忘】: 906 deaths
-【霉運】: 903 deaths
-【幻象】: 879 deaths
-【黏稠液體】: 877 deaths
-【暈眩】: 874 deaths
-【偏食】: 874 deaths
-【生鏽的鎖】: 868 deaths
+【剝削】: 1008 deaths
+【封印之門】: 997 deaths
+【易碎骰子】: 996 deaths
+【深淵凝視】: 974 deaths
+【平庸之惡】: 966 deaths
+【奇/偶數恐懼】: 949 deaths
+【枯萎】: 948 deaths
+【反傷裝甲】: 938 deaths
+【忘卻】: 935 deaths
+【時間壓縮】: 934 deaths
 
 ===== RELIC PICK VS WIN RATE (Top 15 Win Rates with >1000 picks) =====
-【孤注一擲】 - Picked: 8264, Win Rate: 0.21%
-【幸運七】 - Picked: 4185, Win Rate: 0.19%
-【偶數】 - Picked: 9261, Win Rate: 0.12%
-【破釜沉舟】 - Picked: 13620, Win Rate: 0.10%
-【小小】 - Picked: 13595, Win Rate: 0.09%
-【同花順】 - Picked: 1264, Win Rate: 0.08%
-【大大】 - Picked: 13422, Win Rate: 0.07%
-【反抗軍】 - Picked: 4288, Win Rate: 0.07%
-【奇數】 - Picked: 8989, Win Rate: 0.07%
-【中中】 - Picked: 13096, Win Rate: 0.06%
-【大雜燴】 - Picked: 11582, Win Rate: 0.06%
-【大二】 - Picked: 20608, Win Rate: 0.06%
-【四死如歸】 - Picked: 7110, Win Rate: 0.06%
-【大一】 - Picked: 34683, Win Rate: 0.05%
-【大七】 - Picked: 19658, Win Rate: 0.05%
+【雷爪獅的祝福】 - Picked: 1611, Win Rate: 5.34%
+【捧夠的祝福】 - Picked: 1657, Win Rate: 4.71%
+【刷新幣】 - Picked: 3656, Win Rate: 3.47%
+【小小】 - Picked: 15335, Win Rate: 2.98%
+【幸運七】 - Picked: 4908, Win Rate: 2.79%
+【等差數列】 - Picked: 9112, Win Rate: 2.56%
+【孤注一擲】 - Picked: 9204, Win Rate: 2.06%
+【偶數】 - Picked: 10410, Win Rate: 2.04%
+【奇數】 - Picked: 10031, Win Rate: 1.97%
+【破釜沉舟】 - Picked: 14822, Win Rate: 1.89%
+【雙打冠軍】 - Picked: 12260, Win Rate: 1.79%
+【大雜燴】 - Picked: 12889, Win Rate: 1.69%
+【中中】 - Picked: 14656, Win Rate: 1.67%
+【反抗軍】 - Picked: 4844, Win Rate: 1.59%
+【大大】 - Picked: 15014, Win Rate: 1.35%
 
 ===== HANDS TRIGGERED & AVG DAMAGE =====
-三同 - Played: 971900, Avg Damage: 2151.17
-三連順 - Played: 685662, Avg Damage: 3214.37
-小葫蘆 - Played: 531955, Avg Damage: 1615.98
-四同 - Played: 377043, Avg Damage: 7185.91
-順碰交響曲 - Played: 364486, Avg Damage: 3119.72
-對子 - Played: 325741, Avg Damage: 2316.32
-三對子 - Played: 246153, Avg Damage: 1773.39
-中庸之道 - Played: 234990, Avg Damage: 5743.40
-四連順 - Played: 203013, Avg Damage: 3655.36
-豪華四對子 - Played: 174706, Avg Damage: 10187.25
-碰碰胡 - Played: 102625, Avg Damage: 2355.61
-中葫蘆 - Played: 95223, Avg Damage: 8312.02
-絕對秩序 - Played: 84888, Avg Damage: 21883.12
-雙三同 - Played: 75507, Avg Damage: 1638.66
-五同 - Played: 74826, Avg Damage: 8497.91
-三龍會 - Played: 59655, Avg Damage: 8213.56
-雙三連順 - Played: 50487, Avg Damage: 2104.30
-五連順 - Played: 39267, Avg Damage: 5307.14
-雙對子 - Played: 27195, Avg Damage: 1316.26
-平胡 - Played: 17908, Avg Damage: 4649.02
-六同 - Played: 10082, Avg Damage: 35317.61
-葫蘆 - Played: 8666, Avg Damage: 38230.83
-雙子星 - Played: 5498, Avg Damage: 47266.44
-六連順 - Played: 2762, Avg Damage: 8734.52
-七同 - Played: 922, Avg Damage: 87822.41
-兩極 - Played: 742, Avg Damage: 303711.08
-七連順 - Played: 80, Avg Damage: 25031.58
-八重奏 - Played: 39, Avg Damage: 1246818.46
-大滿貫 - Played: 5, Avg Damage: 113812.40
-全異 - Played: 5, Avg Damage: 113812.40
+對子 - Played: 746028, Avg Damage: 4765.51
+三同 - Played: 671630, Avg Damage: 2619.01
+三連順 - Played: 656688, Avg Damage: 3536.78
+四連順 - Played: 336545, Avg Damage: 3473.56
+小葫蘆 - Played: 324838, Avg Damage: 1881.97
+四同 - Played: 289695, Avg Damage: 7102.59
+順碰交響曲 - Played: 280019, Avg Damage: 3891.24
+三龍會 - Played: 279283, Avg Damage: 23152.33
+雙三連順 - Played: 215884, Avg Damage: 3009.02
+五連順 - Played: 174617, Avg Damage: 3821.61
+雙對子 - Played: 173693, Avg Damage: 1213.88
+三對子 - Played: 140254, Avg Damage: 2165.14
+中庸之道 - Played: 124634, Avg Damage: 7329.69
+六連順 - Played: 112854, Avg Damage: 6570.93
+平胡 - Played: 96407, Avg Damage: 6470.13
+豪華四對子 - Played: 84575, Avg Damage: 12423.98
+七連順 - Played: 81832, Avg Damage: 17647.76
+五同 - Played: 69623, Avg Damage: 8052.02
+中葫蘆 - Played: 67764, Avg Damage: 9583.87
+雙三同 - Played: 64766, Avg Damage: 2217.58
+全異 - Played: 55224, Avg Damage: 71749.44
+大滿貫 - Played: 54688, Avg Damage: 72395.01
+絕對秩序 - Played: 43786, Avg Damage: 26938.26
+碰碰胡 - Played: 43554, Avg Damage: 2476.98
+六同 - Played: 11060, Avg Damage: 28656.70
+葫蘆 - Played: 6416, Avg Damage: 35127.32
+雙子星 - Played: 4129, Avg Damage: 48373.54
+七同 - Played: 1061, Avg Damage: 92769.91
+兩極 - Played: 295, Avg Damage: 356221.93
+八重奏 - Played: 50, Avg Damage: 1166374.40

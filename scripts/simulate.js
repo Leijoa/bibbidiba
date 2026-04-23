@@ -21,7 +21,9 @@ function assignShackleForStage(levelIndex, playerRelics) {
 
 class GameSimulation {
     constructor() {
-        this.player = { hp: 3, gold: 20, relics: [], maxRolls: 2, isInfiniteMode: false };
+        const strategies = ['pairs', 'straights', 'mixed'];
+        const selectedStrategy = strategies[Math.floor(Math.random() * strategies.length)];
+        this.player = { hp: 3, gold: 20, relics: [], maxRolls: 2, isInfiniteMode: false, strategy: selectedStrategy };
         this.stage = { level: 0, enemyHp: 0, enemyMaxHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
         this.battle = { dice: [], rollsLeft: 0, scoreResult: null };
         this.metrics = {
@@ -145,16 +147,32 @@ class GameSimulation {
     aiLockLogic() {
         if (this.stage.activeShackle === 'fragile') return;
 
-        let counts = Array(9).fill(0);
-        this.battle.dice.forEach(d => counts[d.val]++);
+        if (this.player.strategy === 'straights') {
+            let lockedVals = new Set();
+            this.battle.dice.forEach(d => {
+                if (!lockedVals.has(d.val)) {
+                    d.locked = true;
+                    lockedVals.add(d.val);
+                } else {
+                    d.locked = false;
+                }
+            });
+        } else if (this.player.strategy === 'pairs') {
+            let counts = Array(9).fill(0);
+            this.battle.dice.forEach(d => counts[d.val]++);
 
-        this.battle.dice.forEach(d => {
-            let willLock = false;
-            // slightly smarter logic to get higher win rate
-            if (counts[d.val] >= 2) willLock = true;
-            else if (d.val >= 6) willLock = true;
-            d.locked = willLock;
-        });
+            this.battle.dice.forEach(d => {
+                let willLock = false;
+                if (counts[d.val] >= 2) willLock = true;
+                else if (d.val >= 6) willLock = true;
+                d.locked = willLock;
+            });
+        } else {
+            // Mixed strategy: randomize per turn or just lock 6,7,8
+            this.battle.dice.forEach(d => {
+                d.locked = d.val >= 6;
+            });
+        }
     }
 
     fireAttack() {
