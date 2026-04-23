@@ -74,7 +74,6 @@ export const SHACKLE_DB = [
     { id: 'inversion', name: '【顛倒是非】', desc: '骰子的顏色樣式隨機錯亂（例如 1 變成紅底）。', type: 'light' },
     { id: 'dizziness', name: '【暈眩】', desc: '每次鎖定/解鎖骰子，盤面上所有骰子位置大洗牌。', type: 'light' },
     { id: 'noise', name: '【噪音】', desc: '螢幕在重骰時劇烈晃動，伴隨雜亂音效。', type: 'light' },
-    { id: 'amnesia', name: '【健忘】', desc: '隱藏本局戰鬥中的歷史最高傷害與牌型紀錄提示。', type: 'light' },
     { id: 'sticky', name: '【黏稠液體】', desc: '依鎖定骰子數量，在重骰的瞬間，需支付同等骰子數量的金幣（金幣不足無法擲骰）。', type: 'light' },
     { id: 'greedy', name: '【貪婪稅】', desc: '點擊「重骰」需額外消耗 2 枚金幣。', type: 'light' },
     { id: 'vampire', name: '【吸血鬼】', desc: '敵人回合結束時若未死，偷取玩家 5 枚金幣。', type: 'light' },
