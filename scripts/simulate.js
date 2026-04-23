@@ -286,6 +286,16 @@ class GameSimulation {
                 }
             });
         }
+        // Enforce rusty lock limit
+        if (this.stage.activeShackle === 'rusty') {
+            let currentlyLocked = 0;
+            this.battle.dice.forEach(d => {
+                if (d.locked) {
+                    currentlyLocked++;
+                    if (currentlyLocked > 6) d.locked = false;
+                }
+            });
+        }
     }
 
     fireAttack() {
@@ -304,6 +314,10 @@ class GameSimulation {
             finalDamage = Math.floor(finalDamage * 1.5);
         }
         let dmg = finalDamage;
+
+        if (this.stage.activeShackle === 'ironwall') {
+            dmg = Math.floor(dmg * 0.8);
+        }
 
         if (this.stage.activeShackle === 'absolutebarrier' && !this.stage.hasAttackedThisStage) {
             dmg = 0;
