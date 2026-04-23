@@ -540,12 +540,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         result.globalNotes.push('【平庸之善】發動: 總倍率提升至 x5.0。');
     }
 
-    if (shackleConfig && shackleConfig.id === 'hardcap') {
-        if (result.finalMultiplier > 10.0) {
-            result.finalMultiplier = 10.0;
-            result.globalNotes.push('【上限鎖死】發動: 總倍率鎖死為 x10.0。');
-        }
-    }
+
     
     result.finalScore = result.totalBase * result.finalMultiplier;
 

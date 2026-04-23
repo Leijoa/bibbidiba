@@ -106,7 +106,7 @@ export const SHACKLE_DB = [
     { id: 'chaoslaw', name: '【混沌法則】', desc: 'A 區（同數）與 B 區（順子）的倍率計算表互相對調。', type: 'heavy' },
     { id: 'sealeddoor', name: '【封印之門】', desc: '盤面必須包含「對子」以上的同數牌型，否則本次攻擊傷害歸零。', type: 'heavy' },
     { id: 'blackhole', name: '【黑洞】', desc: '骰子點數「8」在攻擊結算時會強制被吸走，變成「1」。', type: 'heavy' },
-    { id: 'hardcap', name: '【上限鎖死】', desc: '單次攻擊的最終倍率（Final Multiplier）最高無法超過 x10.0。', type: 'heavy' },
+    { id: 'hardcap', name: '【上限鎖死】', desc: '最多只能同時鎖定四顆骰子。', type: 'heavy' },
     { id: 'relicseal', name: '【遺物封印】', desc: '戰鬥期間，隨機使玩家背包中的 2 個遺物效果暫停運作。', type: 'heavy' },
     { id: 'oblivion', name: '【忘卻】', desc: '無視所有來自遺物的「基礎點數」加成（如大一到大八）。', type: 'heavy' },
     { id: 'exploitation', name: '【剝削】', desc: '所有遺物的觸發倍率效果強制減半（例如 x3.0 變 x1.5）。', type: 'heavy' },

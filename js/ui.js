@@ -74,7 +74,7 @@ export function showToast(msg, callback) {
     // Reposition all active toasts
     const spacing = 10;
     let currentY = window.innerHeight / 2 - 50; // Start roughly at middle
-
+    
     // We position them relative to top or bottom? Let's just stack them downwards from middle
     for (let i = activeToasts.length - 1; i >= 0; i--) {
         let t = activeToasts[i];
@@ -84,10 +84,10 @@ export function showToast(msg, callback) {
 
     setTimeout(() => {
         toast.style.opacity = '0';
-        setTimeout(() => {
-            toast.remove();
+        setTimeout(() => { 
+            toast.remove(); 
             activeToasts = activeToasts.filter(t => t !== toast);
-            if(callback) callback();
+            if(callback) callback(); 
         }, 300);
     }, 1500);
 }
