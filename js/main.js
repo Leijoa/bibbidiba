@@ -162,7 +162,8 @@ function saveGame() {
             enemyHp: stage.enemyHp,
             turnsLeft: stage.turnsLeft,
             activeShackle: stage.activeShackle,
-            shackleMeta: stage.shackleMeta
+            shackleMeta: stage.shackleMeta,
+            hasAttackedThisStage: stage.hasAttackedThisStage
         },
         battle: {
             state: battle.state,
@@ -355,6 +356,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
         stage.turnsLeft = parsedData.stage.turnsLeft ?? enemy.turns;
         stage.activeShackle = parsedData.stage.activeShackle || null;
         stage.shackleMeta = parsedData.stage.shackleMeta || null;
+        stage.hasAttackedThisStage = parsedData.stage.hasAttackedThisStage || false;
 
         if (parsedData.player && parsedData.player.isInfiniteMode !== undefined) {
             player.isInfiniteMode = parsedData.player.isInfiniteMode;
