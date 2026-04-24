@@ -327,9 +327,9 @@ export function renderDice(battle, activeHighlight, player) {
             }
             if (val === 7 || val === 8) {
                 if (player.relics.includes('fusion_peak')) { baseVal = val + Math.floor(player.gold / 20) * 5; isEnhanced = true; }
-                if (player.relics.includes('fusion_titan')) { baseVal = baseVal * (1 + E); isEnhanced = true; }
+                if (player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
             }
-            if (val === 6 && player.relics.includes('fusion_titan')) { baseVal = baseVal * (1 + E); isEnhanced = true; }
+            if (val === 6 && player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
             if (val === 2 && player.relics.includes('fusion_bloody')) {
                 let lostHp = 3 - player.hp;
                 baseVal = 30 + (lostHp > 0 ? lostHp * 10 : 0); isEnhanced = true;
@@ -691,7 +691,9 @@ export function renderSoulsModal(metaData) {
         { id: 'hp', name: '❤️ 體魄鍛鍊', desc: '最大 HP +1', max: 2, cost: 10 },
         { id: 'discount', name: '🏷️ 商店折扣', desc: '商店遺物價格 -2 金幣', max: 3, cost: 5 },
         { id: 'startGold', name: '💰 初始資金', desc: '初始金幣 +10', max: 3, cost: 5 },
-        { id: 'rerolls', name: '🎲 骰子掌握', desc: '初始重骰次數 +1', max: 2, cost: 15 }
+        { id: 'rerolls', name: '🎲 骰子掌握', desc: '初始重骰次數 +1', max: 2, cost: 15 },
+        { id: 'startRelic', name: '🎁 初始裝備', desc: '開局隨機獲得 1 個普通遺物', max: 1, cost: 30 },
+        { id: 'finalDamage', name: '⚔️ 力量覺醒', desc: '最終傷害 +10%', max: 5, cost: 20 }
     ];
 
     el.soulsContent.innerHTML = upgDefs.map(u => {

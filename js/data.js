@@ -85,20 +85,20 @@ export const RELIC_DB = [
     { id: 'fusion_pillar', name: '【中流砥柱】', desc: '4, 5 的點數倍率為 3x。每擊破一隻敵人，此倍率永久增加 +0.2x。', price: 0, rarity: 5 },
     { id: 'fusion_peak', name: '【登峰造極】', desc: '7, 8 點數隨「目前持有的金幣」成長（每 20 金幣，基礎點數 +5）。', price: 0, rarity: 5 },
     { id: 'fusion_nebula', name: '【微縮星雲】', desc: '1, 2, 3 的倍率隨「目前無標籤骰子數」成長（每有一顆散牌，倍率 +1.0x）。', price: 0, rarity: 5 },
-    { id: 'fusion_samsara', name: '【六道輪迴】', desc: '散牌點數基礎為 20。盤面上每多一顆 6，此數值隨關卡層數(E)額外增加。', price: 0, rarity: 5 },
+    { id: 'fusion_samsara', name: '【六道輪迴】', desc: '散牌點數基礎為 20。盤面上每多一顆 6，此數值隨關卡層數(E)額外增加（E x 2）。', price: 0, rarity: 5 },
     { id: 'fusion_recycle', name: '【回收領主】', desc: '刷新商店不花錢。且每次點擊刷新，該局全域傷害永久 +1%。', price: 0, rarity: 5 },
     { id: 'fusion_fortune', name: '【五福中天】', desc: '4, 5 的倍率隨「5 的出現次數」累計成長。每出現過一次 5，倍率 +0.05x。', price: 0, rarity: 5 },
     { id: 'fusion_miser', name: '【黃金守財奴】', desc: '取消重骰扣錢。每回合結束時，根據持有金幣獲得「複利」傷害加成。', price: 0, rarity: 5 },
-    { id: 'fusion_arithmetic', name: '【等差死神】', desc: '每多一種數字，點數總和隨關卡層數(E)成長（+8×E）。', price: 0, rarity: 5 },
+    { id: 'fusion_arithmetic', name: '【等差死神】', desc: '每多一種數字，點數總和隨關卡層數(E)成長（+5×E）。', price: 0, rarity: 5 },
     { id: 'fusion_empire', name: '【帝國遺產】', desc: '戰鬥金幣獎勵隨「總累積金幣」成長（每賺過 1000 金，傷害 +20%）。', price: 0, rarity: 5 },
     { id: 'fusion_bloody', name: '【血色聖戰】', desc: '2 的點數為 30。且每失去 1 點 HP，所有骰子基礎點數永久 +10。', price: 0, rarity: 5 },
     { id: 'fusion_chaos', name: '【混沌原力】', desc: '奇偶共生：若盤面 4 奇 4 偶，倍率隨「已擁有的遺物數量」成長。', price: 0, rarity: 5 },
     { id: 'fusion_scales', name: '【天秤之極】', desc: '絕對秩序門檻降至 6。倍率隨「已損生命值」成長（1 HP 時倍率翻 3 倍）。', price: 0, rarity: 5 },
-    { id: 'fusion_ares', name: '【孤傲戰神】', desc: '若同時存在 1 和 8，傷害隨關卡層數(E)指數成長（1.5E）。', price: 0, rarity: 5 },
+    { id: 'fusion_ares', name: '【孤傲戰神】', desc: '若同時存在 1 和 8，傷害隨關卡層數(E)成長（1.0 + 0.8E）。', price: 0, rarity: 5 },
     { id: 'fusion_eternity', name: '【一念永恆】', desc: '最後一擊且為無標籤時，傷害乘上「剩餘重骰次數的平方」。', price: 0, rarity: 5 },
     { id: 'fusion_glimmer', name: '【微光聖戰】', desc: '弱勢牌型（對子）倍率隨「對戰回合數」成長。戰鬥拖越久，傷害越高。', price: 0, rarity: 5 },
     { id: 'fusion_miracle', name: '【凡骨奇蹟】', desc: '無標籤時，傷害隨「目前解鎖的牌型數量」成長。', price: 0, rarity: 5 },
-    { id: 'fusion_titan', name: '【泰坦之握】', desc: '6, 7, 8 基礎點數隨關卡層數(E)翻倍。對 Boss 傷害隨關卡額外增幅。', price: 0, rarity: 5 },
+    { id: 'fusion_titan', name: '【泰坦之握】', desc: '6, 7, 8 基礎點數增加(E x 3)。對 Boss 傷害翻倍。', price: 0, rarity: 5 },
     { id: 'fusion_infinite', name: '【無限數列】', desc: '順子倍率隨擊殺數成長。', price: 0, rarity: 5 },
 
 ];
@@ -106,14 +106,14 @@ export const RELIC_DB = [
 export const ENEMY_DB = [
     { name: '史萊姆', hp: 1000, turns: 3 },                  // Stage 1 (Index 0)
     { name: '哥布林', hp: 2500, turns: 3 },                  // Stage 2 (Index 1)
-    { name: '巨石傀儡 (菁英)', hp: 6000, turns: 3 },           // Stage 3 (Index 2)
-    { name: '幽暗衛士', hp: 12000, turns: 3 },               // Stage 4 (Index 3)
-    { name: '吸血鬼男爵', hp: 25000, turns: 3 },             // Stage 5 (Index 4)
-    { name: '深淵魔龍 (菁英)', hp: 55000, turns: 3 },          // Stage 6 (Index 5)
-    { name: '墮落天使', hp: 100000, turns: 3 },              // Stage 7 (Index 6)
-    { name: '虛空行者', hp: 200000, turns: 3 },              // Stage 8 (Index 7)
-    { name: '混沌騎士 (菁英)', hp: 320000, turns: 3 },         // Stage 9 (Index 8)
-    { name: '創世神 (最終Boss)', hp: 500000, turns: 3 },     // Stage 10 (Index 9)
+    { name: '巨石傀儡 (菁英)', hp: 8000, turns: 3 },           // Stage 3 (Index 2)
+    { name: '幽暗衛士', hp: 18000, turns: 3 },               // Stage 4 (Index 3)
+    { name: '吸血鬼男爵', hp: 45000, turns: 3 },             // Stage 5 (Index 4)
+    { name: '深淵魔龍 (菁英)', hp: 120000, turns: 3 },          // Stage 6 (Index 5)
+    { name: '墮落天使', hp: 350000, turns: 3 },              // Stage 7 (Index 6)
+    { name: '虛空行者', hp: 900000, turns: 3 },              // Stage 8 (Index 7)
+    { name: '混沌騎士 (菁英)', hp: 2500000, turns: 3 },         // Stage 9 (Index 8)
+    { name: '創世神 (最終Boss)', hp: 8000000, turns: 3 },     // Stage 10 (Index 9)
 ];
 
 export const SHACKLE_DB = [

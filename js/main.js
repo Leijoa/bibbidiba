@@ -22,7 +22,9 @@ let metaData = {
         hp: 0,         // 等級 0~2 (+1 最大生命)
         discount: 0,   // 等級 0~3 (-2 商店金幣)
         startGold: 0,  // 等級 0~3 (+10 初始金幣)
-        rerolls: 0     // 等級 0~2 (+1 初始重骰)
+        rerolls: 0,    // 等級 0~2 (+1 初始重骰)
+        startRelic: 0, // 等級 0~1 (+1 初始遺物)
+        finalDamage: 0 // 等級 0~5 (+10% 最終傷害)
     }
 };
 
@@ -349,6 +351,16 @@ function initNewGame() {
         highestDamageCombo: '',
         isInfiniteMode: false
     };
+
+    if (metaData.upgrades.startRelic > 0) {
+        let available = RELIC_DB.filter(r => r.price > 0 && r.rarity === 1); // Give a basic relic
+        if(available.length > 0) {
+            let r = available[Math.floor(Math.random() * available.length)];
+            player.relics.push(r.id);
+            unlockCollectionItem('relic', r.id);
+        }
+    }
+
     loadStage(0);
 }
 
@@ -356,7 +368,9 @@ function assignShackleForStage(levelIndex) {
     let shackleType = null;
     if (levelIndex < ENEMY_DB.length) {
         if (levelIndex === 2) shackleType = 'light';
-        else if (levelIndex === 4) shackleType = 'heavy';
+        else if (levelIndex === 5) shackleType = 'heavy';
+        else if (levelIndex === 8) shackleType = 'light';
+        else if (levelIndex === 9) shackleType = 'heavy';
     } else {
         let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
         let m = ((infiniteLevel - 1) % 3) + 1;
@@ -804,6 +818,13 @@ window.fireAttack = function() {
         finalDamage = Math.floor(finalDamage * 1.5);
         UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
     }
+
+    // Meta-progression final damage buff
+    if (metaData && metaData.upgrades && metaData.upgrades.finalDamage > 0) {
+        let buffMulti = 1.0 + (metaData.upgrades.finalDamage * 0.1);
+        finalDamage = Math.floor(finalDamage * buffMulti);
+    }
+
     let dmg = finalDamage;
 
     if (stage.activeShackle === 'ironwall') {

@@ -57,7 +57,9 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated, stage, player) 
 function assignShackleForStage(levelIndex) {
     let shackleType = null;
     if (levelIndex === 2) shackleType = 'light';
-    else if (levelIndex === 4) shackleType = 'heavy';
+    else if (levelIndex === 5) shackleType = 'heavy';
+    else if (levelIndex === 8) shackleType = 'light';
+    else if (levelIndex === 9) shackleType = 'heavy';
 
     if (shackleType) {
         let candidates = SHACKLE_DB.filter(s => s.type === shackleType);
@@ -111,6 +113,7 @@ function simulateShop(player) {
     let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random());
     for(let r of available) {
         let price = r.price;
+        price = Math.max(1, price - (player.discountUpg * 2));
         if(player.relics.includes('vip')) price = Math.floor(price * 0.8);
         if(player.gold >= price) {
             player.gold -= price;
@@ -136,7 +139,7 @@ function autoPlayBattle(stage, player) {
     if(stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
 
     while(stage.enemyHp > 0 && player.hp > 0 && stage.turnsLeft > 0) {
-        let maxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2) + (player.berserkerBonus || 0);
+        let maxRolls = 2 + player.rerollsUpg + (player.relics.filter(id => id === 'refresh').length * 2) + (player.berserkerBonus || 0);
         if(stage.activeShackle === 'fatigue') maxRolls = Math.max(0, maxRolls - 1);
         if(stage.activeShackle === 'destinychain') maxRolls = 1;
 
@@ -171,6 +174,7 @@ function autoPlayBattle(stage, player) {
         if (player.relics.includes('dragonslayer') && [2, 5, 8, 9].includes(stage.level)) {
             dmg = Math.floor(dmg * 1.5);
         }
+        dmg = Math.floor(dmg * player.maxMetaBuff);
 
         let actualDamage = Math.min(dmg, stage.enemyHp);
         stage.enemyHp -= dmg;
@@ -208,7 +212,12 @@ function runSimulation() {
 
     for(let i=0; i<TOTAL_RUNS; i++) {
         stats.totalRuns++;
-        let player = { hp: 3, gold: 20, relics: [], totalGoldEarned: 20 };
+        let player = { hp: 5, gold: 50, relics: [], totalGoldEarned: 50, maxMetaBuff: 1.5, startRelic: true, rerollsUpg: 2, discountUpg: 3 };
+
+        // simulate startRelic
+        let av = RELIC_DB.filter(r => r.price > 0 && r.rarity === 1);
+        player.relics.push(av[Math.floor(Math.random()*av.length)].id);
+
         let stage = { level: 0 };
 
         let won = false;

@@ -194,7 +194,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     let freqs = counts.slice(1).filter(c => c > 0);
     if (playerRelics.includes('fusion_arithmetic')) {
         let diffCount = counts.filter(c => c > 0).length;
-        let bonus = diffCount * 8 * E;
+        let bonus = diffCount * 5 * E;
         totalBase += bonus;
         globalNotes.push(`【等差死神】發動: 增加 ${bonus} 基礎點數`);
     } else if (playerRelics.includes('arithmetic')) {
@@ -459,7 +459,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
         let scatterCount = workingDice.length - usedIds.size;
         if (scatterCount > 0) {
-            let bonus = counts[6] > 0 ? (counts[6] * E * 5) : 0; // 額外增加
+            let bonus = counts[6] > 0 ? (counts[6] * E * 2) : 0; // 額外增加
             let scatterBase = 20 + bonus;
             workingDice.forEach(d => {
                 if (!usedIds.has(d.id)) {
@@ -556,7 +556,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     }
 
     if (playerRelics.includes('fusion_ares') && counts[1] > 0 && counts[8] > 0) {
-        let amt = Math.pow(1.5, E);
+        let amt = 1.0 + (E * 0.8);
         globalMulti *= amt;
         globalNotes.push(`【孤傲戰神】 x${amt.toFixed(1)}`);
     }
@@ -582,7 +582,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     }
 
     if (playerRelics.includes('fusion_titan') && [2, 5, 8, 9].includes(stageLevel)) {
-        let amt = 1.0 + (E * 0.5);
+        let amt = 2.0;
         globalMulti *= amt;
         globalNotes.push(`【泰坦之握】 x${amt.toFixed(1)}`);
     }
