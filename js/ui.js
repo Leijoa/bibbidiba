@@ -1,5 +1,5 @@
 // js/ui.js
-import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, SHACKLE_DB, getEnemy } from './data.js';
+import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, SHACKLE_DB, getEnemy, FUSION_RECIPES } from './data.js';
 
 // 緩存 DOM 元素
 export const el = {
@@ -42,7 +42,12 @@ export const el = {
     collectionContent: document.getElementById('collection-content'),
     tabHands: document.getElementById('tab-hands'),
     tabRelics: document.getElementById('tab-relics'),
-    tabShackles: document.getElementById('tab-shackles')
+    tabShackles: document.getElementById('tab-shackles'),
+    btnSouls: document.getElementById('btn-souls'),
+    soulsModal: document.getElementById('souls-modal'),
+    btnCloseSouls: document.getElementById('btn-close-souls'),
+    soulsContent: document.getElementById('souls-content'),
+    soulsHeaderText: document.getElementById('souls-header-text')
 };
 
 if (document.getElementById('btn-rules')) {
@@ -106,10 +111,14 @@ export function renderRulesDB() {
         html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-4 mb-2 border-b border-slate-700 pb-1">${g.title}</h3>`;
         html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">`;
         RULE_DB[g.key].forEach(rule => {
+            let rStyle = RARITY[rule.rarity] || RARITY[1];
             html += `
             <div class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700">
                 <div>
-                    <div class="text-sm md:text-base font-bold text-slate-200">${rule.name}</div>
+                    <div class="flex items-center gap-2">
+                        <div class="text-sm md:text-base font-bold text-slate-200">${rule.name}</div>
+                        ${rule.rarity ? `<span class="text-[9px] md:text-[10px] px-1 py-0.5 rounded ${rStyle.bg} ${rStyle.color} border ${rStyle.border}">${rStyle.label}</span>` : ''}
+                    </div>
                     <div class="text-[10px] md:text-sm text-slate-400">${rule.desc}</div>
                 </div>
                 <div class="text-base md:text-lg font-black text-amber-400">${rule.multi}</div>
@@ -189,7 +198,7 @@ window.showShackleInfo = function(id) {
 };
 
 // --- ★ 任務4：遺物點擊顯示說明 ---
-export function renderInventory(player) {
+export function renderInventory(player, battle) {
     el.inventoryGrid.className = "flex flex-wrap gap-1.5";
     if (player.relics.length === 0) {
         el.inventoryGrid.innerHTML = `<div class="text-[10px] text-slate-500 font-bold p-1">背包空空如也</div>`;
@@ -209,6 +218,17 @@ export function renderInventory(player) {
 
         let r = RELIC_DB.find(x => x.id === id);
         let style = RARITY[r.rarity];
+        let isFusionMaterial = false;
+        if (player && player.relics) {
+            for (let fid in FUSION_RECIPES) {
+                let rec = FUSION_RECIPES[fid];
+                if ((rec.mat1 === r.id && player.relics.includes(rec.mat2)) ||
+                    (rec.mat2 === r.id && player.relics.includes(rec.mat1))) {
+                    isFusionMaterial = true;
+                    break;
+                }
+            }
+        }
         return `
         <div onclick="window.showRelicInfo('${r.id}')" class="${style.bg} px-2 py-1 rounded-full border ${style.border} shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform active:scale-95">
             <span class="text-[10px] md:text-xs font-black ${style.color} whitespace-nowrap">${r.name}</span>
@@ -237,7 +257,7 @@ window.showRelicInfo = function(id) {
 };
 
 // --- 巨型八邊形骰子渲染 ---
-export function renderDice(battle, activeHighlight) {
+export function renderDice(battle, activeHighlight, player) {
     let shackleId = window.getStageActiveShackle ? window.getStageActiveShackle() : null;
     let shackleMeta = window.getShackleMeta ? window.getShackleMeta() : null;
 
@@ -274,10 +294,10 @@ export function renderDice(battle, activeHighlight) {
                     if (d.locked) {
                         innerColor = "bg-emerald-900"; outerColor = "bg-emerald-400"; textColor = "text-emerald-300"; extraClass = "drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"; innerHover = "";
                     } else {
-                        if (d.matchedGroups['D']) { innerColor = "bg-teal-900"; outerColor = "bg-teal-400"; textColor = "text-teal-200"; }
-                        else if (d.matchedGroups['C']) { innerColor = "bg-purple-900"; outerColor = "bg-purple-400"; textColor = "text-purple-200"; }
-                        else if (d.matchedGroups['B']) { innerColor = "bg-pink-900"; outerColor = "bg-pink-400"; textColor = "text-pink-200"; }
-                        else if (d.matchedGroups['A']) { innerColor = "bg-blue-900"; outerColor = "bg-blue-400"; textColor = "text-blue-200"; }
+                        if (d.matchedGroups['D']) { innerColor = "bg-amber-900"; outerColor = "bg-yellow-400"; textColor = "text-yellow-200"; extraClass = "drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]"; }
+                        else if (d.matchedGroups['C']) { innerColor = "bg-purple-900"; outerColor = "bg-purple-400"; textColor = "text-purple-200"; extraClass = "drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]"; }
+                        else if (d.matchedGroups['B']) { innerColor = "bg-green-900"; outerColor = "bg-green-400"; textColor = "text-green-200"; extraClass = "drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]"; }
+                        else if (d.matchedGroups['A']) { innerColor = "bg-blue-900"; outerColor = "bg-blue-400"; textColor = "text-blue-200"; extraClass = "drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"; }
                     }
                 }
             } else if (d.locked) {
@@ -296,6 +316,42 @@ export function renderDice(battle, activeHighlight) {
         
         let valDisplay = d.val;
         
+        let baseVal = d.val;
+        let isEnhanced = false;
+        if (player && player.relics) {
+            let val = d.val;
+            let E = (window.getStageLevel ? window.getStageLevel() : 0) + 1;
+
+            if (val === 1 || val === 2) {
+                if (player.relics.includes('fusion_source')) { baseVal = 15 + (E * 2.5); isEnhanced = true; }
+            }
+            if (val === 7 || val === 8) {
+                if (player.relics.includes('fusion_peak')) { baseVal = val + Math.floor(player.gold / 20) * 5; isEnhanced = true; }
+                if (player.relics.includes('fusion_titan')) { baseVal = baseVal * (1 + E); isEnhanced = true; }
+            }
+            if (val === 6 && player.relics.includes('fusion_titan')) { baseVal = baseVal * (1 + E); isEnhanced = true; }
+            if (val === 2 && player.relics.includes('fusion_bloody')) {
+                let lostHp = 3 - player.hp;
+                baseVal = 30 + (lostHp > 0 ? lostHp * 10 : 0); isEnhanced = true;
+            }
+
+            if (!isEnhanced && player.relics.includes('b' + val)) {
+                if (val===1) baseVal=10; else if(val===2) baseVal=10; else if(val===3) baseVal=11; else if(val===4) baseVal=11; else if(val===5) baseVal=11; else if(val===6) baseVal=11; else if(val===7) baseVal=12; else if(val===8) baseVal=12;
+                isEnhanced = true;
+            }
+            if (player.relics.includes('fusion_bloody')) {
+                let lostHp = 3 - player.hp;
+                if (lostHp > 0 && val !== 2) { baseVal += lostHp * 10; isEnhanced = true; }
+            }
+        }
+
+        let baseBadgeHtml = '';
+        if (battle.state !== 'IDLE' && battle.state !== 'ROLLING') {
+             let badgeClass = isEnhanced ? "bg-amber-500 text-amber-950 shadow-[0_0_8px_rgba(245,158,11,0.8)]" : "bg-slate-700 text-slate-300 border border-slate-500";
+             baseBadgeHtml = `<div class="absolute -top-2 -left-2 ${badgeClass} text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full z-20">${Math.floor(baseVal)}</div>`;
+        }
+
+
         // UI Hook: illusion - fake numbers
         if (shackleId === 'illusion' && !d.locked && battle.state !== 'IDLE' && battle.state !== 'ROLLING') {
             valDisplay = shackleMeta && shackleMeta.fakeNumber ? shackleMeta.fakeNumber : 8;
@@ -327,6 +383,7 @@ export function renderDice(battle, activeHighlight) {
                 <span class="text-2xl md:text-4xl font-black ${textColor}">${valDisplay}</span>
             </div>
             ${lockIconHtml}
+            ${baseBadgeHtml}
         </div>`;
     }).join('');
 
@@ -433,9 +490,14 @@ export function renderShopItems(shopItems, player) {
         <div class="bg-slate-800 p-3 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
             <div class="absolute top-0 right-0 w-20 h-20 ${style.bg} blur-2xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
             <div class="relative z-10">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-base md:text-xl font-black ${style.color}">${r.name}</h3>
-                    <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                <div class="flex flex-col gap-1 mb-2">
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-base md:text-xl font-black ${style.color}">${r.name}</h3>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                            ${isFusionMaterial ? '<span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-bold shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse">✨ 可融合</span>' : ''}
+                        </div>
+                    </div>
                 </div>
                 <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${r.desc}</p>
             </div>
@@ -549,10 +611,15 @@ export function renderCollectionModal(tab) {
                 const nameStr = unlocked ? `${rule.name} <span class="text-emerald-400 text-xs ml-1">✅</span>` : `???`;
                 const descStr = unlocked ? rule.desc : '未解鎖';
                 const opacity = unlocked ? 'opacity-100' : 'opacity-50 grayscale';
+                let rStyle = RARITY[rule.rarity] || RARITY[1];
+                let rarityHtml = (unlocked && rule.rarity) ? `<span class="text-[9px] md:text-[10px] px-1 py-0.5 rounded ${rStyle.bg} ${rStyle.color} border ${rStyle.border}">${rStyle.label}</span>` : '';
                 html += `
                 <div class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700 ${opacity}">
                     <div>
-                        <div class="text-sm md:text-base font-bold text-slate-200">${nameStr}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-sm md:text-base font-bold text-slate-200">${nameStr}</div>
+                            ${rarityHtml}
+                        </div>
                         <div class="text-[10px] md:text-sm text-slate-400">${descStr}</div>
                     </div>
                 </div>`;
@@ -614,3 +681,50 @@ export function renderCollectionModal(tab) {
     
     el.collectionContent.innerHTML = html;
 }
+
+
+export function renderSoulsModal(metaData) {
+    if (!el.soulsContent) return;
+    el.soulsHeaderText.innerText = `目前持有靈魂：${metaData.souls} 👻`;
+
+    const upgDefs = [
+        { id: 'hp', name: '❤️ 體魄鍛鍊', desc: '最大 HP +1', max: 2, cost: 10 },
+        { id: 'discount', name: '🏷️ 商店折扣', desc: '商店遺物價格 -2 金幣', max: 3, cost: 5 },
+        { id: 'startGold', name: '💰 初始資金', desc: '初始金幣 +10', max: 3, cost: 5 },
+        { id: 'rerolls', name: '🎲 骰子掌握', desc: '初始重骰次數 +1', max: 2, cost: 15 }
+    ];
+
+    el.soulsContent.innerHTML = upgDefs.map(u => {
+        let currentLv = metaData.upgrades[u.id] || 0;
+        let isMax = currentLv >= u.max;
+        let canAfford = metaData.souls >= u.cost;
+
+        let dots = Array(u.max).fill().map((_, i) => i < currentLv ? '🟢' : '⚫').join(' ');
+        let btnHtml = isMax
+            ? `<button disabled class="bg-slate-700 text-slate-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed">已滿級</button>`
+            : `<button onclick="window.buySoulUpgrade('${u.id}', ${u.cost})" class="${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_10px_rgba(79,70,229,0.5)]' : 'bg-slate-700 text-slate-500 cursor-not-allowed'} font-black py-2 px-4 rounded-lg transition-transform active:scale-95" ${canAfford ? '' : 'disabled'}>花費 ${u.cost} 👻</button>`;
+
+        return `
+        <div class="bg-slate-900/50 border border-indigo-900/50 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+                <div class="text-base font-black text-indigo-300">${u.name}</div>
+                <div class="text-xs text-slate-400 mt-0.5">${u.desc}</div>
+                <div class="text-xs mt-1">${dots} (${currentLv}/${u.max})</div>
+            </div>
+            <div class="w-full sm:w-auto text-right">
+                ${btnHtml}
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+window.buySoulUpgrade = function(id, cost) {
+    let meta = window.getMetaData();
+    if (meta.souls >= cost) {
+        meta.souls -= cost;
+        meta.upgrades[id] = (meta.upgrades[id] || 0) + 1;
+        window.saveMetaData();
+        renderSoulsModal(meta);
+    }
+};

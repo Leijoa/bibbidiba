@@ -127,7 +127,15 @@ function applyShacklePostHooks(scoreResult, shackleConfig, workingDice, baseCont
     }
 }
 
-export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, shackleConfig = null, isInitialRoll = false, turnsLeft = 0) {
+export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, shackleConfig = null, isInitialRoll = false, turnsLeft = 0, env = {}) {
+    let stageLevel = env.level || 0;
+    let E = stageLevel + 1;
+    let currentGold = env.gold || 0;
+    let totalGoldEarned = env.totalGoldEarned || 0;
+    let totalRelics = (env.relics || []).length;
+    let unlockedHands = env.unlockedHands || 0;
+    let kills = env.level || 0;
+
     let workingDice = [...dice];
 
     // --- Shackle Pre-Hooks ---
@@ -184,7 +192,12 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
 
     let freqs = counts.slice(1).filter(c => c > 0);
-    if (playerRelics.includes('arithmetic')) {
+    if (playerRelics.includes('fusion_arithmetic')) {
+        let diffCount = counts.filter(c => c > 0).length;
+        let bonus = diffCount * 8 * E;
+        totalBase += bonus;
+        globalNotes.push(`【等差死神】發動: 增加 ${bonus} 基礎點數`);
+    } else if (playerRelics.includes('arithmetic')) {
         let uniqueCount = freqs.length;
         totalBase += uniqueCount * 8;
         globalNotes.push(`【等差數列】 +${uniqueCount * 8} 基礎點數`);
@@ -413,7 +426,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
     let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
-    let orderReq = playerRelics.includes('order') ? 7 : 8;
+    let orderReq = playerRelics.includes('fusion_scales') ? 6 : (playerRelics.includes('order') ? 7 : 8);
 
     let orderUsed = [];
     if (oddCount >= orderReq) {
@@ -433,7 +446,31 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         globalNotes.push('【大雜燴】發動: A、B、C 區同時觸發，+100 基礎點數。');
     }
 
-    if (playerRelics.includes('sixsmooth') && counts[6] > 0) {
+    if (playerRelics.includes('fusion_samsara')) {
+        let usedIds = new Set();
+        let markUsed = (usedArr) => {
+            let availableDice = [...workingDice];
+            usedArr.forEach(val => {
+                let idx = availableDice.findIndex(d => d.val === val && !usedIds.has(d.id));
+                if (idx !== -1) { usedIds.add(availableDice[idx].id); availableDice.splice(idx, 1); }
+            });
+        };
+        markUsed(tagA.used); markUsed(tagB.used); markUsed(tagC.used); markUsed(tagD.used);
+
+        let scatterCount = workingDice.length - usedIds.size;
+        if (scatterCount > 0) {
+            let bonus = counts[6] > 0 ? (counts[6] * E * 5) : 0; // 額外增加
+            let scatterBase = 20 + bonus;
+            workingDice.forEach(d => {
+                if (!usedIds.has(d.id)) {
+                    let originalContribution = baseContributions[d.id] || 0;
+                    totalBase -= originalContribution;
+                    totalBase += scatterBase;
+                }
+            });
+            globalNotes.push(`【六道輪迴】發動: ${scatterCount} 顆散牌變為 ${scatterBase} 點計算。`);
+        }
+    } else if (playerRelics.includes('sixsmooth') && counts[6] > 0) {
         let usedIds = new Set();
         let markUsed = (usedArr) => {
             let availableDice = [...workingDice];
@@ -466,6 +503,97 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     // --- 總乘區計算 ---
     let globalMulti = 1.0;
+
+    // Evaluate Unused/Scatter
+    let usedIdsTemp = new Set();
+    let markUsedTemp = (usedArr) => {
+        let availableDice = [...workingDice];
+        usedArr.forEach(val => {
+            let idx = availableDice.findIndex(d => d.val === val && !usedIdsTemp.has(d.id));
+            if (idx !== -1) { usedIdsTemp.add(availableDice[idx].id); availableDice.splice(idx, 1); }
+        });
+    };
+    markUsedTemp(tagA.used); markUsedTemp(tagB.used); markUsedTemp(tagC.used); markUsedTemp(tagD.used);
+    let scatterCount = workingDice.length - usedIdsTemp.size;
+    let isNoTag = (tagA.name === '無' && tagB.name === '無' && tagC.name === '無' && tagD.name === '無');
+
+    if (playerRelics.includes('fusion_nebula') && (counts[1] > 0 || counts[2] > 0 || counts[3] > 0)) {
+        let amt = 1.0 + scatterCount * 1.0;
+        globalMulti *= amt;
+        globalNotes.push(`【微縮星雲】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_pillar') && (counts[4] > 0 || counts[5] > 0)) {
+        let basePillar = 3.0;
+        let amt = basePillar + (kills * 0.2);
+        globalMulti *= amt;
+        globalNotes.push(`【中流砥柱】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_fortune') && (counts[4] > 0 || counts[5] > 0)) {
+        let fiveCount = kills * 2 + counts[5];
+        let amt = 1.0 + (fiveCount * 0.05);
+        globalMulti *= amt;
+        globalNotes.push(`【五福中天】 x${amt.toFixed(2)}`);
+    }
+
+    if (playerRelics.includes('fusion_chaos')) {
+        let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
+        let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
+        if (oddCount === 4 && evenCount === 4) {
+            let amt = 1.0 + (totalRelics * 0.5);
+            globalMulti *= amt;
+            globalNotes.push(`【混沌原力】 x${amt.toFixed(1)}`);
+        }
+    }
+
+    if (playerRelics.includes('fusion_scales') && tagD.name === '絕對秩序') {
+        let lostHp = 3 - playerHp;
+        let amt = 1.0 + (lostHp * 1.5);
+        if (playerHp === 1) amt *= 3.0;
+        globalMulti *= amt;
+        globalNotes.push(`【天秤之極】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_ares') && counts[1] > 0 && counts[8] > 0) {
+        let amt = Math.pow(1.5, E);
+        globalMulti *= amt;
+        globalNotes.push(`【孤傲戰神】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_eternity') && turnsLeft === 1 && isNoTag) {
+        let amt = rollsLeft * rollsLeft;
+        if (amt < 1) amt = 1;
+        globalMulti *= amt;
+        globalNotes.push(`【一念永恆】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_glimmer') && tagA.name === '對子') {
+        let turnsElapsed = 3 - turnsLeft + 1;
+        let amt = 1.0 + (turnsElapsed * 1.5);
+        globalMulti *= amt;
+        globalNotes.push(`【微光聖戰】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_miracle') && isNoTag) {
+        let amt = 1.0 + (unlockedHands * 0.5);
+        globalMulti *= amt;
+        globalNotes.push(`【凡骨奇蹟】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_titan') && [2, 5, 8, 9].includes(stageLevel)) {
+        let amt = 1.0 + (E * 0.5);
+        globalMulti *= amt;
+        globalNotes.push(`【泰坦之握】 x${amt.toFixed(1)}`);
+    }
+
+    if (playerRelics.includes('fusion_infinite') && tagB.name !== '無') {
+        let amt = 1.0 + (kills * 0.5);
+        globalMulti *= amt;
+        globalNotes.push(`【無限數列】 x${amt.toFixed(1)}`);
+    }
+
+
     let baseABCD = 1.0;
 
     if (shackleConfig && shackleConfig.id === 'oblivion') globalNotes.push('【忘卻】發動: 無視遺物基礎點數。');

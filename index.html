@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>比比丟八-BIBBIDIBA [V4版]</title>
+  <title>比比丟八-BIBBIDIBA [V5版]</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
@@ -31,9 +31,12 @@
       <button id="btn-history" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(147,51,234,0.4)] text-lg">
         歷史牌局
       </button>
+      <button id="btn-souls" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(79,70,229,0.4)] text-lg">
+        👻 靈魂奉獻
+      </button>
     </div>
     <div class="absolute bottom-4 flex flex-col items-center text-slate-500 text-[10px] md:text-xs font-bold">
-      <div>[V4版]</div>
+      <div>[V5版]</div>
       <div class="mt-1 flex gap-2">
         <span>作者:雷爪獅</span>
         <span>Youtube:雷爪獅遊戲頻道</span>
@@ -178,5 +181,14 @@
   </div>
 
   <script type="module" src="js/main.js"></script>
+  <div id="souls-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[90] flex items-center justify-center p-2 backdrop-blur-sm">
+    <div class="bg-slate-800 border-2 border-indigo-600 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-3 border-b border-indigo-900 flex justify-between items-center bg-slate-900 shrink-0">
+        <h2 class="text-xl font-black text-indigo-400 flex items-center gap-2" id="souls-header-text">👻 靈魂奉獻</h2>
+        <button id="btn-close-souls" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+      </div>
+      <div class="p-4 overflow-y-auto flex-grow text-sm flex flex-col gap-3" id="souls-content"></div>
+    </div>
+  </div>
 </body>
 </html>
