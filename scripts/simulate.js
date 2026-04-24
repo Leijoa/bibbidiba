@@ -162,7 +162,7 @@ function autoPlayBattle(stage, player) {
 
         // Attack
         let isInitialRoll = maxRolls === rollsLeft; // if maxRolls === rollsLeft (0 rolls used)
-        let env = { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || player.gold, relics: player.relics, playerHp: player.hp };
+        let env = { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || player.gold, relics: player.relics, playerHp: player.hp, maxHp: player.maxHp || 3 };
 
         let result = calculateEngineScore(dice, player.relics, rollsLeft, player.hp, { id: stage.activeShackle }, isInitialRoll, stage.turnsLeft, env);
 
@@ -224,7 +224,14 @@ function runSimulation() {
 
     for(let i=0; i<TOTAL_RUNS; i++) {
         stats.totalRuns++;
-        let player = { hp: 3, gold: 20, relics: [], totalGoldEarned: 20, maxMetaBuff: 1.0, startRelic: false, rerollsUpg: 0, discountUpg: 0 };
+        let player = { hp: 5, maxHp: 5, gold: 50, relics: [], totalGoldEarned: 50, maxMetaBuff: 1.5, startRelic: true, rerollsUpg: 2, discountUpg: 3 };
+
+        if (player.startRelic) {
+            let av = RELIC_DB.filter(r => r.price > 0 && r.rarity === 1);
+            if (av.length > 0) {
+                player.relics.push(av[Math.floor(Math.random()*av.length)].id);
+            }
+        }
 
         let stage = { level: 0 };
 

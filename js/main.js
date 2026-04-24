@@ -100,6 +100,7 @@ window.unlockCollectionItem = unlockCollectionItem; // Export for external usage
 window.getCollection = () => collection;
 window.getStageActiveShackle = () => stage.activeShackle;
 window.getStageLevel = () => stage.level;
+window.getMaxHp = () => 3 + (metaData.upgrades.hp * 1);
 window.getShackleMeta = () => stage.shackleMeta;
 
 // --- Modular Game Loop Hooks ---
@@ -727,7 +728,7 @@ window.executeRoll = function(isInitial = false) {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp });
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
 
             if (stage.activeShackle === 'blind' && stage.shackleMeta) {
                 let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
@@ -1025,7 +1026,7 @@ function checkRelicFusion() {
 
 function enemyDefeated() {
     let isEliteOrBossFirstAid = [2, 5, 8, 9].includes(stage.level);
-    if (player.relics.includes('firstaid') && isEliteOrBossFirstAid && player.hp < 3) {
+    if (player.relics.includes('firstaid') && isEliteOrBossFirstAid && player.hp < window.getMaxHp()) {
         player.hp++;
         UI.showToast("🚑 【急救包】發動：恢復 1 點 HP！");
     }

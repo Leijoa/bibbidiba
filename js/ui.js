@@ -140,7 +140,7 @@ export function updateHeaderUI(player, stage) {
         el.stageInfo.innerText = `無限塔 ${n}-${m}`;
     }
     
-    let maxHp = 3;
+    let maxHp = window.getMaxHp ? window.getMaxHp() : 3;
     if (window.getStageActiveShackle && window.getStageActiveShackle() === 'wither') {
         maxHp = 1;
     }

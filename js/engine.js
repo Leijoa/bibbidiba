@@ -135,6 +135,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     let totalRelics = (env.relics || []).length;
     let unlockedHands = env.unlockedHands || 0;
     let kills = env.level || 0;
+    let maxHp = env.maxHp || 3;
 
     let workingDice = [...dice];
 
@@ -199,7 +200,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
                 hasBaseRelic = true;
             }
             if (v === 2 && playerRelics.includes('fusion_bloody')) {
-                let lostHp = 3 - playerHp;
+                let lostHp = Math.max(0, maxHp - playerHp);
                 baseVal = 30 + (lostHp > 0 ? lostHp * 10 : 0);
                 hasBaseRelic = true;
             }
@@ -208,7 +209,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
                 baseVal = relicBaseVals[v];
             }
             if (playerRelics.includes('fusion_bloody')) {
-                 let lostHp = 3 - playerHp;
+                 let lostHp = Math.max(0, maxHp - playerHp);
                  if (lostHp > 0 && v !== 2) {
                      baseVal += lostHp * 10;
                  }
@@ -584,7 +585,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     }
 
     if (playerRelics.includes('fusion_scales') && tagD.name === '絕對秩序') {
-        let lostHp = 3 - playerHp;
+        let lostHp = Math.max(0, maxHp - playerHp);
         let amt = 1.0 + (lostHp * 1.5);
         if (playerHp === 1) amt *= 3.0;
         globalMulti *= amt;
