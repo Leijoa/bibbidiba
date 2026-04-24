@@ -733,7 +733,7 @@ window.executeRoll = function(isInitial = false) {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
 
             if (stage.activeShackle === 'blind' && stage.shackleMeta) {
                 let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
@@ -789,7 +789,7 @@ window.fireAttack = function() {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp });
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
             UI.showToast(`🖐️ 【手抖】發動：強制重骰了 1 顆未鎖定的骰子！`);
         }
     }
