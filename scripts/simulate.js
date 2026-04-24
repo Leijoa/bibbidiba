@@ -15,7 +15,8 @@ let stats = {
         2: { total: 0, count: 0 },
         5: { total: 0, count: 0 },
         9: { total: 0, count: 0 }
-    }
+    },
+    stageClears: { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 }
 };
 
 // Initialize structures
@@ -240,6 +241,7 @@ function runSimulation() {
             }
 
             // Stage Cleared
+            stats.stageClears[lv]++;
             let baseEarn = 10 + (stage.level * 2);
             if([2, 5, 8, 9].includes(stage.level)) baseEarn += 15;
             player.gold += baseEarn;
@@ -289,7 +291,19 @@ function generateReport() {
     report += `Total Runs: ${stats.totalRuns}\n`;
     report += `Win Rate: ${((stats.winCount / stats.totalRuns) * 100).toFixed(2)}%\n`;
 
-    report += `\n[特定關卡平均傷害]\n`;
+    report += `\n[各層通關率]
+- 第 1 關: ${((stats.stageClears[0] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 2 關: ${((stats.stageClears[1] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 3 關: ${((stats.stageClears[2] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 4 關: ${((stats.stageClears[3] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 5 關: ${((stats.stageClears[4] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 6 關: ${((stats.stageClears[5] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 7 關: ${((stats.stageClears[6] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 8 關: ${((stats.stageClears[7] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 9 關: ${((stats.stageClears[8] / stats.totalRuns) * 100).toFixed(2)}%
+- 第 10 關: ${((stats.stageClears[9] / stats.totalRuns) * 100).toFixed(2)}%
+
+[特定關卡平均傷害]\n`;
     [0, 2, 5, 9].forEach(lv => {
         let sd = stats.stageDamage[lv];
         let avg = sd.count > 0 ? (sd.total / sd.count) : 0;
