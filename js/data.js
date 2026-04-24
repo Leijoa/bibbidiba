@@ -80,7 +80,6 @@ export const RELIC_DB = [
     { id: 'berserker', name: '【越戰越勇】', desc: '每次因回合耗盡或反傷扣除 1 HP 時，永久增加 1 次初始重骰次數。', price: 55, rarity: 4 },
     { id: 'dragonslayer', name: '【屠龍者】', desc: '面對「Boss」或「菁英怪」時，總傷害 x1.5。', price: 60, rarity: 4 },
     { id: 'bankrupt', name: '【破財消災】', desc: '承受致命傷害時，若金幣 ≥ 100，扣除【所有金幣】並保留 1 HP（每局限一次）。', price: 70, rarity: 4 },
-,
 
     { id: 'fusion_source', name: '【萬物之源】', desc: '1, 2 的點數隨關卡層數(E)成長。公式：15+(E×2.5)。', price: 0, rarity: 5 },
     { id: 'fusion_pillar', name: '【中流砥柱】', desc: '4, 5 的點數倍率為 3x。每擊破一隻敵人，此倍率永久增加 +0.2x。', price: 0, rarity: 5 },
