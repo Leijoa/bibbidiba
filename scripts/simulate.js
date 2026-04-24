@@ -9,7 +9,13 @@ let stats = {
     handStats: {},       // { '手牌名': { triggered: 0, wins: 0 } }
     relicStats: {},      // { '遺物id': { equipped: 0, wins: 0 } }
     shackleDeath: {},    // { '枷鎖id': 0 }
-    shackleEncounter: {} // { '枷鎖id': 0 }
+    shackleEncounter: {}, // { '枷鎖id': 0 }
+    stageDamage: {
+        0: { total: 0, count: 0 },
+        2: { total: 0, count: 0 },
+        5: { total: 0, count: 0 },
+        9: { total: 0, count: 0 }
+    }
 };
 
 // Initialize structures
@@ -179,6 +185,11 @@ function autoPlayBattle(stage, player) {
         let actualDamage = Math.min(dmg, stage.enemyHp);
         stage.enemyHp -= dmg;
 
+        if (stage.level === 0 || stage.level === 2 || stage.level === 5 || stage.level === 9) {
+            stats.stageDamage[stage.level].total += dmg;
+            stats.stageDamage[stage.level].count++;
+        }
+
         // Post attack shackle impacts
         let isDefeated = stage.enemyHp <= 0;
         let diedFromRecoil = applyCombatShackles(dmg, actualDamage, isDefeated, stage, player);
@@ -212,11 +223,7 @@ function runSimulation() {
 
     for(let i=0; i<TOTAL_RUNS; i++) {
         stats.totalRuns++;
-        let player = { hp: 5, gold: 50, relics: [], totalGoldEarned: 50, maxMetaBuff: 1.5, startRelic: true, rerollsUpg: 2, discountUpg: 3 };
-
-        // simulate startRelic
-        let av = RELIC_DB.filter(r => r.price > 0 && r.rarity === 1);
-        player.relics.push(av[Math.floor(Math.random()*av.length)].id);
+        let player = { hp: 3, gold: 20, relics: [], totalGoldEarned: 20, maxMetaBuff: 1.0, startRelic: false, rerollsUpg: 0, discountUpg: 0 };
 
         let stage = { level: 0 };
 
@@ -281,6 +288,13 @@ function generateReport() {
     report += `==========================================\n`;
     report += `Total Runs: ${stats.totalRuns}\n`;
     report += `Win Rate: ${((stats.winCount / stats.totalRuns) * 100).toFixed(2)}%\n`;
+
+    report += `\n[特定關卡平均傷害]\n`;
+    [0, 2, 5, 9].forEach(lv => {
+        let sd = stats.stageDamage[lv];
+        let avg = sd.count > 0 ? (sd.total / sd.count) : 0;
+        report += `- 第 ${lv + 1} 關: 平均傷害 ${Math.floor(avg).toLocaleString()}\n`;
+    });
 
     // Sort hands
     let hands = Object.keys(stats.handStats).map(k => ({ name: k, ...stats.handStats[k] })).filter(h => h.triggered > 0);

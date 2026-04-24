@@ -175,9 +175,45 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
             baseVal = hookResult.baseVal;
             multi = hookResult.multi;
         } else {
-            if (playerRelics.includes(`b${v}`) && (!shackleConfig || shackleConfig.id !== 'oblivion')) {
+            let hasBaseRelic = false;
+
+            // Fusion Relic Base Points Override
+            if (v === 1 || v === 2) {
+                if (playerRelics.includes('fusion_source')) {
+                    baseVal = 15 + (E * 2.5);
+                    hasBaseRelic = true;
+                }
+            }
+            if (v === 7 || v === 8) {
+                if (playerRelics.includes('fusion_peak')) {
+                    baseVal = v + Math.floor(currentGold / 20) * 5;
+                    hasBaseRelic = true;
+                }
+                if (playerRelics.includes('fusion_titan')) {
+                    baseVal = baseVal + (E * 3);
+                    hasBaseRelic = true;
+                }
+            }
+            if (v === 6 && playerRelics.includes('fusion_titan')) {
+                baseVal = baseVal + (E * 3);
+                hasBaseRelic = true;
+            }
+            if (v === 2 && playerRelics.includes('fusion_bloody')) {
+                let lostHp = 3 - playerHp;
+                baseVal = 30 + (lostHp > 0 ? lostHp * 10 : 0);
+                hasBaseRelic = true;
+            }
+
+            if (!hasBaseRelic && playerRelics.includes(`b${v}`) && (!shackleConfig || shackleConfig.id !== 'oblivion')) {
                 baseVal = relicBaseVals[v];
             }
+            if (playerRelics.includes('fusion_bloody')) {
+                 let lostHp = 3 - playerHp;
+                 if (lostHp > 0 && v !== 2) {
+                     baseVal += lostHp * 10;
+                 }
+            }
+
             if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= (isExploited ? 2.5 : 5.0);
             if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= (isExploited ? 1.5 : 3.0);
             if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= (isExploited ? 1.0 : 2.0);
