@@ -153,8 +153,8 @@ export function updateEnemyUI(stage) {
     let enemy = getEnemy(stage.level);
     
     let shackleHtml = '';
-    if (stage.activeShackle) {
-        shackleHtml = `<span onclick="window.showShackleInfo('${stage.activeShackle}')" class="ml-2 bg-slate-700/80 hover:bg-slate-600 text-[10px] md:text-xs text-amber-300 px-1.5 py-0.5 rounded cursor-pointer border border-amber-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 枷鎖</span>`;
+    if (stage.shackles && stage.shackles.length > 0) {
+        shackleHtml = stage.shackles.map(sh => `<span onclick="window.showShackleInfo('${sh.id}')" class="ml-2 bg-slate-700/80 hover:bg-slate-600 text-[10px] md:text-xs text-amber-300 px-1.5 py-0.5 rounded cursor-pointer border border-amber-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 枷鎖</span>`).join('');
     }
     
     el.enemyName.innerHTML = `⚔️ ${enemy.name}${shackleHtml}`;

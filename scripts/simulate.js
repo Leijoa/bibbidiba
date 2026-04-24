@@ -33,47 +33,69 @@ SHACKLE_DB.forEach(s => {
 
 // helper hooks from main.js approximated
 function applyCombatShackles(dmg, actualDamage, isEnemyDefeated, stage, player) {
-    if (!stage.activeShackle) return false;
+    if (!stage.shackles || stage.shackles.length === 0) return false;
     let playerDied = false;
-    if (stage.activeShackle === 'vampire' && !isEnemyDefeated) {
-        let lostGold = Math.min(5, player.gold);
-        player.gold -= lostGold;
-    }
-    if (stage.activeShackle === 'thief' && !isEnemyDefeated) {
-        let lostGold = Math.min(2, player.gold);
-        player.gold -= lostGold;
-    }
-    if (stage.activeShackle === 'thornarmor') {
-        let threshold = stage.enemyMaxHp * 0.10;
-        if (dmg < threshold) {
-            player.hp--;
-            if (player.relics.includes('berserker')) player.berserkerBonus = (player.berserkerBonus || 0) + 1;
-            if (player.hp <= 0) playerDied = true;
+
+    stage.shackles.forEach(sh => {
+        if (sh.id === 'vampire' && !isEnemyDefeated) {
+            let lostGold = Math.min(5, player.gold);
+            player.gold -= lostGold;
         }
-    }
-    if (stage.activeShackle === 'mutualdestruction') {
-        let recoil = Math.floor(dmg * 0.05);
-        if (recoil > 0) {
-            player.hp -= recoil;
-            if (player.hp <= 0) player.hp = 1; // 免疫致死
+        if (sh.id === 'thief' && !isEnemyDefeated) {
+            let lostGold = Math.min(2, player.gold);
+            player.gold -= lostGold;
         }
-    }
+        if (sh.id === 'thornarmor') {
+            let threshold = stage.enemyMaxHp * 0.10;
+            if (dmg < threshold) {
+                player.hp--;
+                if (player.relics.includes('berserker')) player.berserkerBonus = (player.berserkerBonus || 0) + 1;
+                if (player.hp <= 0) playerDied = true;
+            }
+        }
+        if (sh.id === 'mutualdestruction') {
+            let recoil = Math.floor(dmg * 0.05);
+            if (recoil > 0) {
+                player.hp -= recoil;
+                if (player.hp <= 0) player.hp = 1; // 免疫致死
+            }
+        }
+    });
     return playerDied;
 }
 
 function assignShackleForStage(levelIndex) {
-    let shackleType = null;
-    if (levelIndex === 2) shackleType = 'light';
-    else if (levelIndex === 5) shackleType = 'heavy';
-    else if (levelIndex === 8) shackleType = 'light';
-    else if (levelIndex === 9) shackleType = 'heavy';
-
-    if (shackleType) {
-        let candidates = SHACKLE_DB.filter(s => s.type === shackleType);
-        let selected = candidates[Math.floor(Math.random() * candidates.length)];
-        return { id: selected.id, meta: null }; // simplifications
+    let types = [];
+    if (levelIndex === 2) types = ['light'];
+    else if (levelIndex === 5) types = ['heavy'];
+    else if (levelIndex === 8) types = ['light'];
+    else if (levelIndex === 9) types = ['heavy'];
+    else if (levelIndex > 9) {
+        let m = ((levelIndex - 10) % 3) + 1;
+        if (m === 3) types = ['heavy', 'light'];
+        else types = ['light'];
     }
-    return { id: null, meta: null };
+
+    let generated = [];
+    for(let t of types) {
+        let candidates = SHACKLE_DB.filter(s => s.type === t && !generated.some(g => g.id === s.id));
+        if (candidates.length > 0) {
+            let selected = candidates[Math.floor(Math.random() * candidates.length)];
+            let meta = null;
+            if (selected.id === 'parityfear') meta = { fearType: Math.random() > 0.5 ? 'odd' : 'even' };
+            else if (selected.id === 'numberplunder') meta = { targetNumber: Math.floor(Math.random() * 8) + 1 };
+            else if (selected.id === 'illusion') meta = { fakeNumber: Math.floor(Math.random() * 8) + 1 };
+            else if (selected.id === 'dizziness') meta = { displayOrder: [0, 1, 2, 3, 4, 5, 6, 7] };
+            else if (selected.id === 'inversion') meta = { colorMap: [] };
+            else if (selected.id === 'blind') meta = { blindIndices: [] };
+            else if (selected.id === 'wither') meta = { originalHp: 3 };
+            else if (selected.id === 'cursedlock') meta = { cursedId: null };
+            else if (selected.id === 'relicseal') meta = { ignoredRelics: [] };
+
+            generated.push({ id: selected.id, meta: meta });
+        }
+    }
+    return generated;
 }
 
 function decideLocks(dice) {
@@ -116,16 +138,30 @@ function checkRelicFusion(player) {
 }
 
 function simulateShop(player) {
-    // Simplistic shop: buy random affordable relics until broke
+    // Basic AI logic to handle infinite tower consumables
     let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random());
+
+    // Inject consumables if empty
+    if(available.length === 0 || player.isInfiniteMode) {
+        available.push(...CONSUMABLES_DB.sort(() => 0.5 - Math.random()));
+    }
+
     for(let r of available) {
         let price = r.price;
         price = Math.max(1, price - (player.discountUpg * 2));
         if(player.relics.includes('vip')) price = Math.floor(price * 0.8);
+
         if(player.gold >= price) {
             player.gold -= price;
-            player.relics.push(r.id);
-            checkRelicFusion(player);
+
+            if (r.id.startsWith('cons_')) {
+                if (r.id === 'cons_power') player.nextDamageMulti = (player.nextDamageMulti || 1.0) * 1.5;
+                if (r.id === 'cons_potential') player.bonusBasePoints = (player.bonusBasePoints || 0) + 50;
+                if (r.id === 'cons_hp') player.hp = Math.min(player.maxHp, player.hp + 1);
+            } else {
+                player.relics.push(r.id);
+                checkRelicFusion(player);
+            }
         }
     }
 }
@@ -136,14 +172,12 @@ function autoPlayBattle(stage, player) {
     stage.enemyHp = enemy.hp;
     stage.turnsLeft = enemy.turns;
 
-    let sAssign = assignShackleForStage(stage.level);
-    stage.activeShackle = sAssign.id;
-    if(stage.activeShackle) {
-        stats.shackleEncounter[stage.activeShackle]++;
-    }
-
-    if(stage.activeShackle === 'wither') player.hp = 1;
-    if(stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
+    stage.shackles = assignShackleForStage(stage.level);
+    stage.shackles.forEach(sh => {
+        stats.shackleEncounter[sh.id]++;
+        if(sh.id === 'wither') player.hp = 1;
+        if(sh.id === 'timecompress') stage.turnsLeft = 2;
+    });
 
     while(stage.enemyHp > 0 && player.hp > 0 && stage.turnsLeft > 0) {
         let maxRolls = 2 + player.rerollsUpg + (player.relics.filter(id => id === 'refresh').length * 2) + (player.berserkerBonus || 0);
@@ -162,9 +196,9 @@ function autoPlayBattle(stage, player) {
 
         // Attack
         let isInitialRoll = maxRolls === rollsLeft; // if maxRolls === rollsLeft (0 rolls used)
-        let env = { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || player.gold, relics: player.relics, playerHp: player.hp, maxHp: player.maxHp || 3 };
+        let env = { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || player.gold, relics: player.relics, playerHp: player.hp, maxHp: player.maxHp || 3, bonusBasePoints: player.bonusBasePoints || 0 };
 
-        let result = calculateEngineScore(dice, player.relics, rollsLeft, player.hp, { id: stage.activeShackle }, isInitialRoll, stage.turnsLeft, env);
+        let result = calculateEngineScore(dice, player.relics, rollsLeft, player.hp, stage.shackles, isInitialRoll, stage.turnsLeft, env);
 
         // Store hands triggered
         let handsTriggered = [result.tagA.name, result.tagB.name, result.tagC.name, result.tagD.name].filter(n => n !== '無');
@@ -172,6 +206,7 @@ function autoPlayBattle(stage, player) {
         handsTriggered.forEach(h => player.tempHands.add(h));
 
         let dmg = Math.floor(result.finalScore);
+        if (player.nextDamageMulti > 1.0) { dmg = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, dmg * player.nextDamageMulti)); player.nextDamageMulti = 1.0; }
         // apply economy / relic damage buffs
         if (player.relics.includes('fusion_miser')) dmg += Math.floor(dmg * (player.gold * 0.01));
         if (player.relics.includes('fusion_empire')) {
@@ -243,7 +278,7 @@ function runSimulation() {
 
             if(player.hp <= 0) {
                 stats.lossCount++;
-                if(stage.activeShackle) stats.shackleDeath[stage.activeShackle]++;
+                stage.shackles.forEach(sh => stats.shackleDeath[sh.id]++);
                 break;
             }
 

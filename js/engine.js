@@ -112,22 +112,23 @@ const ShackleHooks = {
     }
 };
 
-function applyShacklePostHooks(scoreResult, shackleConfig, workingDice, baseContributions) {
-    if (!shackleConfig) return;
+function applyShacklePostHooks(scoreResult, activeShackles, workingDice, baseContributions) {
+    if (!activeShackles || activeShackles.length === 0) return;
     
-    // Some shackles just need notes pushed if they operated in pre-hooks
-    if (shackleConfig.id === 'blackhole') scoreResult.globalNotes.push('【黑洞】發動: 所有的 8 變成 1。');
-    if (shackleConfig.id === 'parityfear') scoreResult.globalNotes.push(`【奇/偶數恐懼】發動: ${shackleConfig.fearType === 'odd' ? '奇數' : '偶數'}點數歸零。`);
-    if (shackleConfig.id === 'numberplunder') scoreResult.globalNotes.push(`【數字掠奪】發動: 數字 ${shackleConfig.targetNumber} 視為廢牌。`);
-    if (shackleConfig.id === 'drowning') scoreResult.globalNotes.push(`【沉溺】發動: 5 點數歸零。`);
-    
-    let hookDef = ShackleHooks[shackleConfig.id];
-    if (hookDef && hookDef.postCalc) {
-        hookDef.postCalc(scoreResult, shackleConfig, { workingDice, baseContributions });
-    }
+    activeShackles.forEach(sh => {
+        if (sh.id === 'blackhole') scoreResult.globalNotes.push('【黑洞】發動: 所有的 8 變成 1。');
+        if (sh.id === 'parityfear') scoreResult.globalNotes.push(`【奇/偶數恐懼】發動: ${sh.meta.fearType === 'odd' ? '奇數' : '偶數'}點數歸零。`);
+        if (sh.id === 'numberplunder') scoreResult.globalNotes.push(`【數字掠奪】發動: 數字 ${sh.meta.targetNumber} 視為廢牌。`);
+        if (sh.id === 'drowning') scoreResult.globalNotes.push(`【沉溺】發動: 5 點數歸零。`);
+
+        let hookDef = ShackleHooks[sh.id];
+        if (hookDef && hookDef.postCalc) {
+            hookDef.postCalc(scoreResult, sh, { workingDice, baseContributions });
+        }
+    });
 }
 
-export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, shackleConfig = null, isInitialRoll = false, turnsLeft = 0, env = {}) {
+export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3, activeShackles = [], isInitialRoll = false, turnsLeft = 0, env = {}) {
     let stageLevel = env.level || 0;
     let E = stageLevel + 1;
     let currentGold = env.gold || 0;
@@ -140,22 +141,26 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     let workingDice = [...dice];
 
     // --- Shackle Pre-Hooks ---
-    if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].preDice) {
-        workingDice = ShackleHooks[shackleConfig.id].preDice(workingDice, shackleConfig);
-    }
+    activeShackles.forEach(sh => {
+        if (ShackleHooks[sh.id] && ShackleHooks[sh.id].preDice) {
+            workingDice = ShackleHooks[sh.id].preDice(workingDice, sh);
+        }
+    });
     
-    if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].filterDice) {
-        workingDice = workingDice.filter(d => ShackleHooks[shackleConfig.id].filterDice(d, shackleConfig));
-    }
+    activeShackles.forEach(sh => {
+        if (ShackleHooks[sh.id] && ShackleHooks[sh.id].filterDice) {
+            workingDice = workingDice.filter(d => ShackleHooks[sh.id].filterDice(d, sh));
+        }
+    });
 
     let counts = new Array(9).fill(0);
     workingDice.forEach(d => counts[d.val]++);
 
-    let totalBase = 0;
+    let totalBase = env.bonusBasePoints || 0;
     let baseContributions = {};
     let globalNotes = [];
 
-    let isExploited = shackleConfig && shackleConfig.id === 'exploitation';
+    let isExploited = activeShackles.some(sh => sh.id === 'exploitation');
 
     workingDice.forEach(d => {
         let multi = 1;
@@ -168,9 +173,12 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         }
 
         let hookResult = null;
-        if (shackleConfig && ShackleHooks[shackleConfig.id] && ShackleHooks[shackleConfig.id].modifyBase) {
-            hookResult = ShackleHooks[shackleConfig.id].modifyBase(d, shackleConfig, { relicBaseVals, playerRelics });
-        }
+        activeShackles.forEach(sh => {
+            if (ShackleHooks[sh.id] && ShackleHooks[sh.id].modifyBase) {
+                // If multiple modifyBase, last one wins (or we combine them, but only few shackles modify base)
+                hookResult = ShackleHooks[sh.id].modifyBase(d, sh, { relicBaseVals, playerRelics });
+            }
+        });
 
         if (hookResult) {
             baseVal = hookResult.baseVal;
@@ -205,7 +213,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
                 hasBaseRelic = true;
             }
 
-            if (!hasBaseRelic && playerRelics.includes(`b${v}`) && (!shackleConfig || shackleConfig.id !== 'oblivion')) {
+            if (!hasBaseRelic && playerRelics.includes(`b${v}`) && !activeShackles.some(sh => sh.id === 'oblivion')) {
                 baseVal = relicBaseVals[v];
             }
             if (playerRelics.includes('fusion_bloody')) {
@@ -633,7 +641,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     let baseABCD = 1.0;
 
-    if (shackleConfig && shackleConfig.id === 'oblivion') globalNotes.push('【忘卻】發動: 無視遺物基礎點數。');
+    if (activeShackles.some(sh => sh.id === 'oblivion')) globalNotes.push('【忘卻】發動: 無視遺物基礎點數。');
     if (isExploited) globalNotes.push('【剝削】發動: 遺物倍率減半。');
 
     if (playerRelics.includes('order')) {
@@ -705,7 +713,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         globalNotes.push(`【極端份子】 D區 x${amt.toFixed(2)}`);
     }
 
-    if (playerRelics.includes('rebel') && shackleConfig) {
+    if (playerRelics.includes('rebel') && activeShackles.length > 0) {
         let amt = isExploited ? 1.25 : 1.5;
         globalMulti *= amt;
         globalNotes.push(`【反抗軍】 x${amt.toFixed(2)}`);
@@ -733,7 +741,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         totalBase, tagA, tagB, tagC, tagD, globalMulti, globalNotes, finalMultiplier: 1.0, finalScore: 0
     };
 
-    applyShacklePostHooks(result, shackleConfig, workingDice, baseContributions);
+    applyShacklePostHooks(result, activeShackles, workingDice, baseContributions);
 
     result.finalMultiplier = (playerRelics.includes('order') ? (result.tagA.multi + result.tagB.multi) * result.tagC.multi * result.tagD.multi : result.tagA.multi * result.tagB.multi * result.tagC.multi * result.tagD.multi) * result.globalMulti;
     
@@ -744,7 +752,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
 
     
-    result.finalScore = result.totalBase * result.finalMultiplier;
+    result.finalScore = Math.min(Number.MAX_SAFE_INTEGER, result.totalBase * result.finalMultiplier);
 
     return result;
 }

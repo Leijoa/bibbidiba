@@ -103,6 +103,13 @@ export const RELIC_DB = [
 
 ];
 
+
+export const CONSUMABLES_DB = [
+    { id: 'cons_power', name: '【力量藥劑】', desc: '下場戰鬥中，總傷害 x1.5 倍（單次消耗）', price: 100, rarity: 2 },
+    { id: 'cons_potential', name: '【潛能秘藥】', desc: '永久增加 50 點基礎點數總和', price: 300, rarity: 3 },
+    { id: 'cons_hp', name: '【生命紅藥】', desc: '立即回復 1 HP', price: 100, rarity: 1 }
+];
+
 export const ENEMY_DB = [
     { name: '史萊姆', hp: 4000, turns: 3 },                  // Stage 1 (Index 0)
     { name: '哥布林', hp: 50000, turns: 3 },                 // Stage 2 (Index 1)
@@ -182,12 +189,13 @@ export function getEnemy(levelIndex) {
         let m = ((infiniteLevel - 1) % 3) + 1;
         
         let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
+        if (hp > Number.MAX_SAFE_INTEGER) hp = Number.MAX_SAFE_INTEGER;
         
         let name = `無限塔 ${n}-${m}`;
         if (m === 3) name += ' (Boss)';
         else if (m === 2) name += ' (菁英)';
         
-        return { name: name, hp: hp, turns: 5 };
+        return { name: name, hp: hp, turns: 3 };
     }
 }
 

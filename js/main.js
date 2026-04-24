@@ -1,5 +1,5 @@
 // js/main.js
-import { RELIC_DB, ENEMY_DB, RULE_DB, getEnemy, FUSION_RECIPES } from './data.js';
+import { RELIC_DB, ENEMY_DB, RULE_DB, getEnemy, FUSION_RECIPES, CONSUMABLES_DB } from './data.js';
 import { calculateEngineScore } from './engine.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
@@ -350,7 +350,7 @@ function initNewGame() {
         maxRolls: startRerolls,
         highestDamage: 0,
         highestDamageCombo: '',
-        isInfiniteMode: false
+        isInfiniteMode: false, bonusBasePoints: 0, nextDamageMulti: 1.0
     };
 
     if (metaData.upgrades.startRelic > 0) {
@@ -446,6 +446,11 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
         stage.activeShackle = shackleAssignment.id;
         stage.shackleMeta = shackleAssignment.meta;
         
+        // Setup consumables buff for this stage
+        stage.damageBuffMulti = player.nextDamageMulti || 1.0;
+        player.nextDamageMulti = 1.0; // Consume it
+
+
         if (stage.activeShackle === 'timecompress') {
             stage.turnsLeft = 2;
         }
@@ -816,14 +821,19 @@ window.fireAttack = function() {
     }
 
     if (player.relics.includes('dragonslayer') && [2, 5, 8, 9].includes(stage.level)) {
-        finalDamage = Math.floor(finalDamage * 1.5);
+        finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * 1.5));
         UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
     }
 
     // Meta-progression final damage buff
     if (metaData && metaData.upgrades && metaData.upgrades.finalDamage > 0) {
         let buffMulti = 1.0 + (metaData.upgrades.finalDamage * 0.1);
-        finalDamage = Math.floor(finalDamage * buffMulti);
+        finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * buffMulti));
+    }
+
+    if (stage.damageBuffMulti > 1.0) {
+        finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * stage.damageBuffMulti));
+        UI.showToast(`💪 力量藥劑發動：總傷害 x${stage.damageBuffMulti}！`);
     }
 
     let dmg = finalDamage;
@@ -1083,7 +1093,7 @@ function enemyDefeated() {
         : `💰 獲得 ${totalBaseEarn} 金幣！`;
 
     let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id));
-    let nextStep = availableForShop.length === 0 ? nextStage : openShop;
+    let nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
     let isElite = [2, 5, 8].includes(stage.level);
 
     if (isElite && availableForShop.length > 0) {
@@ -1095,10 +1105,13 @@ function enemyDefeated() {
 
         // 重新過濾商店可用遺物（排除剛拿到手的）
         availableForShop = availableForShop.filter(r => r.id !== randomRelic.id);
-        // 確保領完遺物後，下一步是進入商店 (除非遺物已被搬空)
-        nextStep = availableForShop.length === 0 ? nextStage : openShop;
+        // 確保領完遺物後，下一步是進入商店
+        nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
 
-        let earnedSouls = 1;
+        // Handle Souls
+        let earnedSouls = 1; // Stage 3, 6, 9 Elites
+        if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
+
         metaData.souls += earnedSouls;
         saveMetaData();
         let soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
@@ -1106,9 +1119,16 @@ function enemyDefeated() {
     } else {
         // 一般怪物結算
         let enemyName = getEnemy(stage.level).name;
-        let earnedSouls = stage.level === 9 ? 5 : 0;
+        let earnedSouls = 0;
+        if (stage.level === 9) earnedSouls = 2; // 第 10 關
+        else if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1; // 無限塔每隻怪
+
         let soulMsg = '';
-        if (earnedSouls > 0) { metaData.souls += earnedSouls; saveMetaData(); soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`; }
+        if (earnedSouls > 0) {
+            metaData.souls += earnedSouls;
+            saveMetaData();
+            soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
+        }
         UI.showToast(`🎉 擊敗了 ${enemyName}！\n${goldMessage}${soulMsg}`, nextStep);
     }
 }
@@ -1145,8 +1165,18 @@ window.rerollShop = function(isInitial = false) {
         UI.updateHeaderUI(player, stage);
     }
     window.itemsBoughtThisScreen = 0;
-    let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
-    shopItems = applyEconomyShackles(available);
+    let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random());
+    let selectedItems = available.slice(0, 3);
+
+    // If empty or infinite mode, inject consumables
+    if (selectedItems.length < 3 || player.isInfiniteMode) {
+        let cons = [...CONSUMABLES_DB].sort(() => 0.5 - Math.random());
+        while(selectedItems.length < 3 && cons.length > 0) {
+            selectedItems.push(cons.pop());
+        }
+    }
+
+    shopItems = applyEconomyShackles(selectedItems);
     UI.renderShopItems(shopItems, player);
     saveGame();
 };
@@ -1156,16 +1186,33 @@ window.buyItem = function(idx) {
     if (player.gold >= r.price) {
         Audio.playBuySound();
         player.gold -= r.price;
-        player.relics.push(r.id);
         window.itemsBoughtThisScreen++;
-        unlockCollectionItem('relic', r.id);
+
+        if (r.id.startsWith('cons_')) {
+            // Consumable logic
+            if (r.id === 'cons_power') {
+                player.nextDamageMulti = (player.nextDamageMulti || 1.0) * 1.5;
+                UI.showToast("💪 【力量藥劑】使用成功！下場戰鬥傷害提升！");
+            } else if (r.id === 'cons_potential') {
+                player.bonusBasePoints = (player.bonusBasePoints || 0) + 50;
+                UI.showToast("🔥 【潛能秘藥】使用成功！永久基礎點數 +50！");
+            } else if (r.id === 'cons_hp') {
+                player.hp = Math.min(window.getMaxHp(), player.hp + 1);
+                UI.showToast("❤️ 【生命紅藥】使用成功！回復 1 HP！");
+            }
+        } else {
+            // Relic logic
+            player.relics.push(r.id);
+            unlockCollectionItem('relic', r.id);
+            checkRelicFusion();
+        }
+
         shopItems.splice(idx, 1);
         UI.el.shopGold.innerText = player.gold;
         // ★ 修復：同步更新頂部資訊列的金幣
         UI.updateHeaderUI(player, stage);
         UI.renderShopItems(shopItems, player);
-        UI.renderInventory(player);
-        checkRelicFusion();
+        UI.renderInventory(player, battle);
         saveGame();
     }
 };
@@ -1244,7 +1291,7 @@ function gameWin() {
     if (btnInfinite) btnInfinite.classList.remove('hidden');
 
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
-    let earnedSouls = 5; metaData.souls += earnedSouls; saveMetaData(); UI.el.endDesc.innerText += `\n👻 獲得 ${earnedSouls} 個靈魂！`;
+    let earnedSouls = 2; metaData.souls += earnedSouls; saveMetaData(); UI.el.endDesc.innerText += `\n👻 獲得 ${earnedSouls} 個靈魂！`;
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
     UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
     UI.renderEndGameStats(player.highestDamage, player.highestDamageCombo, player.relics);
