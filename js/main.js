@@ -1,5 +1,5 @@
 // js/main.js
-import { RELIC_DB, ENEMY_DB, getEnemy } from './data.js';
+import { RELIC_DB, ENEMY_DB, RULE_DB, getEnemy, FUSION_RECIPES, CONSUMABLES_DB } from './data.js';
 import { calculateEngineScore } from './engine.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
@@ -11,9 +11,33 @@ let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, loc
 let shopItems = [];
 let shopRerollsUsed = 0;
 let activeHighlight = null;
-const SAVE_KEY = 'bibbidiba_save_v30';
-const HISTORY_KEY = 'bibbidiba_history_v30';
-const COLLECTION_KEY = 'bibbidiba_collection_v35';
+const SAVE_KEY = 'bibbidiba_save_v50';
+const HISTORY_KEY = 'bibbidiba_history_v50';
+const COLLECTION_KEY = 'bibbidiba_collection_v50';
+
+const META_KEY = 'bibbidiba_meta_v1';
+let metaData = {
+    souls: 0,
+    upgrades: {
+        hp: 0,         // 等級 0~2 (+1 最大生命)
+        discount: 0,   // 等級 0~3 (-2 商店金幣)
+        startGold: 0,  // 等級 0~3 (+10 初始金幣)
+        rerolls: 0,    // 等級 0~2 (+1 初始重骰)
+        startRelic: 0, // 等級 0~1 (+1 初始遺物)
+        finalDamage: 0 // 等級 0~5 (+10% 最終傷害)
+    }
+};
+
+function loadMetaData() {
+    metaData = secureParseStorage(META_KEY, metaData, (data) => typeof data.souls === 'number');
+}
+function saveMetaData() {
+    localStorage.setItem(META_KEY, JSON.stringify(metaData));
+}
+
+window.getMetaData = () => metaData;
+window.saveMetaData = saveMetaData;
+
 
 // 收集冊狀態
 let collection = {
@@ -75,6 +99,8 @@ function unlockCollectionItem(type, id) {
 window.unlockCollectionItem = unlockCollectionItem; // Export for external usage if needed
 window.getCollection = () => collection;
 window.getStageActiveShackle = () => stage.activeShackle;
+window.getStageLevel = () => stage.level;
+window.getMaxHp = () => 3 + (metaData.upgrades.hp * 1);
 window.getShackleMeta = () => stage.shackleMeta;
 
 // --- Modular Game Loop Hooks ---
@@ -134,6 +160,12 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
 
 function applyEconomyShackles(items) {
     let result = items;
+    let discount = metaData.upgrades.discount * 2;
+    result = result.map(item => ({
+        ...item,
+        price: Math.max(1, item.price - discount)
+    }));
+
     if (stage.activeShackle === 'inflation') {
         result = result.map(item => ({
             ...item,
@@ -162,7 +194,8 @@ function saveGame() {
             enemyHp: stage.enemyHp,
             turnsLeft: stage.turnsLeft,
             activeShackle: stage.activeShackle,
-            shackleMeta: stage.shackleMeta
+            shackleMeta: stage.shackleMeta,
+            hasAttackedThisStage: stage.hasAttackedThisStage
         },
         battle: {
             state: battle.state,
@@ -221,6 +254,7 @@ function checkSaveExists() {
 
 // --- 初始化與主流程 ---
 function initTitleScreen() {
+    loadMetaData();
     UI.renderRulesDB();
     checkSaveExists();
 
@@ -236,6 +270,14 @@ function initTitleScreen() {
 
     document.getElementById('btn-rules').onclick = () => UI.el.rulesModal.classList.remove('hidden');
     document.getElementById('btn-close-rules').onclick = () => UI.el.rulesModal.classList.add('hidden');
+
+        if (UI.el.btnSouls) {
+        UI.el.btnSouls.onclick = () => {
+            UI.renderSoulsModal(metaData);
+            UI.el.soulsModal.classList.remove('hidden');
+        };
+        UI.el.btnCloseSouls.onclick = () => UI.el.soulsModal.classList.add('hidden');
+    }
 
     if (UI.el.btnHistory && UI.el.historyModal && UI.el.btnCloseHistory) {
         UI.el.btnHistory.onclick = () => {
@@ -297,7 +339,29 @@ function initTitleScreen() {
 import { SHACKLE_DB } from './data.js';
 
 function initNewGame() {
-    player = { hp: 3, gold: 20, relics: [], maxRolls: 2, highestDamage: 0, highestDamageCombo: '', isInfiniteMode: false };
+    let startHp = 3 + (metaData.upgrades.hp * 1);
+    let startGold = 20 + (metaData.upgrades.startGold * 10);
+    let startRerolls = 2 + (metaData.upgrades.rerolls * 1);
+
+    player = {
+        hp: startHp,
+        gold: startGold,
+        relics: [],
+        maxRolls: startRerolls,
+        highestDamage: 0,
+        highestDamageCombo: '',
+        isInfiniteMode: false, bonusBasePoints: 0, nextDamageMulti: 1.0
+    };
+
+    if (metaData.upgrades.startRelic > 0) {
+        let available = RELIC_DB.filter(r => r.price > 0 && r.rarity === 1); // Give a basic relic
+        if(available.length > 0) {
+            let r = available[Math.floor(Math.random() * available.length)];
+            player.relics.push(r.id);
+            unlockCollectionItem('relic', r.id);
+        }
+    }
+
     loadStage(0);
 }
 
@@ -305,7 +369,9 @@ function assignShackleForStage(levelIndex) {
     let shackleType = null;
     if (levelIndex < ENEMY_DB.length) {
         if (levelIndex === 2) shackleType = 'light';
-        else if (levelIndex === 4) shackleType = 'heavy';
+        else if (levelIndex === 5) shackleType = 'heavy';
+        else if (levelIndex === 8) shackleType = 'light';
+        else if (levelIndex === 9) shackleType = 'heavy';
     } else {
         let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
         let m = ((infiniteLevel - 1) % 3) + 1;
@@ -355,6 +421,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
         stage.turnsLeft = parsedData.stage.turnsLeft ?? enemy.turns;
         stage.activeShackle = parsedData.stage.activeShackle || null;
         stage.shackleMeta = parsedData.stage.shackleMeta || null;
+        stage.hasAttackedThisStage = parsedData.stage.hasAttackedThisStage || false;
 
         if (parsedData.player && parsedData.player.isInfiniteMode !== undefined) {
             player.isInfiniteMode = parsedData.player.isInfiniteMode;
@@ -379,6 +446,11 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
         stage.activeShackle = shackleAssignment.id;
         stage.shackleMeta = shackleAssignment.meta;
         
+        // Setup consumables buff for this stage
+        stage.damageBuffMulti = player.nextDamageMulti || 1.0;
+        player.nextDamageMulti = 1.0; // Consume it
+
+
         if (stage.activeShackle === 'timecompress') {
             stage.turnsLeft = 2;
         }
@@ -469,8 +541,8 @@ function startTurn() {
 function renderAll() {
     UI.updateHeaderUI(player, stage);
     UI.updateEnemyUI(stage);
-    UI.renderInventory(player);
-    UI.renderDice(battle, activeHighlight);
+    UI.renderInventory(player, battle);
+    UI.renderDice(battle, activeHighlight, player);
     UI.renderControls(battle);
     UI.renderScore(battle, activeHighlight);
 }
@@ -537,7 +609,7 @@ window.toggleLock = function(idx) {
         }
         
         saveGame();
-        UI.renderDice(battle, activeHighlight);
+        UI.renderDice(battle, activeHighlight, player);
         const diceEl = document.getElementById(`dice-element-${idx}`);
         if(diceEl) {
             diceEl.classList.remove('pop-anim');
@@ -551,7 +623,7 @@ window.setHighlight = function(group) {
     if (battle.state !== 'WAIT_ACTION') return;
     if (activeHighlight === group) activeHighlight = null;
     else activeHighlight = group;
-    UI.renderDice(battle, activeHighlight);
+    UI.renderDice(battle, activeHighlight, player);
     UI.renderScore(battle, activeHighlight);
 };
 
@@ -560,7 +632,9 @@ window.executeRoll = function(isInitial = false) {
     if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') return;
 
     if (!isInitial) {
-        if (player.relics.includes('piggybank')) {
+        if (player.relics.includes('fusion_miser')) {
+            // Free rerolls
+        } else if (player.relics.includes('piggybank')) {
             if (player.gold >= 1) {
                 player.gold -= 1;
                 UI.updateHeaderUI(player, stage);
@@ -622,7 +696,7 @@ window.executeRoll = function(isInitial = false) {
         Audio.playRollSound();
         battle.dice = battle.dice.map(d => d.locked ? d : { ...d, val: Math.floor(Math.random() * 8) + 1 });
         intervals++;
-        UI.renderDice(battle, activeHighlight);
+        UI.renderDice(battle, activeHighlight, player);
 
         if (intervals >= 15) { // increased animation duration
             clearInterval(timer);
@@ -659,7 +733,7 @@ window.executeRoll = function(isInitial = false) {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft);
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
 
             if (stage.activeShackle === 'blind' && stage.shackleMeta) {
                 let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
@@ -715,22 +789,53 @@ window.fireAttack = function() {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft);
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig, isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp });
             UI.showToast(`🖐️ 【手抖】發動：強制重骰了 1 顆未鎖定的骰子！`);
         }
     }
     
     // Render dice one last time to reveal 'blind' masked dice and any tremor changes
-    UI.renderDice(battle, activeHighlight);
+    UI.renderDice(battle, activeHighlight, player);
     
     UI.renderControls(battle);
     Audio.playAttackSound();
 
     let finalDamage = Math.floor(battle.scoreResult.finalScore);
-    if (player.relics.includes('dragonslayer') && (stage.level % 5 === 4 || stage.level === ENEMY_DB.length - 1)) {
-        finalDamage = Math.floor(finalDamage * 1.5);
+
+    if (player.relics.includes('fusion_miser')) {
+        finalDamage += Math.floor(finalDamage * (player.gold * 0.01));
+        UI.showToast("💎 【黃金守財奴】複利增傷發動！");
+    }
+
+    if (player.relics.includes('fusion_recycle') && player.fusionRecycleRefreshes) {
+        finalDamage = Math.floor(finalDamage * (1 + player.fusionRecycleRefreshes * 0.01));
+    }
+
+    if (player.relics.includes('fusion_empire')) {
+        let totalGold = player.totalGoldEarned || player.gold;
+        let empireMulti = 1 + Math.floor(totalGold / 1000) * 0.2;
+        if (empireMulti > 1) {
+            finalDamage = Math.floor(finalDamage * empireMulti);
+            UI.showToast(`🏛️ 【帝國遺產】發動：傷害 x${empireMulti.toFixed(1)}！`);
+        }
+    }
+
+    if (player.relics.includes('dragonslayer') && [2, 5, 8, 9].includes(stage.level)) {
+        finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * 1.5));
         UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
     }
+
+    // Meta-progression final damage buff
+    if (metaData && metaData.upgrades && metaData.upgrades.finalDamage > 0) {
+        let buffMulti = 1.0 + (metaData.upgrades.finalDamage * 0.1);
+        finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * buffMulti));
+    }
+
+    if (stage.damageBuffMulti > 1.0) {
+        finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * stage.damageBuffMulti));
+        UI.showToast(`💪 力量藥劑發動：總傷害 x${stage.damageBuffMulti}！`);
+    }
+
     let dmg = finalDamage;
 
     if (stage.activeShackle === 'ironwall') {
@@ -766,14 +871,20 @@ window.fireAttack = function() {
     }
 
     if (stage.activeShackle === 'wrath') {
-        let multiA = battle.scoreResult.tagA.multi || 0;
-        let multiB = battle.scoreResult.tagB.multi || 0;
-        let multiC = battle.scoreResult.tagC.multi || 0;
-        let multiD = battle.scoreResult.tagD.multi || 0;
-        if (multiA >= 20 || multiB >= 20 || multiC >= 20 || multiD >= 20) {
+        let hasLegendary = false;
+        ['tagA', 'tagB', 'tagC', 'tagD'].forEach(tag => {
+            let name = battle.scoreResult[tag].name;
+            if (name !== '無') {
+                for (let group in RULE_DB) {
+                    let rule = RULE_DB[group].find(r => r.name === name);
+                    if (rule && rule.rarity === 4) hasLegendary = true;
+                }
+            }
+        });
+        if (hasLegendary) {
             player.hp -= 1;
             UI.updateHeaderUI(player, stage);
-            UI.showToast(`⚡ 【天譴】發動：觸發高倍率牌型，強制扣除 1 HP！`);
+            UI.showToast(`⚡ 【天譴】發動：觸發傳說牌型，強制扣除 1 HP！`);
         }
     }
 
@@ -803,12 +914,14 @@ window.fireAttack = function() {
     if (battle.scoreResult.tagC.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagC.name);
     if (battle.scoreResult.tagD.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagD.name);
 
+    // doVisuals: Immediately apply hit visual effects
     UI.el.battleArea.classList.remove('shake-hard');
     void UI.el.battleArea.offsetWidth;
     UI.el.battleArea.classList.add('shake-hard');
 
     UI.el.hitFlash.classList.remove('hidden');
     UI.el.hitFlash.classList.remove('flash-red-anim');
+    UI.el.hitFlash.classList.add('backdrop-blur-sm'); // Add blur
     void UI.el.hitFlash.offsetWidth;
     UI.el.hitFlash.classList.add('flash-red-anim');
 
@@ -820,20 +933,25 @@ window.fireAttack = function() {
     setTimeout(() => {
         dmgEl.remove();
         UI.el.hitFlash.classList.add('hidden');
+        UI.el.hitFlash.classList.remove('backdrop-blur-sm');
     }, 1200);
 
     UI.updateEnemyUI(stage);
+
+    // hitstop delay
+    let delay = dmg > stage.enemyMaxHp * 0.20 ? 100 : 0;
 
     setTimeout(() => {
         let isDefeated = stage.enemyHp <= 0;
         let playerDied = applyCombatShackles(dmg, actualDamage, isDefeated);
         
+        // 統一依據當下的真實 HP 進行一次性判定
         if (player.hp <= 0) {
-            playerTakesFatalDamage("血量耗盡，旅程結束！");
-            if (player.hp <= 0) return;
-        }
-        if (playerDied) {
-            playerTakesFatalDamage("受到反傷，血量耗盡！");
+            // 根據 playerDied 來決定死因文字
+            let deathReason = playerDied ? "受到反傷，血量耗盡！" : "血量耗盡，旅程結束！";
+            playerTakesFatalDamage(deathReason);
+
+            // 如果經過急救（破財消災）後 HP 仍然 <= 0，才中斷後續邏輯
             if (player.hp <= 0) return;
         }
 
@@ -872,13 +990,53 @@ window.fireAttack = function() {
                 }
             } else startTurn();
         }
-    }, 1000);
+    }, 1000 + delay);
 };
 
 // --- 商店與關卡結算 ---
+
+function checkRelicFusion() {
+    let fusedAny = false;
+    let recipesToProcess = Object.keys(FUSION_RECIPES);
+
+    // Check multiple times in case one fusion satisfies another (rare, but good practice)
+    let keepChecking = true;
+    while(keepChecking) {
+        keepChecking = false;
+        for (let i = 0; i < recipesToProcess.length; i++) {
+            let fid = recipesToProcess[i];
+            let rec = FUSION_RECIPES[fid];
+
+            // Check if player has BOTH materials and DOES NOT have the fused relic yet
+            if (player.relics.includes(rec.mat1) && player.relics.includes(rec.mat2) && !player.relics.includes(fid)) {
+                // Remove materials
+                player.relics = player.relics.filter(r => r !== rec.mat1 && r !== rec.mat2);
+
+                // Add fusion relic
+                player.relics.push(fid);
+                unlockCollectionItem('relic', fid);
+
+                let relicDef = RELIC_DB.find(x => x.id === fid);
+                UI.showToast(`✨ 遺物共鳴！\n【${RELIC_DB.find(x=>x.id===rec.mat1).name}】與【${RELIC_DB.find(x=>x.id===rec.mat2).name}】\n融合成了 ${relicDef.name}！`);
+
+                fusedAny = true;
+                keepChecking = true;
+                break; // Restart loop to handle potential state changes safely
+            }
+        }
+    }
+
+    if (fusedAny) {
+        UI.renderInventory(player, battle);
+        if (!UI.el.shopOverlay.classList.contains('hidden')) {
+            UI.renderShopItems(shopItems, player);
+        }
+    }
+}
+
 function enemyDefeated() {
-    let isEliteOrBoss = (stage.level % 5 === 4 || stage.level === ENEMY_DB.length - 1);
-    if (player.relics.includes('firstaid') && isEliteOrBoss && player.hp < 3) {
+    let isEliteOrBossFirstAid = [2, 5, 8, 9].includes(stage.level);
+    if (player.relics.includes('firstaid') && isEliteOrBossFirstAid && player.hp < window.getMaxHp()) {
         player.hp++;
         UI.showToast("🚑 【急救包】發動：恢復 1 點 HP！");
     }
@@ -892,7 +1050,11 @@ function enemyDefeated() {
         UI.showToast("👽 【同化】發動：超過 50 金幣，金幣強制歸零！");
     }
 
-    let baseEarn = 15;
+    let baseEarn = 10 + (stage.level * 2);
+    let isEliteOrBossReward = [2, 5, 8, 9].includes(stage.level);
+    if (isEliteOrBossReward) {
+        baseEarn += 15; // 額外獲得 15 金幣懸賞
+    }
     let turnsBonus = (stage.turnsLeft - 1) * 10;
     let extraEarn = 0;
 
@@ -923,6 +1085,7 @@ function enemyDefeated() {
     let totalBaseEarn = baseEarn + extraEarn;
     let earn = totalBaseEarn + turnsBonus;
     player.gold += earn;
+    player.totalGoldEarned = (player.totalGoldEarned || 0) + earn;
     UI.shootConfetti();
 
     let goldMessage = turnsBonus > 0 
@@ -930,20 +1093,44 @@ function enemyDefeated() {
         : `💰 獲得 ${totalBaseEarn} 金幣！`;
 
     let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id));
-    let nextStep = availableForShop.length === 0 ? nextStage : openShop;
+    let nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
+    let isElite = [2, 5, 8].includes(stage.level);
 
-    if (stage.level === 2) {
-        if (availableForShop.length > 0) {
-            let randomRelic = availableForShop[Math.floor(Math.random() * availableForShop.length)];
-            player.relics.push(randomRelic.id);
-            unlockCollectionItem('relic', randomRelic.id);
-            UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
-            return;
+    if (isElite && availableForShop.length > 0) {
+        // 隨機抽選免費遺物
+        let randomRelic = availableForShop[Math.floor(Math.random() * availableForShop.length)];
+        player.relics.push(randomRelic.id);
+        unlockCollectionItem('relic', randomRelic.id);
+        checkRelicFusion();
+
+        // 重新過濾商店可用遺物（排除剛拿到手的）
+        availableForShop = availableForShop.filter(r => r.id !== randomRelic.id);
+        // 確保領完遺物後，下一步是進入商店
+        nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
+
+        // Handle Souls
+        let earnedSouls = 1; // Stage 3, 6, 9 Elites
+        if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
+
+        metaData.souls += earnedSouls;
+        saveMetaData();
+        let soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
+        UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+    } else {
+        // 一般怪物結算
+        let enemyName = getEnemy(stage.level).name;
+        let earnedSouls = 0;
+        if (stage.level === 9) earnedSouls = 2; // 第 10 關
+        else if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1; // 無限塔每隻怪
+
+        let soulMsg = '';
+        if (earnedSouls > 0) {
+            metaData.souls += earnedSouls;
+            saveMetaData();
+            soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
         }
+        UI.showToast(`🎉 擊敗了 ${enemyName}！\n${goldMessage}${soulMsg}`, nextStep);
     }
-
-    let enemyName = getEnemy(stage.level).name;
-    UI.showToast(`🎉 擊敗了 ${enemyName}！\n${goldMessage}`, nextStep);
 }
 
 function openShop() {
@@ -965,6 +1152,10 @@ window.rerollShop = function(isInitial = false) {
             cost = 3 + (shopRerollsUsed - 1);
             if (hasScavenger) cost = Math.max(1, cost - 2);
         }
+        if (player.relics.includes('fusion_recycle')) {
+            cost = 0;
+            player.fusionRecycleRefreshes = (player.fusionRecycleRefreshes || 0) + 1;
+        }
         
         if (player.gold < cost) return UI.showToast("⚠️ 金幣不足！");
         player.gold -= cost;
@@ -974,8 +1165,18 @@ window.rerollShop = function(isInitial = false) {
         UI.updateHeaderUI(player, stage);
     }
     window.itemsBoughtThisScreen = 0;
-    let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
-    shopItems = applyEconomyShackles(available);
+    let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random());
+    let selectedItems = available.slice(0, 3);
+
+    // If empty or infinite mode, inject consumables
+    if (selectedItems.length < 3 || player.isInfiniteMode) {
+        let cons = [...CONSUMABLES_DB].sort(() => 0.5 - Math.random());
+        while(selectedItems.length < 3 && cons.length > 0) {
+            selectedItems.push(cons.pop());
+        }
+    }
+
+    shopItems = applyEconomyShackles(selectedItems);
     UI.renderShopItems(shopItems, player);
     saveGame();
 };
@@ -985,15 +1186,33 @@ window.buyItem = function(idx) {
     if (player.gold >= r.price) {
         Audio.playBuySound();
         player.gold -= r.price;
-        player.relics.push(r.id);
         window.itemsBoughtThisScreen++;
-        unlockCollectionItem('relic', r.id);
+
+        if (r.id.startsWith('cons_')) {
+            // Consumable logic
+            if (r.id === 'cons_power') {
+                player.nextDamageMulti = (player.nextDamageMulti || 1.0) * 1.5;
+                UI.showToast("💪 【力量藥劑】使用成功！下場戰鬥傷害提升！");
+            } else if (r.id === 'cons_potential') {
+                player.bonusBasePoints = (player.bonusBasePoints || 0) + 50;
+                UI.showToast("🔥 【潛能秘藥】使用成功！永久基礎點數 +50！");
+            } else if (r.id === 'cons_hp') {
+                player.hp = Math.min(window.getMaxHp(), player.hp + 1);
+                UI.showToast("❤️ 【生命紅藥】使用成功！回復 1 HP！");
+            }
+        } else {
+            // Relic logic
+            player.relics.push(r.id);
+            unlockCollectionItem('relic', r.id);
+            checkRelicFusion();
+        }
+
         shopItems.splice(idx, 1);
         UI.el.shopGold.innerText = player.gold;
         // ★ 修復：同步更新頂部資訊列的金幣
         UI.updateHeaderUI(player, stage);
         UI.renderShopItems(shopItems, player);
-        UI.renderInventory(player);
+        UI.renderInventory(player, battle);
         saveGame();
     }
 };
@@ -1072,6 +1291,7 @@ function gameWin() {
     if (btnInfinite) btnInfinite.classList.remove('hidden');
 
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
+    let earnedSouls = 2; metaData.souls += earnedSouls; saveMetaData(); UI.el.endDesc.innerText += `\n👻 獲得 ${earnedSouls} 個靈魂！`;
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
     UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
     UI.renderEndGameStats(player.highestDamage, player.highestDamageCombo, player.relics);

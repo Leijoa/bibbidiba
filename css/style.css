@@ -31,9 +31,9 @@ body {
 
 .damage-text { animation: floatDamage 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: none; }
 @keyframes floatDamage {
-  0% { opacity: 0; transform: translateY(20px) scale(0.5); }
-  20% { opacity: 1; transform: translateY(-30px) scale(1.3); }
-  100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% - 50px)) scale(1.2); }
 }
 
 .shake-hard { animation: shakeHard 0.4s cubic-bezier(.36,.07,.19,.97) both; }

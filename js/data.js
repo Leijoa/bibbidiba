@@ -4,7 +4,31 @@ export const RARITY = {
     1: { label: '普通', color: 'text-slate-300', bg: 'bg-slate-700/50', border: 'border-slate-500' },
     2: { label: '稀有', color: 'text-blue-400', bg: 'bg-blue-900/40', border: 'border-blue-600' },
     3: { label: '史詩', color: 'text-purple-400', bg: 'bg-purple-900/40', border: 'border-purple-600' },
-    4: { label: '傳說', color: 'text-amber-400', bg: 'bg-amber-900/40', border: 'border-amber-500' }
+    4: { label: '傳說', color: 'text-amber-400', bg: 'bg-amber-900/40', border: 'border-amber-500' },
+    5: { label: '再生', color: 'text-cyan-400', bg: 'bg-cyan-900/40', border: 'border-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]' }
+};
+
+
+export const FUSION_RECIPES = {
+    'fusion_source': { mat1: 'b1', mat2: 'b2' },
+    'fusion_pillar': { mat1: 'b4', mat2: 'b5' },
+    'fusion_peak': { mat1: 'b7', mat2: 'b8' },
+    'fusion_nebula': { mat1: 'b3', mat2: 'small' },
+    'fusion_samsara': { mat1: 'b6', mat2: 'sixsmooth' },
+    'fusion_recycle': { mat1: 'scavenger', mat2: 'vip' },
+    'fusion_fortune': { mat1: 'mid', mat2: 'fivebless' },
+    'fusion_miser': { mat1: 'piggybank', mat2: 'investor' },
+    'fusion_arithmetic': { mat1: 'arithmetic', mat2: 'fourdeath' },
+    'fusion_empire': { mat1: 'bounty', mat2: 'coin' },
+    'fusion_bloody': { mat1: 'doubleedge', mat2: 'luckyseven' },
+    'fusion_chaos': { mat1: 'odd', mat2: 'even' },
+    'fusion_scales': { mat1: 'order', mat2: 'extremist' },
+    'fusion_ares': { mat1: 'allin', mat2: 'highlow' },
+    'fusion_eternity': { mat1: 'brink', mat2: 'oneshot' },
+    'fusion_glimmer': { mat1: 'flicker', mat2: 'doubles' },
+    'fusion_miracle': { mat1: 'hodgepodge', mat2: 'mediocre' },
+    'fusion_titan': { mat1: 'big', mat2: 'laststand' },
+    'fusion_infinite': { mat1: 'straightfan', mat2: 'rebel' }
 };
 
 export const RELIC_DB = [
@@ -56,14 +80,47 @@ export const RELIC_DB = [
     { id: 'berserker', name: '【越戰越勇】', desc: '每次因回合耗盡或反傷扣除 1 HP 時，永久增加 1 次初始重骰次數。', price: 55, rarity: 4 },
     { id: 'dragonslayer', name: '【屠龍者】', desc: '面對「Boss」或「菁英怪」時，總傷害 x1.5。', price: 60, rarity: 4 },
     { id: 'bankrupt', name: '【破財消災】', desc: '承受致命傷害時，若金幣 ≥ 100，扣除【所有金幣】並保留 1 HP（每局限一次）。', price: 70, rarity: 4 },
+
+    { id: 'fusion_source', name: '【萬物之源】', desc: '1, 2 的點數隨關卡層數(E)成長。公式：15+(E×2.5)。', price: 0, rarity: 5 },
+    { id: 'fusion_pillar', name: '【中流砥柱】', desc: '4, 5 的點數倍率為 3x。每擊破一隻敵人，此倍率永久增加 +0.2x。', price: 0, rarity: 5 },
+    { id: 'fusion_peak', name: '【登峰造極】', desc: '7, 8 點數隨「目前持有的金幣」成長（每 20 金幣，基礎點數 +5）。', price: 0, rarity: 5 },
+    { id: 'fusion_nebula', name: '【微縮星雲】', desc: '1, 2, 3 的倍率隨「目前無標籤骰子數」成長（每有一顆散牌，倍率 +1.0x）。', price: 0, rarity: 5 },
+    { id: 'fusion_samsara', name: '【六道輪迴】', desc: '散牌點數基礎為 20。盤面上每多一顆 6，此數值隨關卡層數(E)額外增加（E x 2）。', price: 0, rarity: 5 },
+    { id: 'fusion_recycle', name: '【回收領主】', desc: '刷新商店不花錢。且每次點擊刷新，該局全域傷害永久 +1%。', price: 0, rarity: 5 },
+    { id: 'fusion_fortune', name: '【五福中天】', desc: '4, 5 的倍率隨「5 的出現次數」累計成長。每出現過一次 5，倍率 +0.05x。', price: 0, rarity: 5 },
+    { id: 'fusion_miser', name: '【黃金守財奴】', desc: '取消重骰扣錢。每回合結束時，根據持有金幣獲得「複利」傷害加成。', price: 0, rarity: 5 },
+    { id: 'fusion_arithmetic', name: '【等差死神】', desc: '每多一種數字，點數總和隨關卡層數(E)成長（+5×E）。', price: 0, rarity: 5 },
+    { id: 'fusion_empire', name: '【帝國遺產】', desc: '戰鬥金幣獎勵隨「總累積金幣」成長（每賺過 1000 金，傷害 +20%）。', price: 0, rarity: 5 },
+    { id: 'fusion_bloody', name: '【血色聖戰】', desc: '2 的點數為 30。且每失去 1 點 HP，所有骰子基礎點數永久 +10。', price: 0, rarity: 5 },
+    { id: 'fusion_chaos', name: '【混沌原力】', desc: '奇偶共生：若盤面 4 奇 4 偶，倍率隨「已擁有的遺物數量」成長。', price: 0, rarity: 5 },
+    { id: 'fusion_scales', name: '【天秤之極】', desc: '絕對秩序門檻降至 6。倍率隨「已損生命值」成長（1 HP 時倍率翻 3 倍）。', price: 0, rarity: 5 },
+    { id: 'fusion_ares', name: '【孤傲戰神】', desc: '若同時存在 1 和 8，傷害隨關卡層數(E)成長（1.0 + 0.8E）。', price: 0, rarity: 5 },
+    { id: 'fusion_eternity', name: '【一念永恆】', desc: '最後一擊且為無標籤時，傷害乘上「剩餘重骰次數的平方」。', price: 0, rarity: 5 },
+    { id: 'fusion_glimmer', name: '【微光聖戰】', desc: '弱勢牌型（對子）倍率隨「對戰回合數」成長。戰鬥拖越久，傷害越高。', price: 0, rarity: 5 },
+    { id: 'fusion_miracle', name: '【凡骨奇蹟】', desc: '無標籤時，傷害隨「目前解鎖的牌型數量」成長。', price: 0, rarity: 5 },
+    { id: 'fusion_titan', name: '【泰坦之握】', desc: '6, 7, 8 基礎點數增加(E x 3)。對 Boss 傷害翻倍。', price: 0, rarity: 5 },
+    { id: 'fusion_infinite', name: '【無限數列】', desc: '順子倍率隨擊殺數成長。', price: 0, rarity: 5 },
+
+];
+
+
+export const CONSUMABLES_DB = [
+    { id: 'cons_power', name: '【力量藥劑】', desc: '下場戰鬥中，總傷害 x1.5 倍（單次消耗）', price: 100, rarity: 2 },
+    { id: 'cons_potential', name: '【潛能秘藥】', desc: '永久增加 50 點基礎點數總和', price: 300, rarity: 3 },
+    { id: 'cons_hp', name: '【生命紅藥】', desc: '立即回復 1 HP', price: 100, rarity: 1 }
 ];
 
 export const ENEMY_DB = [
-    { name: '史萊姆', hp: 1000, turns: 3 },
-    { name: '哥布林小隊', hp: 4000, turns: 3 },
-    { name: '巨石傀儡 (菁英)', hp: 16000, turns: 4 },
-    { name: '深淵魔龍', hp: 80000, turns: 4 },
-    { name: '創世神 (最終Boss)', hp: 500000, turns: 5 },
+    { name: '史萊姆', hp: 4000, turns: 3 },                  // Stage 1 (Index 0)
+    { name: '哥布林', hp: 50000, turns: 3 },                 // Stage 2 (Index 1)
+    { name: '巨石傀儡 (菁英)', hp: 200000, turns: 3 },         // Stage 3 (Index 2)
+    { name: '幽暗衛士', hp: 1000000, turns: 3 },             // Stage 4 (Index 3)
+    { name: '吸血鬼男爵', hp: 5000000, turns: 3 },             // Stage 5 (Index 4)
+    { name: '深淵魔龍 (菁英)', hp: 20000000, turns: 3 },        // Stage 6 (Index 5)
+    { name: '墮落天使', hp: 40000000, turns: 3 },            // Stage 7 (Index 6)
+    { name: '虛空行者', hp: 80000000, turns: 3 },            // Stage 8 (Index 7)
+    { name: '混沌騎士 (菁英)', hp: 120000000, turns: 3 },       // Stage 9 (Index 8)
+    { name: '創世神 (最終Boss)', hp: 500000000, turns: 3 },    // Stage 10 (Index 9)
 ];
 
 export const SHACKLE_DB = [
@@ -111,7 +168,7 @@ export const SHACKLE_DB = [
     { id: 'relicseal', name: '【遺物封印】', desc: '戰鬥期間，隨機使玩家背包中的 2 個遺物效果暫停運作。', type: 'heavy' },
     { id: 'oblivion', name: '【忘卻】', desc: '無視所有來自遺物的「基礎點數」加成（如大一到大八）。', type: 'heavy' },
     { id: 'exploitation', name: '【剝削】', desc: '所有遺物的觸發倍率效果強制減半（例如 x3.0 變 x1.5）。', type: 'heavy' },
-    { id: 'wrath', name: '【天譴】', desc: '若玩家觸發「八重奏」或「大滿貫」等頂級牌型，強制扣除 1 HP。', type: 'heavy' },
+    { id: 'wrath', name: '【天譴】', desc: '若結算時觸發傳說牌型，強制扣除 1 HP。', type: 'heavy' },
     { id: 'timecompress', name: '【時間壓縮】', desc: '該關卡的限制回合數強制改為只有 2 回合。', type: 'heavy' },
     { id: 'thornarmor', name: '【反傷裝甲】', desc: '若單回合傷害低於敵人最大 HP 的 10%，玩家受 1 HP 反傷。', type: 'heavy' },
     { id: 'absolutebarrier', name: '【絕對屏障】', desc: '本局戰鬥中的「第一次攻擊」強制無效（造成 0 點傷害）。', type: 'heavy' },
@@ -132,54 +189,55 @@ export function getEnemy(levelIndex) {
         let m = ((infiniteLevel - 1) % 3) + 1;
         
         let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
+        if (hp > Number.MAX_SAFE_INTEGER) hp = Number.MAX_SAFE_INTEGER;
         
         let name = `無限塔 ${n}-${m}`;
         if (m === 3) name += ' (Boss)';
         else if (m === 2) name += ' (菁英)';
         
-        return { name: name, hp: hp, turns: 5 };
+        return { name: name, hp: hp, turns: 3 };
     }
 }
 
 export const RULE_DB = {
     groupA: [
-        { name: '八重奏', desc: '8顆相同數字', multi: 'x50.0' },
-        { name: '七同', desc: '7顆相同數字', multi: 'x25.0' },
-        { name: '六同', desc: '6顆相同數字', multi: 'x12.0' },
-        { name: '五同', desc: '5顆相同數字', multi: 'x6.0' },
-        { name: '四同', desc: '4顆相同數字', multi: 'x4.5' },
-        { name: '三同', desc: '3顆相同數字', multi: 'x2.5' },
-        { name: '對子', desc: '2顆相同數字', multi: 'x1.5' }
+        { name: '八重奏', desc: '8顆相同數字', multi: 'x50.0' , rarity: 4 },
+        { name: '七同', desc: '7顆相同數字', multi: 'x25.0' , rarity: 4 },
+        { name: '六同', desc: '6顆相同數字', multi: 'x12.0' , rarity: 3 },
+        { name: '五同', desc: '5顆相同數字', multi: 'x6.0' , rarity: 3 },
+        { name: '四同', desc: '4顆相同數字', multi: 'x4.5' , rarity: 2 },
+        { name: '三同', desc: '3顆相同數字', multi: 'x2.5' , rarity: 2 },
+        { name: '對子', desc: '2顆相同數字', multi: 'x1.5' , rarity: 1 }
     ],
     groupB: [
-        { name: '大滿貫', desc: '1~8各有一顆', multi: 'x25.0' },
-        { name: '七連順', desc: '7顆數字相連', multi: 'x10.0' },
-        { name: '六連順', desc: '6顆數字相連', multi: 'x6.0' },
-        { name: '五連順', desc: '5顆數字相連', multi: 'x3.5' },
-        { name: '四連順', desc: '4顆數字相連', multi: 'x2.5' },
-        { name: '三連順', desc: '3顆數字相連', multi: 'x2.0' }
+        { name: '大滿貫', desc: '1~8各有一顆', multi: 'x25.0' , rarity: 4 },
+        { name: '七連順', desc: '7顆數字相連', multi: 'x10.0' , rarity: 3 },
+        { name: '六連順', desc: '6顆數字相連', multi: 'x6.0' , rarity: 3 },
+        { name: '五連順', desc: '5顆數字相連', multi: 'x3.5' , rarity: 2 },
+        { name: '四連順', desc: '4顆數字相連', multi: 'x2.5' , rarity: 2 },
+        { name: '三連順', desc: '3顆數字相連', multi: 'x2.0' , rarity: 1 }
     ],
     groupC: [
-        { name: '雙子星', desc: '兩組4同', multi: 'x20.0' },
-        { name: '葫蘆', desc: '5同 + 3同', multi: 'x15.0' },
-        { name: '豪華四對子', desc: '包含3同或4同的4組對子', multi: 'x15.0' },
-        { name: '三龍會', desc: '分成三組完全相連的順子', multi: 'x12.0' },
-        { name: '經典四對子', desc: '嚴格的4組對子(無3同或4同)', multi: 'x10.0' },
-        { name: '雙四連順', desc: '兩組4連順', multi: 'x10.0' },
-        { name: '中葫蘆', desc: '4同 + 3同', multi: 'x8.0' },
-        { name: '平胡', desc: '兩組3連順 + 一組對子', multi: 'x6.0' },
-        { name: '碰碰胡', desc: '兩組3同 + 一組對子', multi: 'x5.0' },
-        { name: '順碰交響曲', desc: '1組3連順 + 1組3同', multi: 'x4.0' },
-        { name: '雙三連順', desc: '兩組3連順', multi: 'x4.0' },
-        { name: '雙三同', desc: '兩組3同', multi: 'x3.5' },
-        { name: '小葫蘆', desc: '3同 + 一組對子', multi: 'x3.5' },
-        { name: '三對子', desc: '任意3組對子', multi: 'x3.0' },
-        { name: '雙對子', desc: '任意2組對子', multi: 'x2.0' }
+        { name: '雙子星', desc: '兩組4同', multi: 'x20.0' , rarity: 4 },
+        { name: '葫蘆', desc: '5同 + 3同', multi: 'x15.0' , rarity: 3 },
+        { name: '豪華四對子', desc: '包含3同或4同的4組對子', multi: 'x15.0' , rarity: 3 },
+        { name: '三龍會', desc: '分成三組完全相連的順子', multi: 'x12.0' , rarity: 3 },
+        { name: '經典四對子', desc: '嚴格的4組對子(無3同或4同)', multi: 'x10.0' , rarity: 2 },
+        { name: '雙四連順', desc: '兩組4連順', multi: 'x10.0' , rarity: 2 },
+        { name: '中葫蘆', desc: '4同 + 3同', multi: 'x8.0' , rarity: 2 },
+        { name: '平胡', desc: '兩組3連順 + 一組對子', multi: 'x6.0' , rarity: 2 },
+        { name: '碰碰胡', desc: '兩組3同 + 一組對子', multi: 'x5.0' , rarity: 2 },
+        { name: '順碰交響曲', desc: '1組3連順 + 1組3同', multi: 'x4.0' , rarity: 1 },
+        { name: '雙三連順', desc: '兩組3連順', multi: 'x4.0' , rarity: 1 },
+        { name: '雙三同', desc: '兩組3同', multi: 'x3.5' , rarity: 1 },
+        { name: '小葫蘆', desc: '3同 + 一組對子', multi: 'x3.5' , rarity: 1 },
+        { name: '三對子', desc: '任意3組對子', multi: 'x3.0' , rarity: 1 },
+        { name: '雙對子', desc: '任意2組對子', multi: 'x2.0' , rarity: 1 }
     ],
     groupD: [
-        { name: '兩極', desc: '盤面只有 1 和 8', multi: 'x30.0' },
-        { name: '絕對秩序', desc: '7顆以上數字為全奇數或全偶數', multi: 'x8.0' },
-        { name: '全異', desc: '8顆數字皆不相同', multi: 'x2.5' },
-        { name: '中庸之道', desc: '盤面完全沒有 1 和 8', multi: 'x2.0' }
+        { name: '兩極', desc: '盤面只有 1 和 8', multi: 'x30.0' , rarity: 4 },
+        { name: '絕對秩序', desc: '7顆以上數字為全奇數或全偶數', multi: 'x8.0' , rarity: 3 },
+        { name: '全異', desc: '8顆數字皆不相同', multi: 'x2.5' , rarity: 2 },
+        { name: '中庸之道', desc: '盤面完全沒有 1 和 8', multi: 'x2.0' , rarity: 1 }
     ]
 };
