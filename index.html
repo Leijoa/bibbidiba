@@ -10,7 +10,7 @@
 </head>
 <body class="p-1 md:p-4 h-[100dvh] flex flex-col relative overflow-hidden bg-slate-950">
 
-  <div id="title-screen" class="absolute inset-0 bg-slate-950 z-[60] flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+  <div id="title-screen" class="absolute inset-0 bg-slate-950 z-[60] flex flex-col items-center justify-center p-6 text-center">
     <div class="mb-4 pop-anim">
       <h1 class="text-6xl md:text-8xl font-black text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.6)] tracking-tighter">BIBBIDIBA</h1>
       <h2 class="text-xl md:text-3xl font-bold text-slate-300 mt-2">比比丟八</h2>
@@ -68,7 +68,7 @@
     </div>
   </header>
 
-  <div id="rules-modal" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2 backdrop-blur-sm">
+  <div id="rules-modal" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2">
     <div class="bg-slate-800 border-2 border-slate-600 rounded-xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-2 md:p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900 shrink-0">
         <h2 class="text-base md:text-xl font-black text-amber-400 flex items-center gap-2">📖 全牌型倍率表</h2>
@@ -123,7 +123,7 @@
       </div>
     </div>
 
-    <div id="shop-overlay" class="absolute inset-0 bg-slate-950/98 backdrop-blur-md z-50 hidden flex-col p-4 overflow-y-auto">
+    <div id="shop-overlay" class="absolute inset-0 bg-slate-950/98 z-50 hidden flex-col p-4 overflow-y-auto">
       <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
         <h1 class="text-xl md:text-3xl font-black text-yellow-400 tracking-tight">💰 芝芝商店</h1>
         <div class="text-sm md:text-xl font-bold text-yellow-400 bg-slate-800 px-2 py-1 rounded-lg border border-yellow-700">
@@ -138,7 +138,7 @@
       </div>
     </div>
 
-    <div id="end-overlay" class="absolute inset-0 bg-red-950/95 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4 text-center">
+    <div id="end-overlay" class="absolute inset-0 bg-red-950/95 z-50 hidden flex-col items-center justify-center p-4 text-center">
       <h1 id="end-title" class="text-5xl md:text-7xl font-black text-red-500 mb-3 pop-anim">GAME OVER</h1>
       <p id="end-desc" class="text-sm md:text-xl text-slate-300 mb-4 font-bold">你未能擊敗敵人，旅程到此為止。</p>
       <div id="end-stats" class="flex flex-col gap-2 mb-6 text-sm md:text-base text-slate-300"></div>
@@ -155,7 +155,7 @@
     </div>
   </main>
 
-  <div id="history-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[70] flex items-center justify-center p-2 backdrop-blur-sm">
+  <div id="history-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[70] flex items-center justify-center p-2">
     <div class="bg-slate-800 border-2 border-slate-600 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-2 md:p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900 shrink-0">
         <h2 class="text-base md:text-xl font-black text-purple-400 flex items-center gap-2">📜 歷史牌局紀錄</h2>
@@ -165,7 +165,7 @@
     </div>
   </div>
 
-  <div id="collection-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[80] flex items-center justify-center p-2 backdrop-blur-sm">
+  <div id="collection-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[80] flex items-center justify-center p-2">
     <div class="bg-slate-800 border-2 border-slate-600 rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-2 md:p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900 shrink-0">
         <h2 class="text-base md:text-xl font-black text-emerald-400 flex items-center gap-2">📖 收集冊</h2>
@@ -181,7 +181,7 @@
   </div>
 
   <script type="module" src="js/main.js"></script>
-  <div id="souls-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[90] flex items-center justify-center p-2 backdrop-blur-sm">
+  <div id="souls-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[90] flex items-center justify-center p-2">
     <div class="bg-slate-800 border-2 border-indigo-600 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-3 border-b border-indigo-900 flex justify-between items-center bg-slate-900 shrink-0">
         <h2 class="text-xl font-black text-indigo-400 flex items-center gap-2" id="souls-header-text">👻 靈魂奉獻</h2>
