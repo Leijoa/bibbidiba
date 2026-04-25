@@ -1245,16 +1245,13 @@ window.rerollShop = function(isInitial = false) {
         });
     }
 
-    // Try to filter out current items and fused materials if we have enough alternatives
-    let nonDuplicateAvailable = available.filter(r => !currentItemIds.includes(r.id) && !fusedMaterials.includes(r.id));
+    // Filter out fused materials unconditionally so they never show up
+    available = available.filter(r => !fusedMaterials.includes(r.id));
+
+    // Try to filter out current items if we have enough alternatives
+    let nonDuplicateAvailable = available.filter(r => !currentItemIds.includes(r.id));
     if (nonDuplicateAvailable.length >= 3 || nonDuplicateAvailable.length > available.length / 2) {
         available = nonDuplicateAvailable;
-    } else {
-        // At least filter out fused materials even if alternatives are low, assuming we have enough fallback
-        let justFusedFiltered = available.filter(r => !fusedMaterials.includes(r.id));
-        if (justFusedFiltered.length > 0) {
-            available = justFusedFiltered;
-        }
     }
 
     available.sort(() => 0.5 - Math.random());
