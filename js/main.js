@@ -1108,10 +1108,10 @@ function enemyDefeated() {
         UI.showToast("👽 【同化】發動：超過 50 金幣，金幣強制歸零！");
     }
 
-    let baseEarn = 10 + (stage.level * 2);
+    let baseEarn = 20 + (stage.level * 5);
     let isEliteOrBossReward = [2, 5, 8, 9].includes(stage.level);
     if (isEliteOrBossReward) {
-        baseEarn += 15; // 額外獲得 15 金幣懸賞
+        baseEarn += 40; // 額外獲得 40 金幣懸賞
     }
     let turnsBonus = (stage.turnsLeft - 1) * 10;
     let extraEarn = 0;
@@ -1150,36 +1150,51 @@ function enemyDefeated() {
         ? `💰 獲得 ${totalBaseEarn} 金幣 + ${turnsBonus} 金幣 (剩餘攻擊次數加成)！`
         : `💰 獲得 ${totalBaseEarn} 金幣！`;
 
-    let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id));
+    // Exclude Rarity 5 from regular drops
+    let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5);
     let nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
-    let isElite = [2, 5, 8].includes(stage.level);
 
-    if (isElite && availableForShop.length > 0) {
-        // 隨機抽選免費遺物
+    // Boss (9) or Elite (2, 5, 8)
+    let isEliteOrBossDrop = [2, 5, 8, 9].includes(stage.level);
+
+    if (isEliteOrBossDrop && availableForShop.length > 0) {
         let randomRelic = availableForShop[Math.floor(Math.random() * availableForShop.length)];
         player.relics.push(randomRelic.id);
         unlockCollectionItem('relic', randomRelic.id);
+
+        // Ensure UI updates properly if fusion happens
         checkRelicFusion();
 
-        // 重新過濾商店可用遺物（排除剛拿到手的）
-        availableForShop = availableForShop.filter(r => r.id !== randomRelic.id);
-        // 確保領完遺物後，下一步是進入商店
+        availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5);
         nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
 
+        if (stage.level === 9 && !player.isInfiniteMode) {
+            nextStep = gameWin; // End game normally instead of shopping after boss in standard mode
+        }
+
         // Handle Souls
-        let earnedSouls = 1; // Stage 3, 6, 9 Elites
+        let enemyName = getEnemy(stage.level).name;
+        let earnedSouls = stage.level === 9 ? 2 : 1;
         if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
 
         metaData.souls += earnedSouls;
         saveMetaData();
         let soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
-        UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+
+        if (stage.level === 9) {
+            UI.showToast(`👑 擊敗了 ${enemyName}！\n${goldMessage}${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+        } else {
+            UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+        }
     } else {
-        // 一般怪物結算
         let enemyName = getEnemy(stage.level).name;
         let earnedSouls = 0;
-        if (stage.level === 9) earnedSouls = 2; // 第 10 關
-        else if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1; // 無限塔每隻怪
+        if (stage.level === 9) earnedSouls = 2;
+        else if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
+
+        if (stage.level === 9 && !player.isInfiniteMode) {
+            nextStep = gameWin;
+        }
 
         let soulMsg = '';
         if (earnedSouls > 0) {
@@ -1223,12 +1238,30 @@ window.rerollShop = function(isInitial = false) {
         UI.updateHeaderUI(player, stage);
     }
     window.itemsBoughtThisScreen = 0;
-    let available = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5).sort(() => 0.5 - Math.random());
+
+    // Remember currently displayed items to prevent them from showing up again
+    let currentItemIds = shopItems ? shopItems.map(item => item.id) : [];
+
+    let available = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5);
+
+    // Try to filter out current items if we have enough alternatives
+    let nonDuplicateAvailable = available.filter(r => !currentItemIds.includes(r.id));
+    if (nonDuplicateAvailable.length >= 3 || nonDuplicateAvailable.length > available.length / 2) {
+        available = nonDuplicateAvailable;
+    }
+
+    available.sort(() => 0.5 - Math.random());
     let selectedItems = available.slice(0, 3);
 
     // If empty or infinite mode, inject consumables
     if (selectedItems.length < 3 || player.isInfiniteMode) {
-        let cons = [...CONSUMABLES_DB].sort(() => 0.5 - Math.random());
+        let cons = [...CONSUMABLES_DB];
+        let nonDuplicateCons = cons.filter(c => !currentItemIds.includes(c.id));
+        if (nonDuplicateCons.length >= (3 - selectedItems.length)) {
+            cons = nonDuplicateCons;
+        }
+        cons.sort(() => 0.5 - Math.random());
+
         while(selectedItems.length < 3 && cons.length > 0) {
             selectedItems.push(cons.pop());
         }
