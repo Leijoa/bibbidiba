@@ -232,7 +232,12 @@ function applyEconomyShackles(items) {
             price: Math.ceil(item.price * 1.2)
         }));
     }
-    if (player.relics.includes('vip')) {
+    if (player.relics.includes('fusion_recycle')) {
+        result = result.map(item => ({
+            ...item,
+            price: Math.floor(item.price * 0.7)
+        }));
+    } else if (player.relics.includes('vip')) {
         result = result.map(item => ({
             ...item,
             price: Math.floor(item.price * 0.8)
@@ -867,8 +872,11 @@ window.fireAttack = function() {
         UI.showToast("💎 【黃金守財奴】複利增傷發動！");
     }
 
-    if (player.relics.includes('fusion_recycle') && player.fusionRecycleRefreshes) {
-        finalDamage = Math.floor(finalDamage * (1 + player.fusionRecycleRefreshes * 0.01));
+    if (player.relics.includes('fusion_recycle')) {
+        let recycleMulti = 1 + Math.floor(player.gold / 10) * 0.02;
+        if (recycleMulti > 1) {
+            finalDamage = Math.floor(finalDamage * recycleMulti);
+        }
     }
 
     if (player.relics.includes('fusion_empire')) {
@@ -1227,7 +1235,6 @@ window.rerollShop = function(isInitial = false) {
         }
         if (player.relics.includes('fusion_recycle')) {
             cost = 0;
-            player.fusionRecycleRefreshes = (player.fusionRecycleRefreshes || 0) + 1;
         }
         
         if (player.gold < cost) return UI.showToast("⚠️ 金幣不足！");
