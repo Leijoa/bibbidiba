@@ -240,7 +240,7 @@ function applyEconomyShackles(items) {
     } else if (player.relics.includes('vip')) {
         result = result.map(item => ({
             ...item,
-            price: Math.floor(item.price * 0.8)
+            price: Math.floor(item.price * 0.9)
         }));
     }
     return result;
@@ -298,7 +298,7 @@ function loadGame() {
             renderAll();
             UI.el.shopOverlay.classList.remove('hidden');
             UI.el.shopOverlay.classList.add('flex');
-            UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'));
+            UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), player.relics.includes('fusion_recycle'));
             UI.el.shopGold.innerText = player.gold;
             UI.renderShopItems(shopItems, player);
         } else {
@@ -697,17 +697,6 @@ window.executeRoll = function(isInitial = false) {
     if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') return;
 
     if (!isInitial) {
-        if (player.relics.includes('fusion_miser')) {
-            // Free rerolls
-        } else if (player.relics.includes('piggybank')) {
-            if (player.gold >= 1) {
-                player.gold -= 1;
-                UI.updateHeaderUI(player, stage);
-            } else {
-                return UI.showToast("⚠️ 金幣不足！【存錢筒】每次重骰需支付 1 枚金幣。");
-            }
-        }
-
         if (stage.activeShackle === 'sticky') {
             let lockedCount = battle.dice.filter(d => d.locked).length;
             let cost = lockedCount * 1;
@@ -870,13 +859,6 @@ window.fireAttack = function() {
     if (player.relics.includes('fusion_miser')) {
         finalDamage += Math.floor(finalDamage * (player.gold * 0.01));
         UI.showToast("💎 【黃金守財奴】複利增傷發動！");
-    }
-
-    if (player.relics.includes('fusion_recycle')) {
-        let recycleMulti = 1 + Math.floor(player.gold / 10) * 0.02;
-        if (recycleMulti > 1) {
-            finalDamage = Math.floor(finalDamage * recycleMulti);
-        }
     }
 
     if (player.relics.includes('fusion_empire')) {
@@ -1131,8 +1113,8 @@ function enemyDefeated() {
 
     let enemy = getEnemy(stage.level);
     if (player.relics.includes('bounty') && stage.turnsLeft === enemy.turns) {
-        extraEarn += 20;
-        UI.showToast("🎯 【賞金獵人】發動：1 回合內秒殺，額外獲得 20 金幣！");
+        extraEarn += 10;
+        UI.showToast("🎯 【賞金獵人】發動：1 回合內秒殺，額外獲得 10 金幣！");
     }
 
     if (stage.activeShackle === 'pickyeater') {
@@ -1145,7 +1127,7 @@ function enemyDefeated() {
         activeRelics = player.relics.filter(r => !stage.shackleMeta.ignoredRelics.includes(r));
     }
     
-    if (activeRelics.includes('coin')) extraEarn += 15;
+    if (activeRelics.includes('coin')) extraEarn += 10;
     if (activeRelics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
     
     let totalBaseEarn = baseEarn + extraEarn;
@@ -1219,7 +1201,7 @@ function openShop() {
     UI.el.shopOverlay.classList.add('flex');
     shopRerollsUsed = 0;
     window.itemsBoughtThisScreen = 0;
-    UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'));
+    UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), player.relics.includes('fusion_recycle'));
     UI.el.shopGold.innerText = player.gold;
     UI.updateHeaderUI(player, stage);
     window.rerollShop(true);
@@ -1231,16 +1213,17 @@ window.rerollShop = function(isInitial = false) {
         let cost = 0;
         if (shopRerollsUsed > 0) {
             cost = 3 + (shopRerollsUsed - 1);
-            if (hasScavenger) cost = Math.max(1, cost - 2);
-        }
-        if (player.relics.includes('fusion_recycle')) {
-            cost = 0;
+            if (player.relics.includes('fusion_recycle')) {
+                cost = Math.max(1, cost - 3);
+            } else if (hasScavenger) {
+                cost = Math.max(1, cost - 2);
+            }
         }
         
         if (player.gold < cost) return UI.showToast("⚠️ 金幣不足！");
         player.gold -= cost;
         shopRerollsUsed++;
-        UI.updateShopRerollBtn(shopRerollsUsed, hasScavenger);
+        UI.updateShopRerollBtn(shopRerollsUsed, hasScavenger, player.relics.includes('fusion_recycle'));
         UI.el.shopGold.innerText = player.gold;
         UI.updateHeaderUI(player, stage);
     }

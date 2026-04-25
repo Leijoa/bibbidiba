@@ -341,7 +341,7 @@ export function renderDice(battle, activeHighlight, player) {
                 if (player.relics.includes('fusion_source')) { baseVal = 15 + (E * 2.5); isEnhanced = true; }
             }
             if (val === 7 || val === 8) {
-                if (player.relics.includes('fusion_peak')) { baseVal = val + Math.floor(player.gold / 20) * 5; isEnhanced = true; }
+                if (player.relics.includes('fusion_peak')) { baseVal = val + Math.floor(player.gold / 15) * 3; isEnhanced = true; }
                 if (player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
             }
             if (val === 6 && player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
@@ -539,11 +539,13 @@ export function renderShopItems(shopItems, player) {
     if(shopItems.length === 0) el.shopItemsContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 py-6 font-bold text-base">商店已經被你買空了！</div>`;
 }
 
-export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false) {
+export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFusionRecycle = false) {
     let cost = 0;
     if (shopRerollsUsed > 0) {
         cost = 3 + (shopRerollsUsed - 1); // 1st = 0, 2nd = 3, 3rd = 4, 4th = 5...
-        if (hasScavenger) {
+        if (hasFusionRecycle) {
+            cost = Math.max(1, cost - 3); // Fusion Recycle discounts by 3, minimum 1
+        } else if (hasScavenger) {
             cost = Math.max(1, cost - 2); // Scavenger discounts by 2, minimum 1
         }
     }

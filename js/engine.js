@@ -195,7 +195,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
             }
             if (v === 7 || v === 8) {
                 if (playerRelics.includes('fusion_peak')) {
-                    baseVal = v + Math.floor(currentGold / 20) * 5;
+                    baseVal = v + Math.floor(currentGold / 15) * 3;
                     hasBaseRelic = true;
                 }
                 if (playerRelics.includes('fusion_titan')) {
