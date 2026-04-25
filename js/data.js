@@ -86,7 +86,7 @@ export const RELIC_DB = [
     { id: 'fusion_peak', name: '【登峰造極】', desc: '7, 8 點數隨「目前持有的金幣」成長（每 20 金幣，基礎點數 +5）。', price: 0, rarity: 5 },
     { id: 'fusion_nebula', name: '【微縮星雲】', desc: '1, 2, 3 的倍率隨「目前無標籤骰子數」成長（每有一顆散牌，倍率 +1.0x）。', price: 0, rarity: 5 },
     { id: 'fusion_samsara', name: '【六道輪迴】', desc: '散牌點數基礎為 20。盤面上每多一顆 6，此數值隨關卡層數(E)額外增加（E x 2）。', price: 0, rarity: 5 },
-    { id: 'fusion_recycle', name: '【回收領主】', desc: '刷新商店不花錢。且每次點擊刷新，該局全域傷害永久 +1%。', price: 0, rarity: 5 },
+    { id: 'fusion_recycle', name: '【回收領主】', desc: '刷新商店不花錢。戰鬥中每擁有 10 枚金幣，總傷害 +2%。且你在商店購物時享有 30% 折扣。', price: 0, rarity: 5 },
     { id: 'fusion_fortune', name: '【五福中天】', desc: '4, 5 的倍率隨「5 的出現次數」累計成長。每出現過一次 5，倍率 +0.05x。', price: 0, rarity: 5 },
     { id: 'fusion_miser', name: '【黃金守財奴】', desc: '取消重骰扣錢。每回合結束時，根據持有金幣獲得「複利」傷害加成。', price: 0, rarity: 5 },
     { id: 'fusion_arithmetic', name: '【等差死神】', desc: '每多一種數字，點數總和隨關卡層數(E)成長（+5×E）。', price: 0, rarity: 5 },

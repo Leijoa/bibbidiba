@@ -152,14 +152,8 @@ export function updateHeaderUI(player, stage) {
     el.playerGold.innerText = player.gold;
 
     let recycleStatus = document.getElementById('recycle-status');
-    let recycleVal = document.getElementById('recycle-val');
-    if (recycleStatus && recycleVal) {
-        if (player.relics && player.relics.includes('fusion_recycle')) {
-            recycleStatus.classList.remove('hidden');
-            recycleVal.innerText = `+${player.fusionRecycleRefreshes || 0}%`;
-        } else {
-            recycleStatus.classList.add('hidden');
-        }
+    if (recycleStatus) {
+        recycleStatus.classList.add('hidden');
     }
 }
 
