@@ -39,6 +39,65 @@ window.getMetaData = () => metaData;
 window.saveMetaData = saveMetaData;
 
 
+// 開發者模式
+let devSecretBuffer = "";
+window.addEventListener('keydown', (e) => {
+    devSecretBuffer += e.key;
+    if (devSecretBuffer.length > 7) devSecretBuffer = devSecretBuffer.slice(-7);
+    if (devSecretBuffer === "3345678") {
+        triggerDevMode();
+    }
+});
+
+function triggerDevMode() {
+    // 增加金幣
+    player.gold += 99999;
+    UI.updateHeaderUI(player, stage);
+    if (UI.el.shopGold) UI.el.shopGold.innerText = player.gold;
+
+    // 增加靈魂
+    metaData.souls += 1000;
+    saveMetaData();
+
+    // 如果在標題畫面，全開收集冊
+    if (!UI.el.titleScreen.classList.contains('hidden')) {
+        for (let group in RULE_DB) RULE_DB[group].forEach(r => { if (!collection.hands.includes(r.id)) collection.hands.push(r.id); });
+        RELIC_DB.forEach(r => { if (!collection.relics.includes(r.id)) collection.relics.push(r.id); });
+        import('./data.js').then(({ SHACKLE_DB }) => {
+            SHACKLE_DB.forEach(r => { if (!collection.shackles.includes(r.id)) collection.shackles.push(r.id); });
+            saveCollection();
+        });
+        UI.showToast("🛠️ 【開發者模式】已獲得 99,999 金幣、1000 靈魂，並全開收集冊！");
+    } else {
+        UI.showToast("🛠️ 【開發者模式】已獲得 99,999 金幣與 1000 靈魂！");
+    }
+
+    if (window.openDevModal) {
+        window.openDevModal();
+    }
+}
+
+if (UI.el.devRelicConfirm) {
+    UI.el.devRelicConfirm.onclick = () => {
+        let select = UI.el.devRelicSelect;
+        if (!select || !select.value) {
+            UI.showToast("請選擇一個遺物！");
+            return;
+        }
+        let rId = select.value;
+        player.relics.push(rId);
+        unlockCollectionItem('relic', rId);
+
+        // 為了使用 checkRelicFusion 與 renderInventory 我們直接呼叫
+        if (typeof checkRelicFusion === 'function') checkRelicFusion();
+        UI.renderInventory(player, battle);
+        if (typeof saveGame === 'function') saveGame();
+
+        UI.showToast(`🛠️ 已獲得遺物：${rId}`);
+        window.closeDevModal();
+    };
+}
+
 // 收集冊狀態
 let collection = {
     hands: [],
@@ -79,6 +138,7 @@ function loadCollection() {
     });
 }
 
+window.saveCollection = saveCollection;
 function saveCollection() {
     localStorage.setItem(COLLECTION_KEY, JSON.stringify(collection));
 }

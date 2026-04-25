@@ -190,5 +190,19 @@
       <div class="p-4 overflow-y-auto flex-grow text-sm flex flex-col gap-3" id="souls-content"></div>
     </div>
   </div>
+
+  <div id="dev-modal" class="hidden fixed inset-0 bg-slate-950/90 z-[100] flex items-center justify-center p-2">
+    <div class="bg-slate-800 border-2 border-slate-600 rounded-xl p-4 flex flex-col gap-4 max-w-sm w-full shadow-2xl">
+      <h2 class="text-xl font-black text-amber-400">🛠️ 開發者模式 - 取得遺物</h2>
+      <select id="dev-relic-select" class="bg-slate-900 text-white p-2 rounded border border-slate-600 font-bold max-h-60 overflow-y-auto cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm md:text-base">
+        <!-- options will be populated dynamically -->
+      </select>
+      <div class="flex justify-end gap-2 mt-2">
+        <button id="dev-relic-cancel" class="bg-slate-600 hover:bg-slate-500 text-white font-bold px-4 py-2 rounded-lg transition-colors active:scale-95 shadow-sm">取消</button>
+        <button id="dev-relic-confirm" class="bg-amber-600 hover:bg-amber-500 text-white font-black px-4 py-2 rounded-lg transition-colors active:scale-95 shadow-sm">確定取得</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
