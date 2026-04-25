@@ -9,18 +9,18 @@ const ShackleHooks = {
         preDice: (dice) => dice.map(d => ({ ...d, val: d.val === 8 ? 1 : d.val }))
     },
     numberplunder: {
-        filterDice: (d, meta) => d.val !== meta.targetNumber
+        filterDice: (d, sh) => d.val !== sh.targetNumber
     },
     drowning: {
-        modifyBase: (d, meta, ctx) => {
+        modifyBase: (d, sh, ctx) => {
             if (d.val === 5) return { baseVal: 0, multi: 1 };
             return null;
         }
     },
     parityfear: {
-        modifyBase: (d, meta, ctx) => {
-            if (meta.fearType === 'odd' && d.val % 2 !== 0) return { baseVal: 0, multi: 0 };
-            if (meta.fearType === 'even' && d.val % 2 === 0) return { baseVal: 0, multi: 0 };
+        modifyBase: (d, sh, ctx) => {
+            if (sh.fearType === 'odd' && d.val % 2 !== 0) return { baseVal: 0, multi: 0 };
+            if (sh.fearType === 'even' && d.val % 2 === 0) return { baseVal: 0, multi: 0 };
             return null; // Fallback to default
         }
     },
@@ -117,8 +117,8 @@ function applyShacklePostHooks(scoreResult, activeShackles, workingDice, baseCon
     
     activeShackles.forEach(sh => {
         if (sh.id === 'blackhole') scoreResult.globalNotes.push('【黑洞】發動: 所有的 8 變成 1。');
-        if (sh.id === 'parityfear') scoreResult.globalNotes.push(`【奇/偶數恐懼】發動: ${sh.meta.fearType === 'odd' ? '奇數' : '偶數'}點數歸零。`);
-        if (sh.id === 'numberplunder') scoreResult.globalNotes.push(`【數字掠奪】發動: 數字 ${sh.meta.targetNumber} 視為廢牌。`);
+        if (sh.id === 'parityfear') scoreResult.globalNotes.push(`【奇/偶數恐懼】發動: ${sh.fearType === 'odd' ? '奇數' : '偶數'}點數歸零。`);
+        if (sh.id === 'numberplunder') scoreResult.globalNotes.push(`【數字掠奪】發動: 數字 ${sh.targetNumber} 視為廢牌。`);
         if (sh.id === 'drowning') scoreResult.globalNotes.push(`【沉溺】發動: 5 點數歸零。`);
 
         let hookDef = ShackleHooks[sh.id];
