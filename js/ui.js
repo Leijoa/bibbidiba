@@ -47,7 +47,11 @@ export const el = {
     soulsModal: document.getElementById('souls-modal'),
     btnCloseSouls: document.getElementById('btn-close-souls'),
     soulsContent: document.getElementById('souls-content'),
-    soulsHeaderText: document.getElementById('souls-header-text')
+    soulsHeaderText: document.getElementById('souls-header-text'),
+    devModal: document.getElementById('dev-modal'),
+    devRelicSelect: document.getElementById('dev-relic-select'),
+    devRelicCancel: document.getElementById('dev-relic-cancel'),
+    devRelicConfirm: document.getElementById('dev-relic-confirm')
 };
 
 if (document.getElementById('btn-rules')) {
@@ -694,6 +698,29 @@ export function renderCollectionModal(tab) {
     el.collectionContent.innerHTML = html;
 }
 
+
+window.openDevModal = function() {
+    if (!el.devModal || !el.devRelicSelect) return;
+    el.devRelicSelect.innerHTML = '<option value="">-- 請選擇遺物 --</option>';
+    RELIC_DB.forEach(r => {
+        let opt = document.createElement('option');
+        opt.value = r.id;
+        opt.innerText = `${r.name} (${r.id})`;
+        el.devRelicSelect.appendChild(opt);
+    });
+    el.devModal.classList.remove('hidden');
+    el.devModal.classList.add('flex');
+};
+
+window.closeDevModal = function() {
+    if (!el.devModal) return;
+    el.devModal.classList.add('hidden');
+    el.devModal.classList.remove('flex');
+};
+
+if (el.devRelicCancel) {
+    el.devRelicCancel.onclick = window.closeDevModal;
+}
 
 export function renderSoulsModal(metaData) {
     if (!el.soulsContent) return;
