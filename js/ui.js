@@ -223,12 +223,14 @@ export function renderInventory(player, battle) {
         let r = RELIC_DB.find(x => x.id === id);
         let style = RARITY[r.rarity];
         let isFusionMaterial = false;
+        let fusionResultId = null;
         if (player && player.relics) {
             for (let fid in FUSION_RECIPES) {
                 let rec = FUSION_RECIPES[fid];
                 if ((rec.mat1 === r.id && player.relics.includes(rec.mat2)) ||
                     (rec.mat2 === r.id && player.relics.includes(rec.mat1))) {
                     isFusionMaterial = true;
+                    fusionResultId = fid;
                     break;
                 }
             }
@@ -298,10 +300,9 @@ export function renderDice(battle, activeHighlight, player) {
                     if (d.locked) {
                         innerColor = "bg-emerald-900"; outerColor = "bg-emerald-400"; textColor = "text-emerald-300"; extraClass = "drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"; innerHover = "";
                     } else {
-                        if (d.matchedGroups['D']) { innerColor = "bg-amber-900"; outerColor = "bg-yellow-400"; textColor = "text-yellow-200"; extraClass = "drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]"; }
-                        else if (d.matchedGroups['C']) { innerColor = "bg-purple-900"; outerColor = "bg-purple-400"; textColor = "text-purple-200"; extraClass = "drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]"; }
-                        else if (d.matchedGroups['B']) { innerColor = "bg-green-900"; outerColor = "bg-green-400"; textColor = "text-green-200"; extraClass = "drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]"; }
-                        else if (d.matchedGroups['A']) { innerColor = "bg-blue-900"; outerColor = "bg-blue-400"; textColor = "text-blue-200"; extraClass = "drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"; }
+                        if (d.matchedGroups['A'] || d.matchedGroups['B'] || d.matchedGroups['C'] || d.matchedGroups['D']) {
+                            innerColor = "bg-blue-900"; outerColor = "bg-blue-400"; textColor = "text-blue-200"; extraClass = "drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]";
+                        }
                     }
                 }
             } else if (d.locked) {
@@ -491,12 +492,14 @@ export function renderShopItems(shopItems, player) {
         let style = RARITY[r.rarity];
 
         let isFusionMaterial = false;
+        let fusionResultId = null;
         if (player && player.relics) {
             for (let fid in FUSION_RECIPES) {
                 let rec = FUSION_RECIPES[fid];
                 if ((rec.mat1 === r.id && player.relics.includes(rec.mat2)) ||
                     (rec.mat2 === r.id && player.relics.includes(rec.mat1))) {
                     isFusionMaterial = true;
+                    fusionResultId = fid;
                     break;
                 }
             }
@@ -511,7 +514,7 @@ export function renderShopItems(shopItems, player) {
                         <h3 class="text-base md:text-xl font-black ${style.color}">${r.name}</h3>
                         <div class="flex flex-col items-end gap-1">
                             <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
-                            ${isFusionMaterial ? '<span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-bold shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse">✨ 可融合</span>' : ''}
+                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ 可融合</span>` : ''}
                         </div>
                     </div>
                 </div>

@@ -1239,6 +1239,13 @@ window.rerollShop = function(isInitial = false) {
     saveGame();
 };
 
+window.showFusionInfo = function(fusionId) {
+    let relic = RELIC_DB.find(r => r.id === fusionId);
+    if (relic) {
+        UI.showToast(`✨ 融合預覽：【${relic.name}】\n${relic.desc}`);
+    }
+};
+
 window.buyItem = function(idx) {
     let r = shopItems[idx];
     if (player.gold >= r.price) {
