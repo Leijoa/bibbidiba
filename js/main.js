@@ -1163,7 +1163,7 @@ window.rerollShop = function(isInitial = false) {
         UI.updateHeaderUI(player, stage);
     }
     window.itemsBoughtThisScreen = 0;
-    let available = RELIC_DB.filter(r => !player.relics.includes(r.id)).sort(() => 0.5 - Math.random());
+    let available = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5).sort(() => 0.5 - Math.random());
     let selectedItems = available.slice(0, 3);
 
     // If empty or infinite mode, inject consumables
