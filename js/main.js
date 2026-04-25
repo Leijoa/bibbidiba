@@ -921,7 +921,6 @@ window.fireAttack = function() {
 
     UI.el.hitFlash.classList.remove('hidden');
     UI.el.hitFlash.classList.remove('flash-red-anim');
-    UI.el.hitFlash.classList.add('backdrop-blur-sm'); // Add blur
     void UI.el.hitFlash.offsetWidth;
     UI.el.hitFlash.classList.add('flash-red-anim');
 
@@ -933,7 +932,6 @@ window.fireAttack = function() {
     setTimeout(() => {
         dmgEl.remove();
         UI.el.hitFlash.classList.add('hidden');
-        UI.el.hitFlash.classList.remove('backdrop-blur-sm');
     }, 1200);
 
     UI.updateEnemyUI(stage);

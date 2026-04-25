@@ -486,6 +486,18 @@ export function renderShopItems(shopItems, player) {
         let btnClass = canAfford ? "bg-yellow-600 hover:bg-yellow-500 text-white active:scale-95 shadow-md border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1" : "bg-slate-700 text-slate-500 cursor-not-allowed";
         let style = RARITY[r.rarity];
 
+        let isFusionMaterial = false;
+        if (player && player.relics) {
+            for (let fid in FUSION_RECIPES) {
+                let rec = FUSION_RECIPES[fid];
+                if ((rec.mat1 === r.id && player.relics.includes(rec.mat2)) ||
+                    (rec.mat2 === r.id && player.relics.includes(rec.mat1))) {
+                    isFusionMaterial = true;
+                    break;
+                }
+            }
+        }
+
         return `
         <div class="bg-slate-800 p-3 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
             <div class="absolute top-0 right-0 w-20 h-20 ${style.bg} blur-2xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
