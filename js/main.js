@@ -1244,10 +1244,27 @@ window.rerollShop = function(isInitial = false) {
 
     let available = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5);
 
-    // Try to filter out current items if we have enough alternatives
-    let nonDuplicateAvailable = available.filter(r => !currentItemIds.includes(r.id));
+    // Track materials used in fusions to prevent them from showing up again
+    let fusedMaterials = [];
+    if (player.relics) {
+        player.relics.forEach(rId => {
+            if (FUSION_RECIPES[rId]) {
+                fusedMaterials.push(FUSION_RECIPES[rId].mat1);
+                fusedMaterials.push(FUSION_RECIPES[rId].mat2);
+            }
+        });
+    }
+
+    // Try to filter out current items and fused materials if we have enough alternatives
+    let nonDuplicateAvailable = available.filter(r => !currentItemIds.includes(r.id) && !fusedMaterials.includes(r.id));
     if (nonDuplicateAvailable.length >= 3 || nonDuplicateAvailable.length > available.length / 2) {
         available = nonDuplicateAvailable;
+    } else {
+        // At least filter out fused materials even if alternatives are low, assuming we have enough fallback
+        let justFusedFiltered = available.filter(r => !fusedMaterials.includes(r.id));
+        if (justFusedFiltered.length > 0) {
+            available = justFusedFiltered;
+        }
     }
 
     available.sort(() => 0.5 - Math.random());
@@ -1389,7 +1406,6 @@ function gameWin() {
     if (btnInfinite) btnInfinite.classList.remove('hidden');
 
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
-    let earnedSouls = 2; metaData.souls += earnedSouls; saveMetaData(); UI.el.endDesc.innerText += `\n👻 獲得 ${earnedSouls} 個靈魂！`;
     UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
     UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
     UI.renderEndGameStats(player.highestDamage, player.highestDamageCombo, player.relics);

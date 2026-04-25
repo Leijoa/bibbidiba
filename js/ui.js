@@ -98,7 +98,7 @@ export function showToast(msg, callback) {
             activeToasts = activeToasts.filter(t => t !== toast);
             if(callback) callback(); 
         }, 300);
-    }, 1500);
+    }, 2200);
 }
 
 // --- 動態生成牌型表 ---
@@ -120,8 +120,7 @@ export function renderRulesDB() {
             <div class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700">
                 <div>
                     <div class="flex items-center gap-2">
-                        <div class="text-sm md:text-base font-bold text-slate-200">${rule.name}</div>
-                        ${rule.rarity ? `<span class="text-[9px] md:text-[10px] px-1 py-0.5 rounded ${rStyle.bg} ${rStyle.color} border ${rStyle.border}">${rStyle.label}</span>` : ''}
+                        <div class="text-sm md:text-base font-bold ${rStyle.color}">${rule.name}</div>
                     </div>
                     <div class="text-[10px] md:text-sm text-slate-400">${rule.desc}</div>
                 </div>
@@ -151,14 +150,31 @@ export function updateHeaderUI(player, stage) {
     
     el.playerHp.innerText = `${player.hp}/${maxHp}`;
     el.playerGold.innerText = player.gold;
+
+    let recycleStatus = document.getElementById('recycle-status');
+    let recycleVal = document.getElementById('recycle-val');
+    if (recycleStatus && recycleVal) {
+        if (player.relics && player.relics.includes('fusion_recycle')) {
+            recycleStatus.classList.remove('hidden');
+            recycleVal.innerText = `+${player.fusionRecycleRefreshes || 0}%`;
+        } else {
+            recycleStatus.classList.add('hidden');
+        }
+    }
 }
 
 export function updateEnemyUI(stage) {
     let enemy = getEnemy(stage.level);
     
     let shackleHtml = '';
+    // legacy support if stage.shackles array exists
     if (stage.shackles && stage.shackles.length > 0) {
-        shackleHtml = stage.shackles.map(sh => `<span onclick="window.showShackleInfo('${sh.id}')" class="ml-2 bg-slate-700/80 hover:bg-slate-600 text-[10px] md:text-xs text-amber-300 px-1.5 py-0.5 rounded cursor-pointer border border-amber-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 枷鎖</span>`).join('');
+        shackleHtml += stage.shackles.map(sh => `<span onclick="window.showShackleInfo('${sh.id}')" class="ml-2 bg-red-900/80 hover:bg-red-800 text-[10px] md:text-xs text-red-300 px-1.5 py-0.5 rounded cursor-pointer border border-red-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 當前枷鎖</span>`).join('');
+    }
+
+    // new logic using activeShackle
+    if (window.getStageActiveShackle && window.getStageActiveShackle()) {
+        shackleHtml += `<span onclick="window.showShackleInfo('${window.getStageActiveShackle()}')" class="ml-2 bg-red-900/80 hover:bg-red-800 text-[10px] md:text-xs text-red-300 px-1.5 py-0.5 rounded cursor-pointer border border-red-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 當前枷鎖</span>`;
     }
     
     el.enemyName.innerHTML = `⚔️ ${enemy.name}${shackleHtml}`;
@@ -631,13 +647,12 @@ export function renderCollectionModal(tab) {
                 const descStr = unlocked ? rule.desc : '未解鎖';
                 const opacity = unlocked ? 'opacity-100' : 'opacity-50 grayscale';
                 let rStyle = RARITY[rule.rarity] || RARITY[1];
-                let rarityHtml = (unlocked && rule.rarity) ? `<span class="text-[9px] md:text-[10px] px-1 py-0.5 rounded ${rStyle.bg} ${rStyle.color} border ${rStyle.border}">${rStyle.label}</span>` : '';
+                let nameColor = unlocked ? rStyle.color : 'text-slate-200';
                 html += `
                 <div class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700 ${opacity}">
                     <div>
                         <div class="flex items-center gap-2">
-                            <div class="text-sm md:text-base font-bold text-slate-200">${nameStr}</div>
-                            ${rarityHtml}
+                            <div class="text-sm md:text-base font-bold ${nameColor}">${nameStr}</div>
                         </div>
                         <div class="text-[10px] md:text-sm text-slate-400">${descStr}</div>
                     </div>
