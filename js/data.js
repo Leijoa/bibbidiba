@@ -117,10 +117,10 @@ export const ENEMY_DB = [
     { name: '幽暗衛士', hp: 3500, turns: 3 },                  // Stage 4 (Index 3)
     { name: '吸血鬼男爵', hp: 4500, turns: 3 },                // Stage 5 (Index 4)
     { name: '深淵魔龍 (菁英)', hp: 11000, turns: 3 },          // Stage 6 (Index 5)
-    { name: '墮落天使', hp: 7000, turns: 3 },                  // Stage 7 (Index 6)
-    { name: '虛空行者', hp: 9000, turns: 3 },                  // Stage 8 (Index 7)
-    { name: '混沌騎士 (菁英)', hp: 28000, turns: 3 },          // Stage 9 (Index 8)
-    { name: '創世神 (最終Boss)', hp: 47000, turns: 3 },        // Stage 10 (Index 9)
+    { name: '墮落天使', hp: 8000, turns: 3 },                  // Stage 7 (Index 6)
+    { name: '虛空行者', hp: 10000, turns: 3 },                 // Stage 8 (Index 7)
+    { name: '混沌騎士 (菁英)', hp: 37000, turns: 3 },          // Stage 9 (Index 8)
+    { name: '創世神 (最終Boss)', hp: 70000, turns: 3 },        // Stage 10 (Index 9)
 ];
 
 export const SHACKLE_DB = [
