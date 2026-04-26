@@ -552,7 +552,7 @@ export function renderShopItems(shopItems, player) {
 export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFusionRecycle = false) {
     let cost = 0;
     if (shopRerollsUsed > 0) {
-        cost = 3 + (shopRerollsUsed - 1); // 1st = 0, 2nd = 3, 3rd = 4, 4th = 5...
+        cost = 5 + (shopRerollsUsed - 1) * 2;
         if (hasFusionRecycle) {
             cost = Math.max(1, cost - 3); // Fusion Recycle discounts by 3, minimum 1
         } else if (hasScavenger) {
