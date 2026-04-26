@@ -263,7 +263,17 @@ window.showRelicInfo = function(id) {
 
         let descSpan = document.createElement('span');
         descSpan.className = "text-sm md:text-lg text-slate-200 mt-2 block";
-        descSpan.textContent = r.desc;
+
+        let fusionText = '';
+        if (r.rarity === 5 && FUSION_RECIPES[r.id]) {
+            let mat1Id = FUSION_RECIPES[r.id].mat1;
+            let mat2Id = FUSION_RECIPES[r.id].mat2;
+            let mat1Name = RELIC_DB.find(x => x.id === mat1Id)?.name || mat1Id;
+            let mat2Name = RELIC_DB.find(x => x.id === mat2Id)?.name || mat2Id;
+            fusionText = `\n\n合成條件: ${mat1Name} + ${mat2Name}`;
+        }
+
+        descSpan.textContent = r.desc + fusionText;
 
         container.appendChild(nameSpan);
         container.appendChild(descSpan);
@@ -662,6 +672,14 @@ export function renderCollectionModal(tab) {
             const unlocked = coll.relics.includes(r.id);
             if (unlocked) {
                 let style = RARITY[r.rarity] || RARITY[1];
+                let fusionText = '';
+                if (r.rarity === 5 && FUSION_RECIPES[r.id]) {
+                    let mat1Id = FUSION_RECIPES[r.id].mat1;
+                    let mat2Id = FUSION_RECIPES[r.id].mat2;
+                    let mat1Name = RELIC_DB.find(x => x.id === mat1Id)?.name || mat1Id;
+                    let mat2Name = RELIC_DB.find(x => x.id === mat2Id)?.name || mat2Id;
+                    fusionText = `<p class="text-xs text-amber-300 mt-1 border-t border-slate-600 pt-1">合成: ${mat1Name} + ${mat2Name}</p>`;
+                }
                 html += `
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-1">
@@ -669,6 +687,7 @@ export function renderCollectionModal(tab) {
                         <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
                     </div>
                     <p class="text-xs md:text-sm text-slate-300 font-bold">${r.desc}</p>
+                    ${fusionText}
                 </div>`;
             } else {
                 html += `
