@@ -49,7 +49,9 @@ export const el = {
     devModal: document.getElementById('dev-modal'),
     devRelicSelect: document.getElementById('dev-relic-select'),
     devRelicCancel: document.getElementById('dev-relic-cancel'),
-    devRelicConfirm: document.getElementById('dev-relic-confirm')
+    devRelicConfirm: document.getElementById('dev-relic-confirm'),
+    fusionReplaceModal: document.getElementById('fusion-replace-modal'),
+    fusionReplaceContent: document.getElementById('fusion-replace-content')
 };
 
 if (document.getElementById('btn-rules')) {
@@ -542,6 +544,65 @@ export function renderShopItems(shopItems, player) {
     }).join('');
     
     if(shopItems.length === 0) el.shopItemsContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 py-6 font-bold text-base">商店已經被你買空了！</div>`;
+}
+
+export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
+    if (!el.fusionReplaceModal || !el.fusionReplaceContent) return;
+
+    let html = '';
+    const allRelics = [...currentFusions, newFusionId];
+
+    allRelics.forEach((id, index) => {
+        let relic = RELIC_DB.find(r => r.id === id);
+        if (!relic) return;
+
+        let style = RARITY[relic.rarity] || RARITY[1];
+        let isNew = (id === newFusionId);
+
+        let materialsHtml = '';
+        if (FUSION_RECIPES[id]) {
+            let mat1 = RELIC_DB.find(x => x.id === FUSION_RECIPES[id].mat1);
+            let mat2 = RELIC_DB.find(x => x.id === FUSION_RECIPES[id].mat2);
+            materialsHtml = `<div class="text-[10px] md:text-xs text-amber-300/80 mt-2 border-t border-amber-900/50 pt-2">
+                退回素材：<br/>• ${mat1 ? mat1.name : FUSION_RECIPES[id].mat1}<br/>• ${mat2 ? mat2.name : FUSION_RECIPES[id].mat2}
+            </div>`;
+        }
+
+        html += `
+        <div class="bg-slate-900/80 border-2 ${isNew ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]' : 'border-slate-600'} rounded-xl p-3 md:p-4 flex flex-col justify-between h-full relative overflow-hidden">
+            ${isNew ? '<div class="absolute -top-1 -right-8 bg-amber-500 text-slate-900 text-[10px] font-black px-8 py-1 rotate-45">本次合成</div>' : ''}
+            <div>
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-base md:text-lg font-black ${style.color}">${relic.name}</h3>
+                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                </div>
+                <p class="text-xs md:text-sm text-slate-300 font-bold mb-3">${relic.desc}</p>
+                ${materialsHtml}
+            </div>
+
+            <button onclick="window.selectFusionDiscard('${id}')" class="w-full mt-4 bg-red-950/80 hover:bg-red-900 border border-red-800 hover:border-red-500 text-red-400 hover:text-white font-black py-2.5 rounded-lg transition-all active:scale-95 text-sm md:text-base">
+                捨棄並分解
+            </button>
+        </div>
+        `;
+    });
+
+    el.fusionReplaceContent.innerHTML = html;
+
+    // Attach the callback globally so the onclick handler can access it
+    window._fusionReplaceCallback = callback;
+
+    window.selectFusionDiscard = function(selectedId) {
+        el.fusionReplaceModal.classList.add('hidden');
+        el.fusionReplaceModal.classList.remove('flex');
+        if (window._fusionReplaceCallback) {
+            window._fusionReplaceCallback(selectedId);
+            window._fusionReplaceCallback = null;
+        }
+    };
+
+    el.fusionReplaceModal.classList.remove('hidden');
+    el.fusionReplaceModal.classList.add('flex');
 }
 
 export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFusionRecycle = false) {
