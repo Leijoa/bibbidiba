@@ -198,29 +198,9 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
                     baseVal = v + Math.floor(currentGold / 15) * 3;
                     hasBaseRelic = true;
                 }
-                if (playerRelics.includes('fusion_titan')) {
-                    baseVal = baseVal + (E * 3);
-                    hasBaseRelic = true;
-                }
             }
-            if (v === 6 && playerRelics.includes('fusion_titan')) {
-                baseVal = baseVal + (E * 3);
-                hasBaseRelic = true;
-            }
-            if (v === 2 && playerRelics.includes('fusion_bloody')) {
-                let lostHp = Math.max(0, maxHp - playerHp);
-                baseVal = 30 + (lostHp > 0 ? lostHp * 10 : 0);
-                hasBaseRelic = true;
-            }
-
             if (!hasBaseRelic && playerRelics.includes(`b${v}`) && !activeShackles.some(sh => sh.id === 'oblivion')) {
                 baseVal = relicBaseVals[v];
-            }
-            if (playerRelics.includes('fusion_bloody')) {
-                 let lostHp = Math.max(0, maxHp - playerHp);
-                 if (lostHp > 0 && v !== 2) {
-                     baseVal += lostHp * 10;
-                 }
             }
 
             if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= (isExploited ? 2.5 : 5.0);
@@ -237,12 +217,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
 
     let freqs = counts.slice(1).filter(c => c > 0);
-    if (playerRelics.includes('fusion_arithmetic')) {
-        let diffCount = counts.filter(c => c > 0).length;
-        let bonus = diffCount * 5 * E;
-        totalBase += bonus;
-        globalNotes.push(`【等差死神】發動: 增加 ${bonus} 基礎點數`);
-    } else if (playerRelics.includes('arithmetic')) {
+    if (playerRelics.includes('arithmetic')) {
         let uniqueCount = freqs.length;
         totalBase += uniqueCount * 8;
         globalNotes.push(`【等差數列】 +${uniqueCount * 8} 基礎點數`);
@@ -471,7 +446,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
     let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
-    let orderReq = playerRelics.includes('fusion_scales') ? 6 : (playerRelics.includes('order') ? 7 : 8);
+    let orderReq = playerRelics.includes('order') ? 7 : 8;
 
     let orderUsed = [];
     if (oddCount >= orderReq) {
@@ -580,62 +555,6 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         let amt = 1.0 + (fiveCount * 0.05);
         globalMulti *= amt;
         globalNotes.push(`【五福中天】 x${amt.toFixed(2)}`);
-    }
-
-    if (playerRelics.includes('fusion_chaos')) {
-        let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
-        let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
-        if (oddCount === 4 && evenCount === 4) {
-            let amt = 1.0 + (totalRelics * 0.5);
-            globalMulti *= amt;
-            globalNotes.push(`【混沌原力】 x${amt.toFixed(1)}`);
-        }
-    }
-
-    if (playerRelics.includes('fusion_scales') && tagD.name === '絕對秩序') {
-        let lostHp = Math.max(0, maxHp - playerHp);
-        let amt = 1.0 + (lostHp * 1.5);
-        if (playerHp === 1) amt *= 3.0;
-        globalMulti *= amt;
-        globalNotes.push(`【天秤之極】 x${amt.toFixed(1)}`);
-    }
-
-    if (playerRelics.includes('fusion_ares') && counts[1] > 0 && counts[8] > 0) {
-        let amt = 1.0 + (E * 0.8);
-        globalMulti *= amt;
-        globalNotes.push(`【孤傲戰神】 x${amt.toFixed(1)}`);
-    }
-
-    if (playerRelics.includes('fusion_eternity') && turnsLeft === 1 && isNoTag) {
-        let amt = rollsLeft * rollsLeft;
-        if (amt < 1) amt = 1;
-        globalMulti *= amt;
-        globalNotes.push(`【一念永恆】 x${amt.toFixed(1)}`);
-    }
-
-    if (playerRelics.includes('fusion_glimmer') && tagA.name === '對子') {
-        let turnsElapsed = 3 - turnsLeft + 1;
-        let amt = 1.0 + (turnsElapsed * 1.5);
-        globalMulti *= amt;
-        globalNotes.push(`【微光聖戰】 x${amt.toFixed(1)}`);
-    }
-
-    if (playerRelics.includes('fusion_miracle') && isNoTag) {
-        let amt = 1.0 + (unlockedHands * 0.5);
-        globalMulti *= amt;
-        globalNotes.push(`【凡骨奇蹟】 x${amt.toFixed(1)}`);
-    }
-
-    if (playerRelics.includes('fusion_titan') && [2, 5, 8, 9].includes(stageLevel)) {
-        let amt = 2.0;
-        globalMulti *= amt;
-        globalNotes.push(`【泰坦之握】 x${amt.toFixed(1)}`);
-    }
-
-    if (playerRelics.includes('fusion_infinite') && tagB.name !== '無') {
-        let amt = 1.0 + (kills * 0.5);
-        globalMulti *= amt;
-        globalNotes.push(`【無限數列】 x${amt.toFixed(1)}`);
     }
 
 
