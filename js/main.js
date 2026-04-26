@@ -1084,7 +1084,7 @@ function enemyDefeated() {
         UI.showToast("👽 【同化】發動：超過 50 金幣，金幣強制歸零！");
     }
 
-    let baseEarn = 20 + (stage.level * 5);
+    let baseEarn = Math.min(50, 10 + (stage.level * 5));
     let isEliteOrBossReward = [2, 5, 8, 9].includes(stage.level);
     if (isEliteOrBossReward) {
         baseEarn += 20; // 額外獲得 20 金幣懸賞
@@ -1198,7 +1198,7 @@ window.rerollShop = function(isInitial = false) {
     if (!isInitial) {
         let cost = 0;
         if (shopRerollsUsed > 0) {
-            cost = 3 + (shopRerollsUsed - 1);
+            cost = 5 + (shopRerollsUsed - 1) * 2;
             if (false) {
                 cost = Math.max(1, cost - 3);
             } else if (hasScavenger) {
