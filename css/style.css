@@ -69,3 +69,10 @@ body {
   0%, 100% { opacity: 1; }
   10%, 90% { opacity: 0; }
 }
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

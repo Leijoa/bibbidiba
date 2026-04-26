@@ -213,7 +213,7 @@ window.showShackleInfo = function(id) {
 
 // --- ★ 任務4：遺物點擊顯示說明 ---
 export function renderInventory(player, battle) {
-    el.inventoryGrid.className = "flex flex-wrap gap-1.5";
+    el.inventoryGrid.className = "flex overflow-x-auto gap-1.5 pb-2 scroll-smooth items-center hide-scrollbar";
     if (player.relics.length === 0) {
         el.inventoryGrid.innerHTML = `<div class="text-[10px] text-slate-500 font-bold p-1">背包空空如也</div>`;
         return;
@@ -463,7 +463,7 @@ export function renderScore(battle, activeHighlight) {
     el.scoreDisplay.innerHTML = `
     <div class="flex flex-col gap-1.5 bg-slate-900 px-2 py-1.5 rounded-lg border border-slate-700 mb-1.5 shadow-inner">
         <div class="text-[11px] md:text-sm font-bold text-slate-400 whitespace-nowrap">骰子點數加成後總和: <span class="text-sm md:text-base font-black text-white ml-1">${res.totalBase.toFixed(1)}</span></div>
-        <div class="flex flex-wrap gap-1">${notesHtml}</div>
+        <div class="flex overflow-x-auto gap-1 pb-1 scroll-smooth hide-scrollbar">${notesHtml}</div>
     </div>
     
     <div class="grid grid-cols-4 gap-1.5 mb-1">
@@ -626,7 +626,7 @@ export function renderEndGameStats(highestDamage, highestDamageCombo, relics) {
             </div>
             <div>
                 <div class="text-xs text-slate-400 mb-1.5">最終持有遺物</div>
-                <div class="flex flex-wrap gap-1">${relicHtml}</div>
+                <div class="flex overflow-x-auto gap-1 pb-1 scroll-smooth hide-scrollbar">${relicHtml}</div>
             </div>
         </div>
     `;
