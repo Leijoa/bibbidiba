@@ -5,7 +5,7 @@ import * as UI from './ui.js';
 import * as Audio from './audio.js';
 
 // --- 遊戲狀態 ---
-let player = { hp: 3, relics: [], maxRolls: 3 };
+let player = { hp: 3, relics: [], maxRolls: 3, dismantledFusions: [] };
 let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
 let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} })), rollsLeft: 0, scoreResult: null };
 let shopItems = [];
@@ -232,6 +232,7 @@ function loadGame() {
     
     if (parsed) {
         player = parsed.player;
+        player.dismantledFusions = player.dismantledFusions || [];
         UI.el.titleScreen.classList.add('hidden');
 
         if (parsed.shop && parsed.shop.active) {
@@ -363,7 +364,8 @@ function initNewGame() {
         maxRolls: startRerolls,
         highestDamage: 0,
         highestDamageCombo: '',
-        isInfiniteMode: false, bonusBasePoints: 0, nextDamageMulti: 1.0
+        isInfiniteMode: false, bonusBasePoints: 0, nextDamageMulti: 1.0,
+        dismantledFusions: []
     };
 
     if (metaData.upgrades.startRelic > 0) {
@@ -957,12 +959,26 @@ function checkRelicFusion() {
             let fid = recipesToProcess[i];
             let rec = FUSION_RECIPES[fid];
 
+            // Ignore if recipe was dismantled
+            if (player.dismantledFusions && player.dismantledFusions.includes(fid)) continue;
+
             // Check if player has BOTH materials and DOES NOT have the fused relic yet
             if (player.relics.includes(rec.mat1) && player.relics.includes(rec.mat2) && !player.relics.includes(fid)) {
-                // Remove materials
-                player.relics = player.relics.filter(r => r !== rec.mat1 && r !== rec.mat2);
+                let currentRarity5 = player.relics.filter(rId => {
+                    let rDef = RELIC_DB.find(x => x.id === rId);
+                    return rDef && rDef.rarity === 5;
+                });
 
-                // Add fusion relic
+                if (currentRarity5.length >= 2) {
+                    // Maximum of 2 rarity 5 items reached
+                    // Trigger modal and pause the checking loop
+                    player.relics = player.relics.filter(r => r !== rec.mat1 && r !== rec.mat2);
+                    window.triggerFusionReplace(currentRarity5, fid, rec.mat1, rec.mat2);
+                    return; // Important: return to pause execution. Callback will resume if needed.
+                }
+
+                // Normal fusion
+                player.relics = player.relics.filter(r => r !== rec.mat1 && r !== rec.mat2);
                 player.relics.push(fid);
                 unlockCollectionItem('relic', fid);
 
@@ -983,6 +999,48 @@ function checkRelicFusion() {
         }
     }
 }
+
+window.triggerFusionReplace = function(currentFusions, newFusionId, mat1, mat2) {
+    UI.showFusionReplaceModal(currentFusions, newFusionId, (discardedId) => {
+        player.dismantledFusions = player.dismantledFusions || [];
+        player.dismantledFusions.push(discardedId);
+
+        let discardedName = RELIC_DB.find(r => r.id === discardedId)?.name || discardedId;
+
+        if (discardedId === newFusionId) {
+            // Discarding the new one, return its materials to inventory
+            player.relics.push(mat1, mat2);
+            UI.showToast(`已捨棄並分解【${discardedName}】，退回基礎素材。`);
+        } else {
+            // Discarding an old one. Return its materials.
+            let oldRec = FUSION_RECIPES[discardedId];
+            if (oldRec) {
+                player.relics.push(oldRec.mat1, oldRec.mat2);
+            }
+
+            // Remove the discarded old relic from inventory
+            player.relics = player.relics.filter(r => r !== discardedId);
+
+            // Add the new one
+            player.relics.push(newFusionId);
+            unlockCollectionItem('relic', newFusionId);
+
+            let newDef = RELIC_DB.find(x => x.id === newFusionId);
+            UI.showToast(`✨ 遺物共鳴！\n捨棄了【${discardedName}】並退回素材。\n全新的力量【${newDef.name}】已加入！`);
+        }
+
+        // Re-check just in case the returned materials can form something else
+        // (though they shouldn't since we added them to dismantledFusions)
+        checkRelicFusion();
+
+        // Update UI
+        UI.renderInventory(player, battle);
+        if (!UI.el.shopOverlay.classList.contains('hidden')) {
+            UI.renderShopItems(shopItems, player);
+        }
+        saveGame();
+    });
+};
 
 function enemyDefeated() {
     let isEliteOrBossFirstAid = [2, 5, 8, 9].includes(stage.level);
