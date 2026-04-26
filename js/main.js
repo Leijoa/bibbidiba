@@ -5,15 +5,15 @@ import * as UI from './ui.js';
 import * as Audio from './audio.js';
 
 // --- 遊戲狀態 ---
-let player = { hp: 3, gold: 0, relics: [], maxRolls: 2 };
+let player = { hp: 3, relics: [], maxRolls: 2 };
 let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
 let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} })), rollsLeft: 0, scoreResult: null };
 let shopItems = [];
 let shopRerollsUsed = 0;
 let activeHighlight = null;
-const SAVE_KEY = 'bibbidiba_save_v50';
-const HISTORY_KEY = 'bibbidiba_history_v50';
-const COLLECTION_KEY = 'bibbidiba_collection_v50';
+const SAVE_KEY = 'bibbidiba_save_v60';
+const HISTORY_KEY = 'bibbidiba_history_v60';
+const COLLECTION_KEY = 'bibbidiba_collection_v60';
 
 const META_KEY = 'bibbidiba_meta_v1';
 let metaData = {
@@ -50,10 +50,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 function triggerDevMode() {
-    // 增加金幣
-    player.gold += 99999;
     UI.updateHeaderUI(player, stage);
-    if (UI.el.shopGold) UI.el.shopGold.innerText = player.gold;
 
     // 增加靈魂
     metaData.souls += 1000;
@@ -169,24 +166,6 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
 
     let playerDied = false;
 
-    if (stage.activeShackle === 'vampire' && !isEnemyDefeated) {
-        let lostGold = Math.min(5, player.gold);
-        if (lostGold > 0) {
-            player.gold -= lostGold;
-            UI.updateHeaderUI(player, stage);
-            UI.showToast(`🩸 【吸血鬼】發動：被偷走 ${lostGold} 金幣！`);
-        }
-    }
-
-    if (stage.activeShackle === 'thief' && !isEnemyDefeated) {
-        let lostGold = Math.min(2, player.gold);
-        if (lostGold > 0) {
-            player.gold -= lostGold;
-            UI.updateHeaderUI(player, stage);
-            UI.showToast(`🦹 【小偷】發動：被偷走 ${lostGold} 金幣！`);
-        }
-    }
-
     if (stage.activeShackle === 'thornarmor') {
         let threshold = stage.enemyMaxHp * 0.10;
         if (dmg < threshold) {
@@ -216,34 +195,6 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
     }
 
     return playerDied;
-}
-
-function applyEconomyShackles(items) {
-    let result = items;
-    let discount = metaData.upgrades.discount * 2;
-    result = result.map(item => ({
-        ...item,
-        price: Math.max(1, item.price - discount)
-    }));
-
-    if (stage.activeShackle === 'inflation') {
-        result = result.map(item => ({
-            ...item,
-            price: Math.ceil(item.price * 1.2)
-        }));
-    }
-    if (false) {
-        result = result.map(item => ({
-            ...item,
-            price: Math.floor(item.price * 0.7)
-        }));
-    } else if (player.relics.includes('vip')) {
-        result = result.map(item => ({
-            ...item,
-            price: Math.floor(item.price * 0.9)
-        }));
-    }
-    return result;
 }
 
 // --- 存檔系統 (Save System) ---
@@ -298,8 +249,7 @@ function loadGame() {
             renderAll();
             UI.el.shopOverlay.classList.remove('hidden');
             UI.el.shopOverlay.classList.add('flex');
-            UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), false);
-            UI.el.shopGold.innerText = player.gold;
+            UI.updateShopRerollBtn(shopRerollsUsed, false, false);
             UI.renderShopItems(shopItems, player);
         } else {
             loadStage(parsed.stage.level, true, parsed);
@@ -405,12 +355,10 @@ import { SHACKLE_DB } from './data.js';
 
 function initNewGame() {
     let startHp = 3 + (metaData.upgrades.hp * 1);
-    let startGold = 20 + (metaData.upgrades.startGold * 10);
     let startRerolls = 2 + (metaData.upgrades.rerolls * 1);
 
     player = {
         hp: startHp,
-        gold: startGold,
         relics: [],
         maxRolls: startRerolls,
         highestDamage: 0,
@@ -697,28 +645,6 @@ window.executeRoll = function(isInitial = false) {
     if (battle.state === 'ROLLING' || battle.state === 'ATTACKING') return;
 
     if (!isInitial) {
-        if (stage.activeShackle === 'sticky') {
-            let lockedCount = battle.dice.filter(d => d.locked).length;
-            let cost = lockedCount * 1;
-            if (cost > 0) {
-                if (player.gold >= cost) {
-                    player.gold -= cost;
-                    UI.updateHeaderUI(player, stage);
-                } else {
-                    return UI.showToast("金幣不足無法重骰！");
-                }
-            }
-        }
-
-        if (stage.activeShackle === 'greedy') {
-            if (player.gold >= 2) {
-                player.gold -= 2;
-                UI.updateHeaderUI(player, stage);
-            } else {
-                return UI.showToast("⚠️ 金幣不足，無法重骰！(需要 2 金幣)");
-            }
-        }
-        
         if (stage.activeShackle === 'rebel') {
             let freed = 0;
             battle.dice.forEach(d => {
@@ -787,7 +713,7 @@ window.executeRoll = function(isInitial = false) {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
 
             if (stage.activeShackle === 'blind' && stage.shackleMeta) {
                 let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
@@ -843,7 +769,7 @@ window.fireAttack = function() {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, gold: player.gold, totalGoldEarned: player.totalGoldEarned || 0, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
             UI.showToast(`🖐️ 【手抖】發動：強制重骰了 1 顆未鎖定的骰子！`);
         }
     }
@@ -921,16 +847,6 @@ window.fireAttack = function() {
             player.hp -= 1;
             UI.updateHeaderUI(player, stage);
             UI.showToast(`⚡ 【天譴】發動：觸發傳說牌型，強制扣除 1 HP！`);
-        }
-    }
-
-    if (player.relics.includes('goldendice') && battle.dice) {
-        let sevens = battle.dice.filter(d => d.val === 7).length;
-        if (sevens > 0) {
-            let goldEarned = sevens * 3;
-            player.gold += goldEarned;
-            UI.updateHeaderUI(player, stage);
-            UI.showToast(`💰 黃金骰子發動：獲得 ${goldEarned} 金幣！`);
         }
     }
 
@@ -1079,52 +995,7 @@ function enemyDefeated() {
         player.hp = stage.shackleMeta.originalHp;
     }
 
-    if (stage.activeShackle === 'assimilation' && player.gold > 50) {
-        player.gold = 0;
-        UI.showToast("👽 【同化】發動：超過 50 金幣，金幣強制歸零！");
-    }
-
-    let baseEarn = Math.min(50, 10 + (stage.level * 5));
-    let isEliteOrBossReward = [2, 5, 8, 9].includes(stage.level);
-    if (isEliteOrBossReward) {
-        baseEarn += 20; // 額外獲得 20 金幣懸賞
-    }
-    let turnsBonus = (stage.turnsLeft - 1) * 10;
-    let extraEarn = 0;
-
-    if (player.relics.includes('piggybank')) {
-        extraEarn += 5;
-        UI.showToast("🐷 【存錢筒】發動：獲得 5 枚金幣！");
-    }
-
-    let enemy = getEnemy(stage.level);
-    if (player.relics.includes('bounty') && stage.turnsLeft === enemy.turns) {
-        extraEarn += 10;
-        UI.showToast("🎯 【賞金獵人】發動：1 回合內秒殺，額外獲得 10 金幣！");
-    }
-
-    if (stage.activeShackle === 'pickyeater') {
-        baseEarn = Math.floor(baseEarn * 0.7);
-        UI.showToast("🥦 【偏食】發動：基礎金幣獎勵減少 30%！");
-    }
-
-    let activeRelics = player.relics;
-    if (stage.activeShackle === 'relicseal' && stage.shackleMeta && stage.shackleMeta.ignoredRelics) {
-        activeRelics = player.relics.filter(r => !stage.shackleMeta.ignoredRelics.includes(r));
-    }
-    
-    if (activeRelics.includes('coin')) extraEarn += 10;
-    if (activeRelics.includes('investor')) extraEarn += Math.floor(player.gold / 10);
-    
-    let totalBaseEarn = baseEarn + extraEarn;
-    let earn = totalBaseEarn + turnsBonus;
-    player.gold += earn;
-    player.totalGoldEarned = (player.totalGoldEarned || 0) + earn;
     UI.shootConfetti();
-
-    let goldMessage = turnsBonus > 0 
-        ? `💰 獲得 ${totalBaseEarn} 金幣 + ${turnsBonus} 金幣 (剩餘攻擊次數加成)！`
-        : `💰 獲得 ${totalBaseEarn} 金幣！`;
 
     // Exclude Rarity 5 from regular drops
     let availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5);
@@ -1158,9 +1029,9 @@ function enemyDefeated() {
         let soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
 
         if (stage.level === 9) {
-            UI.showToast(`👑 擊敗了 ${enemyName}！\n${goldMessage}${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+            UI.showToast(`👑 擊敗了 ${enemyName}！${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
         } else {
-            UI.showToast(`🎉 擊敗了菁英怪！\n${goldMessage}${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+            UI.showToast(`🎉 擊敗了菁英怪！${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
         }
     } else {
         let enemyName = getEnemy(stage.level).name;
@@ -1178,7 +1049,7 @@ function enemyDefeated() {
             saveMetaData();
             soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
         }
-        UI.showToast(`🎉 擊敗了 ${enemyName}！\n${goldMessage}${soulMsg}`, nextStep);
+        UI.showToast(`🎉 擊敗了 ${enemyName}！${soulMsg}`, nextStep);
     }
 }
 
@@ -1187,30 +1058,16 @@ function openShop() {
     UI.el.shopOverlay.classList.add('flex');
     shopRerollsUsed = 0;
     window.itemsBoughtThisScreen = 0;
-    UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), false);
-    UI.el.shopGold.innerText = player.gold;
+    UI.updateShopRerollBtn(shopRerollsUsed, false, false);
     UI.updateHeaderUI(player, stage);
     window.rerollShop(true);
 }
 
 window.rerollShop = function(isInitial = false) {
-    let hasScavenger = player.relics.includes('scavenger');
     if (!isInitial) {
-        let cost = 0;
-        if (shopRerollsUsed > 0) {
-            cost = 5 + (shopRerollsUsed - 1) * 2;
-            if (false) {
-                cost = Math.max(1, cost - 3);
-            } else if (hasScavenger) {
-                cost = Math.max(1, cost - 2);
-            }
-        }
-        
-        if (player.gold < cost) return UI.showToast("⚠️ 金幣不足！");
-        player.gold -= cost;
+        if (shopRerollsUsed > 0) return UI.showToast("⚠️ 只能刷新一次！");
         shopRerollsUsed++;
-        UI.updateShopRerollBtn(shopRerollsUsed, hasScavenger, false);
-        UI.el.shopGold.innerText = player.gold;
+        UI.updateShopRerollBtn(shopRerollsUsed, false, false);
         UI.updateHeaderUI(player, stage);
     }
     window.itemsBoughtThisScreen = 0;
@@ -1257,7 +1114,7 @@ window.rerollShop = function(isInitial = false) {
         }
     }
 
-    shopItems = applyEconomyShackles(selectedItems);
+    shopItems = selectedItems;
     UI.renderShopItems(shopItems, player);
     saveGame();
 };
@@ -1271,38 +1128,37 @@ window.showFusionInfo = function(fusionId) {
 
 window.buyItem = function(idx) {
     let r = shopItems[idx];
-    if (player.gold >= r.price) {
-        Audio.playBuySound();
-        player.gold -= r.price;
-        window.itemsBoughtThisScreen++;
 
-        if (r.id.startsWith('cons_')) {
-            // Consumable logic
-            if (r.id === 'cons_power') {
-                player.nextDamageMulti = (player.nextDamageMulti || 1.0) * 1.5;
-                UI.showToast("💪 【力量藥劑】使用成功！下場戰鬥傷害提升！");
-            } else if (r.id === 'cons_potential') {
-                player.bonusBasePoints = (player.bonusBasePoints || 0) + 50;
-                UI.showToast("🔥 【潛能秘藥】使用成功！永久基礎點數 +50！");
-            } else if (r.id === 'cons_hp') {
-                player.hp = Math.min(window.getMaxHp(), player.hp + 1);
-                UI.showToast("❤️ 【生命紅藥】使用成功！回復 1 HP！");
-            }
-        } else {
-            // Relic logic
-            player.relics.push(r.id);
-            unlockCollectionItem('relic', r.id);
-            checkRelicFusion();
+    Audio.playBuySound();
+    window.itemsBoughtThisScreen++;
+
+    if (r.id.startsWith('cons_')) {
+        // Consumable logic
+        if (r.id === 'cons_power') {
+            player.nextDamageMulti = (player.nextDamageMulti || 1.0) * 1.5;
+            UI.showToast("💪 【力量藥劑】使用成功！下場戰鬥傷害提升！");
+        } else if (r.id === 'cons_potential') {
+            player.bonusBasePoints = (player.bonusBasePoints || 0) + 50;
+            UI.showToast("🔥 【潛能秘藥】使用成功！永久基礎點數 +50！");
+        } else if (r.id === 'cons_hp') {
+            player.hp = Math.min(window.getMaxHp(), player.hp + 1);
+            UI.showToast("❤️ 【生命紅藥】使用成功！回復 1 HP！");
         }
-
-        shopItems.splice(idx, 1);
-        UI.el.shopGold.innerText = player.gold;
-        // ★ 修復：同步更新頂部資訊列的金幣
-        UI.updateHeaderUI(player, stage);
-        UI.renderShopItems(shopItems, player);
-        UI.renderInventory(player, battle);
-        saveGame();
+    } else {
+        // Relic logic
+        player.relics.push(r.id);
+        unlockCollectionItem('relic', r.id);
+        checkRelicFusion();
     }
+
+    shopItems.splice(idx, 1);
+    UI.updateHeaderUI(player, stage);
+    UI.renderInventory(player, battle);
+    saveGame();
+
+    // Close shop immediately after picking one
+    UI.el.shopOverlay.classList.add('hidden');
+    nextStage();
 };
 
 function nextStage() { loadStage(stage.level + 1); }
@@ -1333,14 +1189,6 @@ function recordHistory(win) {
 
 
 function playerTakesFatalDamage(reason) {
-    if (player.relics.includes('bankrupt') && player.gold >= 100) {
-        player.gold = 0;
-        player.hp = 1;
-        player.relics = player.relics.filter(r => r !== 'bankrupt');
-        UI.updateHeaderUI(player, stage);
-        UI.showToast("🛡️ 【破財消災】發動：扣除所有金幣並保留 1 HP！（遺物已消耗）");
-        return;
-    }
     gameOver(reason);
 }
 
