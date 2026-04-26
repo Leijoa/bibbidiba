@@ -232,7 +232,7 @@ function applyEconomyShackles(items) {
             price: Math.ceil(item.price * 1.2)
         }));
     }
-    if (player.relics.includes('fusion_recycle')) {
+    if (false) {
         result = result.map(item => ({
             ...item,
             price: Math.floor(item.price * 0.7)
@@ -298,7 +298,7 @@ function loadGame() {
             renderAll();
             UI.el.shopOverlay.classList.remove('hidden');
             UI.el.shopOverlay.classList.add('flex');
-            UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), player.relics.includes('fusion_recycle'));
+            UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), false);
             UI.el.shopGold.innerText = player.gold;
             UI.renderShopItems(shopItems, player);
         } else {
@@ -856,20 +856,6 @@ window.fireAttack = function() {
 
     let finalDamage = Math.floor(battle.scoreResult.finalScore);
 
-    if (player.relics.includes('fusion_miser')) {
-        finalDamage += Math.floor(finalDamage * (player.gold * 0.01));
-        UI.showToast("💎 【黃金守財奴】複利增傷發動！");
-    }
-
-    if (player.relics.includes('fusion_empire')) {
-        let totalGold = player.totalGoldEarned || player.gold;
-        let empireMulti = 1 + Math.floor(totalGold / 1000) * 0.2;
-        if (empireMulti > 1) {
-            finalDamage = Math.floor(finalDamage * empireMulti);
-            UI.showToast(`🏛️ 【帝國遺產】發動：傷害 x${empireMulti.toFixed(1)}！`);
-        }
-    }
-
     if (player.relics.includes('dragonslayer') && [2, 5, 8, 9].includes(stage.level)) {
         finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * 1.5));
         UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
@@ -1101,7 +1087,7 @@ function enemyDefeated() {
     let baseEarn = 20 + (stage.level * 5);
     let isEliteOrBossReward = [2, 5, 8, 9].includes(stage.level);
     if (isEliteOrBossReward) {
-        baseEarn += 40; // 額外獲得 40 金幣懸賞
+        baseEarn += 20; // 額外獲得 20 金幣懸賞
     }
     let turnsBonus = (stage.turnsLeft - 1) * 10;
     let extraEarn = 0;
@@ -1201,7 +1187,7 @@ function openShop() {
     UI.el.shopOverlay.classList.add('flex');
     shopRerollsUsed = 0;
     window.itemsBoughtThisScreen = 0;
-    UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), player.relics.includes('fusion_recycle'));
+    UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), false);
     UI.el.shopGold.innerText = player.gold;
     UI.updateHeaderUI(player, stage);
     window.rerollShop(true);
@@ -1213,7 +1199,7 @@ window.rerollShop = function(isInitial = false) {
         let cost = 0;
         if (shopRerollsUsed > 0) {
             cost = 3 + (shopRerollsUsed - 1);
-            if (player.relics.includes('fusion_recycle')) {
+            if (false) {
                 cost = Math.max(1, cost - 3);
             } else if (hasScavenger) {
                 cost = Math.max(1, cost - 2);
@@ -1223,7 +1209,7 @@ window.rerollShop = function(isInitial = false) {
         if (player.gold < cost) return UI.showToast("⚠️ 金幣不足！");
         player.gold -= cost;
         shopRerollsUsed++;
-        UI.updateShopRerollBtn(shopRerollsUsed, hasScavenger, player.relics.includes('fusion_recycle'));
+        UI.updateShopRerollBtn(shopRerollsUsed, hasScavenger, false);
         UI.el.shopGold.innerText = player.gold;
         UI.updateHeaderUI(player, stage);
     }
