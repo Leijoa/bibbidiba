@@ -1,0 +1,12 @@
+[V6 Simulation Report - 100000 runs]
+Stage Reached Distribution: [0,1057,37907,32772,22540,5256,407,59,2,0,0,0,0,0,0]
+Avg Damage - Stage 1: 1045.01, Stage 3: 1907.13, Stage 6: 12009.32, Stage 10: 0.00
+Top 5 Relics by Win Count: []
+Bottom 5 Relics by Win Count: []
+Top 3 Hands by Win Count: []
+Highest Lethality Shackles: [["drowning",2618],["gluttony",2604],["shortcircuit",2332]]
+Lowest Lethality Shackles: [["destinychain",181],["wither",180],["ultimatelock",174]]
+Infinite Mode Runs: 0, Avg Inf Stage: 0.00, Max Inf Stage: 0
+Max Absolute Damage: 1655640.0000000002
+Avg Relics per Run (Fusion counts as 2): 3.56
+Avg Gold: 0 (Gold mechanics removed in V6)
