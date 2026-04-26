@@ -5,7 +5,6 @@ import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, SHACKLE_DB, getEnemy, FUSION_RECIP
 export const el = {
     stageInfo: document.getElementById('stage-info'),
     playerHp: document.getElementById('player-hp'),
-    playerGold: document.getElementById('player-gold'),
     enemyName: document.getElementById('enemy-name'),
     enemyHpBar: document.getElementById('enemy-hp-bar'),
     enemyHpText: document.getElementById('enemy-hp-text'),
@@ -20,7 +19,6 @@ export const el = {
     rulesModal: document.getElementById('rules-modal'),
     rulesContent: document.getElementById('rules-content'),
     shopOverlay: document.getElementById('shop-overlay'),
-    shopGold: document.getElementById('shop-gold'),
     shopItemsContainer: document.getElementById('shop-items'),
     shopRerollBtn: document.getElementById('shop-reroll-btn'),
     endOverlay: document.getElementById('end-overlay'),
@@ -149,7 +147,6 @@ export function updateHeaderUI(player, stage) {
     }
     
     el.playerHp.innerText = `${player.hp}/${maxHp}`;
-    el.playerGold.innerText = player.gold;
 
     let recycleStatus = document.getElementById('recycle-status');
     if (recycleStatus) {
@@ -351,7 +348,6 @@ export function renderDice(battle, activeHighlight, player) {
                 if (player.relics.includes('fusion_source')) { baseVal = 15 + (E * 2.5); isEnhanced = true; }
             }
             if (val === 7 || val === 8) {
-                if (player.relics.includes('fusion_peak')) { baseVal = val + Math.floor(player.gold / 15) * 3; isEnhanced = true; }
                 if (player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
             }
             if (val === 6 && player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
@@ -507,8 +503,7 @@ export function renderScore(battle, activeHighlight) {
 // --- 商店渲染邏輯 ---
 export function renderShopItems(shopItems, player) {
     el.shopItemsContainer.innerHTML = shopItems.map((r, idx) => {
-        let canAfford = player.gold >= r.price;
-        let btnClass = canAfford ? "bg-yellow-600 hover:bg-yellow-500 text-white active:scale-95 shadow-md border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1" : "bg-slate-700 text-slate-500 cursor-not-allowed";
+        let btnClass = "bg-yellow-600 hover:bg-yellow-500 text-white active:scale-95 shadow-md border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1";
         let style = RARITY[r.rarity];
 
         let isFusionMaterial = false;
@@ -540,8 +535,8 @@ export function renderShopItems(shopItems, player) {
                 </div>
                 <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${r.desc}</p>
             </div>
-            <button onclick="window.buyItem(${idx})" class="w-full font-black py-2.5 rounded-lg transition-all relative z-10 text-sm md:text-base ${btnClass}" ${!canAfford ? 'disabled' : ''}>
-                💰 ${r.price} 金幣
+            <button onclick="window.buyItem(${idx})" class="w-full font-black py-2.5 rounded-lg transition-all relative z-10 text-sm md:text-base ${btnClass}">
+                ✅ 選擇
             </button>
         </div>`;
     }).join('');
@@ -550,22 +545,14 @@ export function renderShopItems(shopItems, player) {
 }
 
 export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFusionRecycle = false) {
-    let cost = 0;
-    if (shopRerollsUsed > 0) {
-        cost = 5 + (shopRerollsUsed - 1) * 2;
-        if (hasFusionRecycle) {
-            cost = Math.max(1, cost - 3); // Fusion Recycle discounts by 3, minimum 1
-        } else if (hasScavenger) {
-            cost = Math.max(1, cost - 2); // Scavenger discounts by 2, minimum 1
-        }
-    }
-    
-    if (cost === 0) {
-        el.shopRerollBtn.innerHTML = "🆓 免費刷新";
+    if (shopRerollsUsed === 0) {
+        el.shopRerollBtn.innerHTML = "🔄 刷新商店 (限1次)";
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
+        el.shopRerollBtn.disabled = false;
     } else {
-        el.shopRerollBtn.innerHTML = `🔄 刷新商店 (${cost} 金幣)`;
-        el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-slate-900 active:border-b-0 active:translate-y-1";
+        el.shopRerollBtn.innerHTML = `🚫 已刷新過`;
+        el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 text-slate-400 font-black py-3 rounded-xl cursor-not-allowed text-base md:text-lg border-b-4 border-slate-900";
+        el.shopRerollBtn.disabled = true;
     }
 }
 
@@ -761,8 +748,6 @@ export function renderSoulsModal(metaData) {
 
     const upgDefs = [
         { id: 'hp', name: '❤️ 體魄鍛鍊', desc: '最大 HP +1', max: 2, cost: 10 },
-        { id: 'discount', name: '🏷️ 商店折扣', desc: '商店遺物價格 -2 金幣', max: 3, cost: 5 },
-        { id: 'startGold', name: '💰 初始資金', desc: '初始金幣 +10', max: 3, cost: 5 },
         { id: 'rerolls', name: '🎲 骰子掌握', desc: '初始重骰次數 +1', max: 2, cost: 15 },
         { id: 'startRelic', name: '🎁 初始裝備', desc: '開局隨機獲得 1 個普通遺物', max: 1, cost: 30 },
         { id: 'finalDamage', name: '⚔️ 力量覺醒', desc: '最終傷害 +10%', max: 5, cost: 20 }
