@@ -5,7 +5,7 @@ import * as UI from './ui.js';
 import * as Audio from './audio.js';
 
 // --- 遊戲狀態 ---
-let player = { hp: 3, relics: [], maxRolls: 2 };
+let player = { hp: 3, relics: [], maxRolls: 3 };
 let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
 let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} })), rollsLeft: 0, scoreResult: null };
 let shopItems = [];
@@ -355,7 +355,7 @@ import { SHACKLE_DB } from './data.js';
 
 function initNewGame() {
     let startHp = 3 + (metaData.upgrades.hp * 1);
-    let startRerolls = 2 + (metaData.upgrades.rerolls * 1);
+    let startRerolls = 3 + (metaData.upgrades.rerolls * 1);
 
     player = {
         hp: startHp,

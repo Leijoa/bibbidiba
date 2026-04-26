@@ -347,6 +347,9 @@ export function renderDice(battle, activeHighlight, player) {
             if (val === 1 || val === 2) {
                 if (player.relics.includes('fusion_source')) { baseVal = 15 + (E * 2.5); isEnhanced = true; }
             }
+            if (val === 7 || val === 8) {
+                if (player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
+            }
             if (val === 6 && player.relics.includes('fusion_titan')) { baseVal = baseVal + (E * 3); isEnhanced = true; }
             if (val === 2 && player.relics.includes('fusion_bloody')) {
                 let lostHp = 3 - player.hp;

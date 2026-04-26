@@ -620,12 +620,6 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         globalNotes.push(`【四死如歸】 x${amt.toFixed(1)}`);
     }
 
-    if (playerRelics.includes('oneshot') && isInitialRoll) {
-        let amt = isExploited ? 1.5 : 3.0;
-        globalMulti *= amt;
-        globalNotes.push(`【一發入魂】 x${amt.toFixed(1)}`);
-    }
-
     if (playerRelics.includes('extremist') && tagD.name !== '無') {
         let amt = isExploited ? 1.25 : 1.5;
         tagD.multi *= amt;

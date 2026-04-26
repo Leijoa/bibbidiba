@@ -59,47 +59,30 @@ function rollDice(count) {
 async function run() {
     console.log(`Starting ${NUM_SIMULATIONS} simulations...`);
 
-    // Output tracking
-    let globalStats = {
-        totalRuns: NUM_SIMULATIONS,
-        stageReached: Array(15).fill(0), // 0 to 10+
-        damageAtStage: { 0: [], 2: [], 5: [], 9: [] }, // 1, 3, 6, 10
-        shackleDeaths: {},
-        relicPicked: {},
-        relicWin: {},
-        handPlayed: {},
-        handWin: {},
-        highestInfinite: 0,
-        sumInfinite: 0,
-        infiniteRuns: 0,
-        highestDamage: 0,
-        sumRelics: 0,
-        sumGold: 0 // Will be 0
-    };
+    // Track total damage dealt in EXACTLY 3 turns for every stage (0 to 9)
+    let stageTotalDamage = Array(10).fill().map(() => []);
 
     for (let run = 0; run < NUM_SIMULATIONS; run++) {
-        let player = { hp: 3, relics: [], maxRolls: 2 };
+        let player = { hp: 3, relics: [], maxRolls: 3 };
         let stage = { level: 0 };
-        let isDead = false;
-        let reachedInfinite = false;
 
-        let runHands = new Set();
-
-        while (!isDead) {
+        // Only run exactly 10 stages (0 to 9)
+        while (stage.level < 10) {
             let enemy = getEnemy(stage.level);
-            let enemyHp = enemy.hp;
             let shackle = assignShackleForStage(stage.level);
             let activeShackles = shackle ? [shackle] : [];
-            let turnsLeft = enemy.turns;
+            let turnsLeft = enemy.turns; // usually 3
 
             global.window.getStageLevel = () => stage.level;
 
-            // Combat Loop
-            while (turnsLeft > 0 && enemyHp > 0 && !isDead) {
+            let totalDamageThisStage = 0;
+
+            // Combat Loop: Force exactly 3 attacks
+            while (turnsLeft > 0) {
                 let rollsLeft = player.maxRolls;
                 let dice = rollDice(8);
 
-                // Simple AI: roll once, keep nothing, roll again. Just random.
+                // Simple AI: roll once, keep nothing, roll again.
                 if (rollsLeft > 0) {
                     dice = rollDice(8);
                 }
@@ -108,38 +91,14 @@ async function run() {
                 let score = calculateEngineScore(dice, player.relics, 0, player.hp, activeShackles, false, turnsLeft, env);
 
                 let dmg = score.finalScore;
-                if (dmg > globalStats.highestDamage) globalStats.highestDamage = dmg;
-
-                if (stage.level === 0 || stage.level === 2 || stage.level === 5 || stage.level === 9) {
-                    globalStats.damageAtStage[stage.level].push(dmg);
-                }
-
-                if (score.tagA.name !== '無') { runHands.add(score.tagA.name); globalStats.handPlayed[score.tagA.name] = (globalStats.handPlayed[score.tagA.name] || 0) + 1; }
-                if (score.tagB.name !== '無') { runHands.add(score.tagB.name); globalStats.handPlayed[score.tagB.name] = (globalStats.handPlayed[score.tagB.name] || 0) + 1; }
-                if (score.tagC.name !== '無') { runHands.add(score.tagC.name); globalStats.handPlayed[score.tagC.name] = (globalStats.handPlayed[score.tagC.name] || 0) + 1; }
-                if (score.tagD.name !== '無') { runHands.add(score.tagD.name); globalStats.handPlayed[score.tagD.name] = (globalStats.handPlayed[score.tagD.name] || 0) + 1; }
-
-                // Apply Ironwall shackle
                 if (shackle && shackle.id === 'ironwall') dmg *= 0.8;
-                if (shackle && shackle.id === 'gluttony') enemyHp += enemy.hp * 0.03;
 
-                enemyHp -= dmg;
-
-                if (enemyHp > 0) {
-                    turnsLeft--;
-                    if (turnsLeft === 0) {
-                        player.hp--;
-                        if (player.hp <= 0) {
-                            isDead = true;
-                            if (shackle) globalStats.shackleDeaths[shackle.id] = (globalStats.shackleDeaths[shackle.id] || 0) + 1;
-                        } else {
-                            turnsLeft = enemy.turns;
-                        }
-                    }
-                }
+                totalDamageThisStage += dmg;
+                turnsLeft--;
             }
 
-            if (isDead) break;
+            stageTotalDamage[stage.level].push(totalDamageThisStage);
+
 
             // Enemy Defeated - Drop Elite/Boss Relic
             if ([2, 5, 8, 9].includes(stage.level)) {
@@ -172,7 +131,6 @@ async function run() {
             if (shopItems.length > 0) {
                 let picked = shopItems[Math.floor(Math.random() * shopItems.length)];
                 player.relics.push(picked.id);
-                globalStats.relicPicked[picked.id] = (globalStats.relicPicked[picked.id] || 0) + 1;
             }
 
             // Fusion Check
@@ -192,66 +150,29 @@ async function run() {
             }
 
             stage.level++;
-            if (stage.level > 9) {
-                reachedInfinite = true;
-            }
-        }
-
-        // Track stats end of run
-        let displayStage = Math.min(stage.level, 14);
-        globalStats.stageReached[displayStage]++;
-        if (reachedInfinite) {
-            globalStats.infiniteRuns++;
-            let infLvl = stage.level - 9;
-            globalStats.sumInfinite += infLvl;
-            if (infLvl > globalStats.highestInfinite) globalStats.highestInfinite = infLvl;
-        }
-
-        let relicCount = 0;
-        player.relics.forEach(r => {
-            let def = RELIC_DB.find(d => d.id === r);
-            if (def && def.rarity === 5) relicCount += 2;
-            else relicCount += 1;
-        });
-        globalStats.sumRelics += relicCount;
-
-        if (stage.level >= 9) {
-            runHands.forEach(h => { globalStats.handWin[h] = (globalStats.handWin[h] || 0) + 1; });
-            player.relics.forEach(r => { globalStats.relicWin[r] = (globalStats.relicWin[r] || 0) + 1; });
         }
     }
 
-    // Process output directly instead of saving massive dump array
-    let output = `[V6 Simulation Report - ${NUM_SIMULATIONS} runs]\n`;
-    output += `Stage Reached Distribution: ${JSON.stringify(globalStats.stageReached)}\n`;
+    let output = `[V6 Target HP Recommendation - ${NUM_SIMULATIONS} runs]\n`;
+    output += `Goal: To achieve ~20% pass rate, HP should be around the 80th Percentile (Top 20%) of 3-turn total damage.\n\n`;
 
-    let avgDmg1 = globalStats.damageAtStage[0].reduce((a,b)=>a+b, 0) / Math.max(1, globalStats.damageAtStage[0].length);
-    let avgDmg3 = globalStats.damageAtStage[2].reduce((a,b)=>a+b, 0) / Math.max(1, globalStats.damageAtStage[2].length);
-    let avgDmg6 = globalStats.damageAtStage[5].reduce((a,b)=>a+b, 0) / Math.max(1, globalStats.damageAtStage[5].length);
-    let avgDmg10 = globalStats.damageAtStage[9].reduce((a,b)=>a+b, 0) / Math.max(1, globalStats.damageAtStage[9].length);
+    for (let i = 0; i < 10; i++) {
+        let dmgArr = stageTotalDamage[i];
+        dmgArr.sort((a, b) => a - b);
 
-    output += `Avg Damage - Stage 1: ${avgDmg1.toFixed(2)}, Stage 3: ${avgDmg3.toFixed(2)}, Stage 6: ${avgDmg6.toFixed(2)}, Stage 10: ${avgDmg10.toFixed(2)}\n`;
+        let p50 = dmgArr[Math.floor(dmgArr.length * 0.5)];
+        let p80 = dmgArr[Math.floor(dmgArr.length * 0.8)];
+        let p90 = dmgArr[Math.floor(dmgArr.length * 0.9)];
+        let avg = dmgArr.reduce((a,b) => a+b, 0) / dmgArr.length;
 
-    let sortedRelics = Object.entries(globalStats.relicWin).sort((a,b)=>b[1]-a[1]);
-    output += `Top 5 Relics by Win Count: ${JSON.stringify(sortedRelics.slice(0,5))}\n`;
-    output += `Bottom 5 Relics by Win Count: ${JSON.stringify(sortedRelics.slice(-5))}\n`;
+        output += `Stage ${i+1}:\n`;
+        output += `  Average 3-Turn Dmg: ${Math.floor(avg).toLocaleString()}\n`;
+        output += `  Median (50%) Dmg:   ${Math.floor(p50).toLocaleString()}\n`;
+        output += `  Top 20% (80%) Dmg:  ${Math.floor(p80).toLocaleString()}  <-- Recommended HP\n`;
+        output += `  Top 10% (90%) Dmg:  ${Math.floor(p90).toLocaleString()}\n\n`;
+    }
 
-    let sortedHands = Object.entries(globalStats.handWin).sort((a,b)=>b[1]-a[1]);
-    output += `Top 3 Hands by Win Count: ${JSON.stringify(sortedHands.slice(0,3))}\n`;
-
-    let sortedShackles = Object.entries(globalStats.shackleDeaths).sort((a,b)=>b[1]-a[1]);
-    output += `Highest Lethality Shackles: ${JSON.stringify(sortedShackles.slice(0,3))}\n`;
-    output += `Lowest Lethality Shackles: ${JSON.stringify(sortedShackles.slice(-3))}\n`;
-
-    let avgInf = globalStats.sumInfinite / Math.max(1, globalStats.infiniteRuns);
-    output += `Infinite Mode Runs: ${globalStats.infiniteRuns}, Avg Inf Stage: ${avgInf.toFixed(2)}, Max Inf Stage: ${globalStats.highestInfinite}\n`;
-    output += `Max Absolute Damage: ${globalStats.highestDamage}\n`;
-
-    let avgRelics = globalStats.sumRelics / NUM_SIMULATIONS;
-    output += `Avg Relics per Run (Fusion counts as 2): ${avgRelics.toFixed(2)}\n`;
-    output += `Avg Gold: 0 (Gold mechanics removed in V6)\n`;
-
-    fs.writeFileSync('V6_Simulation_Report.txt', output);
+    fs.writeFileSync('HP_Recommendation_Report.txt', output);
     console.log(output);
     console.log("Done.");
 }

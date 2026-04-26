@@ -46,7 +46,6 @@ export const RELIC_DB = [
     { id: 'brink', name: '【極限拉扯】', desc: '若發動攻擊時，剩餘發動攻擊次數（turnsLeft）剛好為 1，最終傷害 x2.5。', price: 40, rarity: 3 },
     { id: 'straightfan', name: '【順子愛好者】', desc: '只要觸發 B 區（順子連號）的任何牌型，該牌型倍率額外 +2.0。', price: 40, rarity: 3 },
     { id: 'fourdeath', name: '【四死如歸】', desc: '只要盤面上「剛好」有四顆 4，總倍率 x4.0。', price: 40, rarity: 3 },
-    { id: 'oneshot', name: '【一發入魂】', desc: '若發動攻擊時「完全沒有消耗過重骰次數」，最終總倍率 x3.0。', price: 45, rarity: 3 },
     { id: 'extremist', name: '【極端份子】', desc: 'D 區（極端盤面）的所有結算倍率 x1.5。', price: 45, rarity: 3 },
     { id: 'luckyseven', name: '【幸運七】', desc: '盤面上每有一顆 7，結算時基礎點數額外 +77。', price: 45, rarity: 3 },
     { id: 'rebel', name: '【反抗軍】', desc: '若本關卡存在任何「枷鎖」，最終總倍率 x1.5。', price: 45, rarity: 3 },
@@ -78,13 +77,13 @@ export const ENEMY_DB = [
     { name: '史萊姆', hp: 1500, turns: 3 },                  // Stage 1 (Index 0)
     { name: '哥布林', hp: 2500, turns: 3 },                  // Stage 2 (Index 1)
     { name: '巨石傀儡 (菁英)', hp: 8000, turns: 3 },           // Stage 3 (Index 2)
-    { name: '幽暗衛士', hp: 15000, turns: 3 },                  // Stage 4 (Index 3)
-    { name: '吸血鬼男爵', hp: 45000, turns: 3 },               // Stage 5 (Index 4)
-    { name: '深淵魔龍 (菁英)', hp: 120000, turns: 3 },          // Stage 6 (Index 5)
-    { name: '墮落天使', hp: 250000, turns: 3 },                 // Stage 7 (Index 6)
-    { name: '虛空行者', hp: 800000, turns: 3 },                 // Stage 8 (Index 7)
-    { name: '混沌騎士 (菁英)', hp: 1500000, turns: 3 },         // Stage 9 (Index 8)
-    { name: '創世神 (最終Boss)', hp: 5000000, turns: 3 },       // Stage 10 (Index 9)
+    { name: '幽暗衛士', hp: 14000, turns: 3 },                  // Stage 4 (Index 3)
+    { name: '吸血鬼男爵', hp: 18000, turns: 3 },               // Stage 5 (Index 4)
+    { name: '深淵魔龍 (菁英)', hp: 25000, turns: 3 },          // Stage 6 (Index 5)
+    { name: '影焰刺客', hp: 40000, turns: 3 },                 // Stage 7 (Index 6)
+    { name: '遺忘守護者', hp: 50000, turns: 3 },                 // Stage 8 (Index 7)
+    { name: '虛空大祭司 (菁英)', hp: 75000, turns: 3 },         // Stage 9 (Index 8)
+    { name: '創世神 (最終Boss)', hp: 150000, turns: 3 },       // Stage 10 (Index 9)
 ];
 
 export const SHACKLE_DB = [
