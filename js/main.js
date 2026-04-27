@@ -3,6 +3,7 @@ import { RELIC_DB, ENEMY_DB, RULE_DB, getEnemy, FUSION_RECIPES, CONSUMABLES_DB, 
 import { calculateEngineScore } from './engine.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
+import { i18n } from './i18n.js';
 
 // --- 遊戲狀態 ---
 let player = { hp: 3, relics: [], maxRolls: 3, dismantledFusions: [] };
@@ -64,9 +65,9 @@ function triggerDevMode() {
             SHACKLE_DB.forEach(r => { if (!collection.shackles.includes(r.id)) collection.shackles.push(r.id); });
             saveCollection();
         });
-        UI.showToast("🛠️ 【開發者模式】已獲得 99,999 金幣、1000 靈魂，並全開收集冊！");
+        UI.showToast(i18n.t('messages.toast_dev_mode', '99,999'));
     } else {
-        UI.showToast("🛠️ 【開發者模式】已獲得 99,999 金幣與 1000 靈魂！");
+        UI.showToast(i18n.t('messages.toast_dev_mode_simple', '99,999'));
     }
 
     if (window.openDevModal) {
@@ -90,7 +91,8 @@ if (UI.el.devRelicConfirm) {
         UI.renderInventory(player, battle);
         if (typeof saveGame === 'function') saveGame();
 
-        UI.showToast(`🛠️ 已獲得遺物：${rId}`);
+        let rName = rId.startsWith('cons_') ? i18n.t(`consumables.${rId}.name`) : (i18n.t(`relics.${rId}.name`) || rId);
+        UI.showToast(i18n.t('messages.toast_dev_get_relic', rName));
         window.closeDevModal();
     };
 }
@@ -270,6 +272,23 @@ function checkSaveExists() {
 
 // --- 初始化與主流程 ---
 function initTitleScreen() {
+    i18n.updateDOM(); // Initialize standard DOM texts
+
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) {
+        langSelect.value = i18n.getLocale();
+        langSelect.addEventListener('change', (e) => {
+            i18n.setLocale(e.target.value);
+        });
+    }
+
+    i18n.subscribe(() => {
+        UI.updatePlayerHp(player.hp, getMaxHp());
+        if (battle.state !== 'IDLE' && battle.state !== 'SHOP') {
+            updateUI();
+        }
+    });
+
     loadMetaData();
     UI.renderRulesDB();
     checkSaveExists();
@@ -522,7 +541,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
 }
 
 function startTurn() {
-    if (stage.turnsLeft <= 0) return gameOver("回合耗盡，未能擊敗敵人！");
+    if (stage.turnsLeft <= 0) return gameOver(i18n.t('ui.game_over_desc'));
     battle.state = 'IDLE';
     activeHighlight = null;
 
@@ -1085,20 +1104,23 @@ function enemyDefeated() {
 
         // Handle Souls
         let enemyName = getEnemy(stage.level).name;
+        let enemyNameI18n = i18n.t(`enemies.enemy_${stage.level}`) || enemyName;
         let earnedSouls = isBoss(stage.level) && !player.isInfiniteMode ? 2 : 1;
         if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
 
         metaData.souls += earnedSouls;
         saveMetaData();
-        let soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
+        let soulMsg = i18n.t('messages.toast_soul_gain', earnedSouls);
 
+        let randomRelicName = i18n.t(`relics.${randomRelic.id}.name`) || randomRelic.name;
         if (isBoss(stage.level)) {
-            UI.showToast(`👑 擊敗了 ${enemyName}！${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+            UI.showToast(i18n.t('messages.toast_boss_defeat', enemyNameI18n, soulMsg, randomRelicName), nextStep);
         } else {
-            UI.showToast(`🎉 擊敗了菁英怪！${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
+            UI.showToast(i18n.t('messages.toast_elite_defeat', '', soulMsg, randomRelicName), nextStep);
         }
     } else {
         let enemyName = getEnemy(stage.level).name;
+        let enemyNameI18n = i18n.t(`enemies.enemy_${stage.level}`) || enemyName;
         let earnedSouls = 0;
         if (isBoss(stage.level) && !player.isInfiniteMode) earnedSouls = 2;
         else if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
@@ -1107,13 +1129,21 @@ function enemyDefeated() {
             nextStep = gameWin;
         }
 
+        if (stage.level >= ENEMY_DB.length) {
+            let infiniteLevel = stage.level - ENEMY_DB.length + 1;
+            let m = ((infiniteLevel - 1) % 3) + 1;
+            if (m === 3) enemyNameI18n = i18n.t('messages.stage_infinite_boss', infiniteLevel);
+            else if (m === 2) enemyNameI18n = i18n.t('messages.stage_infinite_elite', infiniteLevel);
+            else enemyNameI18n = i18n.t('messages.stage_infinite', infiniteLevel);
+        }
+
         let soulMsg = '';
         if (earnedSouls > 0) {
             metaData.souls += earnedSouls;
             saveMetaData();
-            soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
+            soulMsg = i18n.t('messages.toast_soul_gain', earnedSouls);
         }
-        UI.showToast(`🎉 擊敗了 ${enemyName}！${soulMsg}`, nextStep);
+        UI.showToast(i18n.t('messages.toast_enemy_defeat', enemyNameI18n, soulMsg), nextStep);
     }
 }
 
@@ -1265,7 +1295,7 @@ function gameOver(reason) {
 
     if (player.isInfiniteMode) {
         let infiniteLevel = stage.level - ENEMY_DB.length + 1;
-        UI.el.endTitle.innerText = `無限塔第 ${infiniteLevel} 層 挑戰失敗`;
+        UI.el.endTitle.innerText = i18n.t('messages.infinite_fail', infiniteLevel);
     } else {
         UI.el.endTitle.innerText = "GAME OVER";
     }
@@ -1291,8 +1321,8 @@ function gameWin() {
     if (btnInfinite) btnInfinite.classList.remove('hidden');
 
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";
-    UI.el.endTitle.innerText = "🎉 遊戲通關 🎉";
-    UI.el.endDesc.innerText = "你擊敗了創世神，證明了混亂中的絕對秩序！";
+    UI.el.endTitle.innerText = i18n.t('messages.game_clear');
+    UI.el.endDesc.innerText = i18n.t('messages.game_clear_desc');
     UI.renderEndGameStats(player.highestDamage, player.highestDamageCombo, player.relics);
     let endInterval = setInterval(UI.shootConfetti, 1000);
     setTimeout(() => clearInterval(endInterval), 5000);
