@@ -53,7 +53,7 @@ export const RELIC_DB = [
     { id: 'balance', name: '【動態平衡】', desc: '每回合的「第一次重骰」不消耗重骰次數。', price: 55, rarity: 4 },
     { id: 'pansy', name: '【雷爪獅的祝福】', desc: '場上有 1 時總傷害 x3', price: 60, rarity: 4 },
     { id: 'pongo', name: '【捧夠的祝福】', desc: '場上有 8 時總傷害 x3', price: 60, rarity: 4 },
-    { id: 'firstaid', name: '【急救包】', desc: '每次擊敗【菁英怪】或【Boss】時，若 HP 不滿，恢復 1 點 HP。', price: 60, rarity: 4 },
+    { id: 'firstaid', name: '【急救包】', desc: '每擊敗 3 個敵人時，若 HP 不滿，恢復 1 點 HP。', price: 60, rarity: 4 },
     { id: 'royalflush', name: '【同花順】', desc: '若本次攻擊「同時」觸發了 A 區（同數）與 B 區（順子），總倍率 x2.0。', price: 60, rarity: 4 },
     { id: 'berserker', name: '【越戰越勇】', desc: '每次因回合耗盡或反傷扣除 1 HP 時，永久增加 1 次初始重骰次數。', price: 65, rarity: 4 },
     { id: 'dragonslayer', name: '【屠龍者】', desc: '面對「Boss」或「菁英怪」時，總傷害 x1.5。', price: 70, rarity: 4 },

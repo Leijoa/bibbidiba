@@ -1049,8 +1049,8 @@ window.triggerFusionReplace = function(currentFusions, newFusionId, mat1, mat2) 
 };
 
 function enemyDefeated() {
-    let isEliteOrBossFirstAid = isElite(stage.level) || isBoss(stage.level);
-    if (player.relics.includes('firstaid') && isEliteOrBossFirstAid && player.hp < window.getMaxHp()) {
+    let shouldTriggerFirstAid = (stage.level + 1) % 3 === 0;
+    if (player.relics.includes('firstaid') && shouldTriggerFirstAid && player.hp < window.getMaxHp()) {
         player.hp++;
         UI.showToast("🚑 【急救包】發動：恢復 1 點 HP！");
     }
