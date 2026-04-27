@@ -537,7 +537,7 @@ function startTurn() {
     
     let baseMaxRolls = 2 + (player.relics.filter(id => id === 'refresh').length * 2) + (player.berserkerBonus || 0);
     if (stage.activeShackle === 'fatigue') {
-        baseMaxRolls = Math.max(0, baseMaxRolls - 1);
+        baseMaxRolls = 1;
     }
     if (stage.activeShackle === 'destinychain') {
         baseMaxRolls = 1;
@@ -880,7 +880,13 @@ window.fireAttack = function() {
 
     let dmgEl = document.createElement('div');
     dmgEl.className = 'damage-text text-6xl md:text-8xl font-black text-red-500 drop-shadow-[0_0_20px_rgba(255,0,0,0.9)] z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
-    dmgEl.innerText = `-${dmg.toLocaleString()}`;
+
+    let displayDmg = dmg;
+    if (stage.activeShackle === 'illusionary') {
+        let fakeMultiplier = Math.floor(Math.random() * 16) + 5; // 5 to 20
+        displayDmg *= fakeMultiplier;
+    }
+    dmgEl.innerText = `-${displayDmg.toLocaleString()}`;
     UI.el.damageContainer.appendChild(dmgEl);
 
     setTimeout(() => {

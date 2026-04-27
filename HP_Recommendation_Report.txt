@@ -2,61 +2,61 @@
 Goal: To achieve ~20% pass rate, HP should be around the 80th Percentile (Top 20%) of 3-turn total damage.
 
 Stage 1:
-  Average 3-Turn Dmg: 3,097
-  Median (50%) Dmg:   2,135
-  Top 20% (80%) Dmg:  4,045  <-- Recommended HP
-  Top 10% (90%) Dmg:  6,328
+  Average 3-Turn Dmg: 3,105
+  Median (50%) Dmg:   2,142
+  Top 20% (80%) Dmg:  4,060  <-- Recommended HP
+  Top 10% (90%) Dmg:  6,322
 
 Stage 2:
   Average 3-Turn Dmg: 4,409
   Median (50%) Dmg:   2,856
-  Top 20% (80%) Dmg:  5,844  <-- Recommended HP
-  Top 10% (90%) Dmg:  8,752
+  Top 20% (80%) Dmg:  5,863  <-- Recommended HP
+  Top 10% (90%) Dmg:  8,775
 
 Stage 3:
-  Average 3-Turn Dmg: 6,071
-  Median (50%) Dmg:   3,828
-  Top 20% (80%) Dmg:  8,125  <-- Recommended HP
-  Top 10% (90%) Dmg:  12,204
+  Average 3-Turn Dmg: 6,078
+  Median (50%) Dmg:   3,839
+  Top 20% (80%) Dmg:  8,137  <-- Recommended HP
+  Top 10% (90%) Dmg:  12,171
 
 Stage 4:
-  Average 3-Turn Dmg: 10,871
-  Median (50%) Dmg:   6,674
-  Top 20% (80%) Dmg:  14,517  <-- Recommended HP
-  Top 10% (90%) Dmg:  22,558
+  Average 3-Turn Dmg: 10,855
+  Median (50%) Dmg:   6,663
+  Top 20% (80%) Dmg:  14,472  <-- Recommended HP
+  Top 10% (90%) Dmg:  22,271
 
 Stage 5:
-  Average 3-Turn Dmg: 14,261
-  Median (50%) Dmg:   8,666
-  Top 20% (80%) Dmg:  19,233  <-- Recommended HP
-  Top 10% (90%) Dmg:  29,831
+  Average 3-Turn Dmg: 14,322
+  Median (50%) Dmg:   8,714
+  Top 20% (80%) Dmg:  19,254  <-- Recommended HP
+  Top 10% (90%) Dmg:  29,798
 
 Stage 6:
-  Average 3-Turn Dmg: 17,695
-  Median (50%) Dmg:   10,353
-  Top 20% (80%) Dmg:  23,839  <-- Recommended HP
-  Top 10% (90%) Dmg:  37,451
+  Average 3-Turn Dmg: 17,747
+  Median (50%) Dmg:   10,416
+  Top 20% (80%) Dmg:  23,737  <-- Recommended HP
+  Top 10% (90%) Dmg:  37,368
 
 Stage 7:
-  Average 3-Turn Dmg: 31,701
-  Median (50%) Dmg:   18,390
-  Top 20% (80%) Dmg:  42,408  <-- Recommended HP
-  Top 10% (90%) Dmg:  66,555
+  Average 3-Turn Dmg: 31,704
+  Median (50%) Dmg:   18,413
+  Top 20% (80%) Dmg:  42,215  <-- Recommended HP
+  Top 10% (90%) Dmg:  65,794
 
 Stage 8:
-  Average 3-Turn Dmg: 41,598
-  Median (50%) Dmg:   23,418
-  Top 20% (80%) Dmg:  54,769  <-- Recommended HP
-  Top 10% (90%) Dmg:  86,921
+  Average 3-Turn Dmg: 41,824
+  Median (50%) Dmg:   23,392
+  Top 20% (80%) Dmg:  54,726  <-- Recommended HP
+  Top 10% (90%) Dmg:  87,462
 
 Stage 9:
-  Average 3-Turn Dmg: 58,589
-  Median (50%) Dmg:   32,340
-  Top 20% (80%) Dmg:  76,982  <-- Recommended HP
-  Top 10% (90%) Dmg:  123,570
+  Average 3-Turn Dmg: 59,148
+  Median (50%) Dmg:   32,652
+  Top 20% (80%) Dmg:  77,403  <-- Recommended HP
+  Top 10% (90%) Dmg:  123,856
 
 Stage 10:
-  Average 3-Turn Dmg: 91,484
-  Median (50%) Dmg:   46,950
-  Top 20% (80%) Dmg:  117,312  <-- Recommended HP
-  Top 10% (90%) Dmg:  193,552
+  Average 3-Turn Dmg: 91,345
+  Median (50%) Dmg:   47,243
+  Top 20% (80%) Dmg:  118,905  <-- Recommended HP
+  Top 10% (90%) Dmg:  196,879
