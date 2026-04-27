@@ -3,6 +3,7 @@ import { RELIC_DB, ENEMY_DB, RULE_DB, getEnemy, FUSION_RECIPES, CONSUMABLES_DB }
 import { calculateEngineScore } from './engine.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
+import { i18n } from './i18n.js';
 
 // --- 遊戲狀態 ---
 let player = { hp: 3, relics: [], maxRolls: 3, dismantledFusions: [] };
@@ -270,6 +271,23 @@ function checkSaveExists() {
 
 // --- 初始化與主流程 ---
 function initTitleScreen() {
+    i18n.updateDOM(); // Initialize standard DOM texts
+
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) {
+        langSelect.value = i18n.getLocale();
+        langSelect.addEventListener('change', (e) => {
+            i18n.setLocale(e.target.value);
+        });
+    }
+
+    i18n.subscribe(() => {
+        UI.updatePlayerHp(player.hp, getMaxHp());
+        if (battle.state !== 'IDLE' && battle.state !== 'SHOP') {
+            updateUI();
+        }
+    });
+
     loadMetaData();
     UI.renderRulesDB();
     checkSaveExists();

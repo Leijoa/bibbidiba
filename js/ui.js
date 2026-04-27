@@ -1,5 +1,6 @@
 // js/ui.js
 import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, SHACKLE_DB, getEnemy, FUSION_RECIPES } from './data.js';
+import { i18n } from './i18n.js';
 
 // 緩存 DOM 元素
 export const el = {
@@ -135,12 +136,12 @@ export function renderRulesDB() {
 // --- 更新 UI 狀態 ---
 export function updateHeaderUI(player, stage) {
     if (stage.level < ENEMY_DB.length) {
-        el.stageInfo.innerText = `關卡 ${stage.level + 1} / ${ENEMY_DB.length}`;
+        el.stageInfo.innerText = `${i18n.t('ui.stage')} ${stage.level + 1} / ${ENEMY_DB.length}`;
     } else {
         let infiniteLevel = stage.level - ENEMY_DB.length + 1;
         let n = Math.floor((infiniteLevel - 1) / 3) + 1;
         let m = ((infiniteLevel - 1) % 3) + 1;
-        el.stageInfo.innerText = `無限塔 ${n}-${m}`;
+        el.stageInfo.innerText = `無限塔 ${n}-${m}`; // Will be migrated later
     }
     
     let maxHp = window.getMaxHp ? window.getMaxHp() : 3;
@@ -185,7 +186,7 @@ export function updateEnemyUI(stage) {
         el.enemyName.classList.add("text-slate-200");
     }
     
-    el.turnsLeft.innerText = `剩餘 ${stage.turnsLeft} 次發動攻擊次數`;
+    el.turnsLeft.innerText = i18n.t('ui.turns_left', stage.turnsLeft);
     let pct = Math.max(0, (stage.enemyHp / stage.enemyMaxHp) * 100);
     el.enemyHpBar.style.width = `${pct}%`;
     el.enemyHpText.innerText = `${Math.floor(stage.enemyHp).toLocaleString()} / ${stage.enemyMaxHp.toLocaleString()}`;
@@ -410,7 +411,7 @@ export function renderDice(battle, activeHighlight, player) {
         </div>`;
     }).join('');
 
-    el.rollsBadge.innerText = `剩餘重骰：${battle.rollsLeft}`;
+    el.rollsBadge.innerText = i18n.t('ui.rolls_left', battle.rollsLeft);
     el.rollsBadge.className = battle.rollsLeft === 0 ? "bg-slate-700 px-2 py-0.5 rounded-full text-[10px] md:text-sm font-bold text-slate-400 transition-colors" : "bg-slate-700 px-2 py-0.5 rounded-full text-[10px] md:text-sm font-bold text-amber-300 transition-colors";
 }
 
