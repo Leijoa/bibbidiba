@@ -1,5 +1,5 @@
 // js/main.js
-import { RELIC_DB, ENEMY_DB, RULE_DB, getEnemy, FUSION_RECIPES, CONSUMABLES_DB } from './data.js';
+import { RELIC_DB, ENEMY_DB, RULE_DB, getEnemy, FUSION_RECIPES, CONSUMABLES_DB, isElite, isBoss } from './data.js';
 import { calculateEngineScore } from './engine.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
@@ -784,7 +784,7 @@ window.fireAttack = function() {
 
     let finalDamage = Math.floor(battle.scoreResult.finalScore);
 
-    if (player.relics.includes('dragonslayer') && [2, 5, 8, 9].includes(stage.level)) {
+    if (player.relics.includes('dragonslayer') && (isElite(stage.level) || isBoss(stage.level))) {
         finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * 1.5));
         UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
     }
@@ -1043,7 +1043,7 @@ window.triggerFusionReplace = function(currentFusions, newFusionId, mat1, mat2) 
 };
 
 function enemyDefeated() {
-    let isEliteOrBossFirstAid = [2, 5, 8, 9].includes(stage.level);
+    let isEliteOrBossFirstAid = isElite(stage.level) || isBoss(stage.level);
     if (player.relics.includes('firstaid') && isEliteOrBossFirstAid && player.hp < window.getMaxHp()) {
         player.hp++;
         UI.showToast("🚑 【急救包】發動：恢復 1 點 HP！");
@@ -1060,7 +1060,7 @@ function enemyDefeated() {
     let nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
 
     // Boss (9) or Elite (2, 5, 8)
-    let isEliteOrBossDrop = [2, 5, 8, 9].includes(stage.level);
+    let isEliteOrBossDrop = isElite(stage.level) || isBoss(stage.level);
 
     if (isEliteOrBossDrop && availableForShop.length > 0) {
         let randomRelic = availableForShop[Math.floor(Math.random() * availableForShop.length)];
@@ -1073,20 +1073,20 @@ function enemyDefeated() {
         availableForShop = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5);
         nextStep = (availableForShop.length === 0 && !player.isInfiniteMode) ? nextStage : openShop;
 
-        if (stage.level === 9 && !player.isInfiniteMode) {
+        if (isBoss(stage.level) && !player.isInfiniteMode) {
             nextStep = gameWin; // End game normally instead of shopping after boss in standard mode
         }
 
         // Handle Souls
         let enemyName = getEnemy(stage.level).name;
-        let earnedSouls = stage.level === 9 ? 2 : 1;
+        let earnedSouls = isBoss(stage.level) && !player.isInfiniteMode ? 2 : 1;
         if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
 
         metaData.souls += earnedSouls;
         saveMetaData();
         let soulMsg = `\n👻 獲得 ${earnedSouls} 個靈魂！`;
 
-        if (stage.level === 9) {
+        if (isBoss(stage.level)) {
             UI.showToast(`👑 擊敗了 ${enemyName}！${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
         } else {
             UI.showToast(`🎉 擊敗了菁英怪！${soulMsg}\n🎁 掉落遺物：${randomRelic.name}`, nextStep);
@@ -1094,10 +1094,10 @@ function enemyDefeated() {
     } else {
         let enemyName = getEnemy(stage.level).name;
         let earnedSouls = 0;
-        if (stage.level === 9) earnedSouls = 2;
+        if (isBoss(stage.level) && !player.isInfiniteMode) earnedSouls = 2;
         else if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
 
-        if (stage.level === 9 && !player.isInfiniteMode) {
+        if (isBoss(stage.level) && !player.isInfiniteMode) {
             nextStep = gameWin;
         }
 

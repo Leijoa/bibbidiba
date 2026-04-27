@@ -133,6 +133,26 @@ export const SHACKLE_DB = [
     { id: 'mutualdestruction', name: '【同歸於盡】', desc: '敵人會將受到的 5% 傷害反彈給玩家，但不會導致玩家死亡（最少剩 1 HP）。', type: 'heavy' }
 ];
 
+export function isElite(levelIndex) {
+    if (levelIndex < ENEMY_DB.length) {
+        return [2, 5, 8].includes(levelIndex);
+    } else {
+        let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
+        let m = ((infiniteLevel - 1) % 3) + 1;
+        return m === 2;
+    }
+}
+
+export function isBoss(levelIndex) {
+    if (levelIndex < ENEMY_DB.length) {
+        return levelIndex === ENEMY_DB.length - 1;
+    } else {
+        let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
+        let m = ((infiniteLevel - 1) % 3) + 1;
+        return m === 3;
+    }
+}
+
 export function getEnemy(levelIndex) {
     if (levelIndex < ENEMY_DB.length) {
         return ENEMY_DB[levelIndex];
