@@ -1,9 +1,15 @@
+import { zh_tw_data } from './locales/zh-tw.js';
+import { zh_cn_data } from './locales/zh-cn.js';
+import { en_data } from './locales/en.js';
+import { ja_data } from './locales/ja.js';
+
 export const translations = {
   'zh-tw': {
+    ...zh_tw_data,
     'ui': {
       'title_main': 'BIBBIDIBA',
       'title_sub': '比比丟八',
-      'title_desc': '擲八顆骰子湊牌型疊加倍率！每回合重骰兩次，在限制回合內打倒敵人獲取遺物強化流派，挑戰連過五關！',
+      'title_desc': '擲八顆骰子湊牌型疊加倍率！每回合重骰兩次，在限制回合內打倒敵人獲取遺物強化流派，挑戰連過十關！',
       'btn_continue': '繼續旅程',
       'btn_new_game': '開始新遊戲',
       'btn_collection': '📖 收集冊',
@@ -27,14 +33,19 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': '你未能擊敗敵人，旅程到此為止。',
       'btn_restart': '回到標題畫面',
-      'btn_infinite': '進入無限塔'
+      'btn_infinite': '進入無限塔',
+      'rules_title': '📖 全牌型倍率表',
+      'tab_hands': '牌型',
+      'tab_relics': '遺物',
+      'tab_shackles': '枷鎖'
     }
   },
   'zh-cn': {
+    ...zh_cn_data,
     'ui': {
       'title_main': 'BIBBIDIBA',
       'title_sub': '比比丢八',
-      'title_desc': '掷八颗骰子凑牌型叠加倍率！每回合重骰两次，在限制回合内打倒敌人获取遗物强化流派，挑战连过五关！',
+      'title_desc': '掷八颗骰子凑牌型叠加倍率！每回合重骰两次，在限制回合内打倒敌人获取遗物强化流派，挑战连过十关！',
       'btn_continue': '继续旅程',
       'btn_new_game': '开始新游戏',
       'btn_collection': '📖 收集册',
@@ -58,14 +69,19 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': '你未能击败敌人，旅程到此为止。',
       'btn_restart': '回到标题画面',
-      'btn_infinite': '进入无限塔'
+      'btn_infinite': '进入无限塔',
+      'rules_title': '📖 全牌型倍率表',
+      'tab_hands': '牌型',
+      'tab_relics': '遗物',
+      'tab_shackles': '枷锁'
     }
   },
   'en': {
+    ...en_data,
     'ui': {
       'title_main': 'BIBBIDIBA',
       'title_sub': 'Bibbidiba',
-      'title_desc': 'Roll 8 dice to form hands and stack multipliers! Reroll twice per turn, defeat enemies within the turn limit to gain relics and strengthen your build. Challenge 5 stages in a row!',
+      'title_desc': 'Roll 8 dice to form hands and stack multipliers! Reroll twice per turn, defeat enemies within the turn limit to gain relics and strengthen your build. Challenge 10 stages in a row!',
       'btn_continue': 'Continue Journey',
       'btn_new_game': 'Start New Game',
       'btn_collection': '📖 Collection',
@@ -89,14 +105,19 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': 'You failed to defeat the enemy. Your journey ends here.',
       'btn_restart': 'Back to Title',
-      'btn_infinite': 'Enter Infinite Tower'
+      'btn_infinite': 'Enter Infinite Tower',
+      'rules_title': '📖 Hands Multipliers',
+      'tab_hands': 'Hands',
+      'tab_relics': 'Relics',
+      'tab_shackles': 'Shackles'
     }
   },
   'ja': {
+    ...ja_data,
     'ui': {
       'title_main': 'BIBBIDIBA',
       'title_sub': 'ビビディバ',
-      'title_desc': '8つのダイスを振って役を作り、倍率を重ねよう！毎ターン2回振り直し可能。制限ターン内に敵を倒して遺物を獲得し、ビルドを強化。5ステージ連続クリアを目指せ！',
+      'title_desc': '8つのダイスを振って役を作り、倍率を重ねよう！毎ターン2回振り直し可能。制限ターン内に敵を倒して遺物を獲得し、ビルドを強化。10ステージ連続クリアを目指せ！',
       'btn_continue': '旅を続ける',
       'btn_new_game': '最初から',
       'btn_collection': '📖 コレクション',
@@ -120,7 +141,11 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': '敵を倒せませんでした。旅はここで終わります。',
       'btn_restart': 'タイトルへ戻る',
-      'btn_infinite': '無限の塔へ'
+      'btn_infinite': '無限の塔へ',
+      'rules_title': '📖 役の倍率表',
+      'tab_hands': '役',
+      'tab_relics': '遺物',
+      'tab_shackles': '枷鎖'
     }
   }
 };

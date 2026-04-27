@@ -245,9 +245,10 @@ export function renderInventory(player, battle) {
                 }
             }
         }
+        let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || r.name);
         return `
         <div onclick="window.showRelicInfo('${r.id}')" class="${style.bg} px-2 py-1 rounded-full border ${style.border} shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform active:scale-95">
-            <span class="text-[10px] md:text-xs font-black ${style.color} whitespace-nowrap">${r.name}</span>
+            <span class="text-[10px] md:text-xs font-black ${style.color} whitespace-nowrap">${rName}</span>
         </div>`;
     }).join('');
 }
@@ -256,10 +257,13 @@ export function renderInventory(player, battle) {
 window.showRelicInfo = function(id) {
     let r = RELIC_DB.find(x => x.id === id);
     if(r) {
+        let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || r.name);
+        let rDesc = id.startsWith('cons_') ? i18n.t(`consumables.${id}.desc`) : (i18n.t(`relics.${id}.desc`) || r.desc);
+
         let container = document.createElement('div');
         let nameSpan = document.createElement('span');
         nameSpan.className = "text-amber-400 font-black";
-        nameSpan.textContent = r.name;
+        nameSpan.textContent = rName;
 
         let descSpan = document.createElement('span');
         descSpan.className = "text-sm md:text-lg text-slate-200 mt-2 block";
@@ -268,12 +272,14 @@ window.showRelicInfo = function(id) {
         if (r.rarity === 5 && FUSION_RECIPES[r.id]) {
             let mat1Id = FUSION_RECIPES[r.id].mat1;
             let mat2Id = FUSION_RECIPES[r.id].mat2;
-            let mat1Name = RELIC_DB.find(x => x.id === mat1Id)?.name || mat1Id;
-            let mat2Name = RELIC_DB.find(x => x.id === mat2Id)?.name || mat2Id;
+            let mat1Def = RELIC_DB.find(x => x.id === mat1Id);
+            let mat2Def = RELIC_DB.find(x => x.id === mat2Id);
+            let mat1Name = mat1Def ? (i18n.t(`relics.${mat1Id}.name`) || mat1Def.name) : mat1Id;
+            let mat2Name = mat2Def ? (i18n.t(`relics.${mat2Id}.name`) || mat2Def.name) : mat2Id;
             fusionText = `\n\n合成條件: ${mat1Name} + ${mat2Name}`;
         }
 
-        descSpan.textContent = r.desc + fusionText;
+        descSpan.textContent = rDesc + fusionText;
 
         container.appendChild(nameSpan);
         container.appendChild(descSpan);
@@ -523,20 +529,23 @@ export function renderShopItems(shopItems, player) {
             }
         }
 
+        let rName = r.id.startsWith('cons_') ? i18n.t(`consumables.${r.id}.name`) : (i18n.t(`relics.${r.id}.name`) || r.name);
+        let rDesc = r.id.startsWith('cons_') ? i18n.t(`consumables.${r.id}.desc`) : (i18n.t(`relics.${r.id}.desc`) || r.desc);
+
         return `
         <div class="bg-slate-800 p-3 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
             <div class="absolute top-0 right-0 w-20 h-20 ${style.bg} blur-2xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
             <div class="relative z-10">
                 <div class="flex flex-col gap-1 mb-2">
                     <div class="flex justify-between items-start">
-                        <h3 class="text-base md:text-xl font-black ${style.color}">${r.name}</h3>
+                        <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
                         <div class="flex flex-col items-end gap-1">
                             <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
                             ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ 可融合</span>` : ''}
                         </div>
                     </div>
                 </div>
-                <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${r.desc}</p>
+                <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${rDesc}</p>
             </div>
             <button onclick="window.buyItem(${idx})" class="w-full font-black py-2.5 rounded-lg transition-all relative z-10 text-sm md:text-base ${btnClass}">
                 ✅ 選擇
@@ -620,20 +629,21 @@ export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFu
 
 export function renderHistoryModal(records) {
     if (!records || records.length === 0) {
-        el.historyContent.innerHTML = `<div class="text-center text-slate-500 py-6 font-bold">尚無歷史紀錄。</div>`;
+        el.historyContent.innerHTML = `<div class="text-center text-slate-500 py-6 font-bold">${i18n.t('messages.history_empty')}</div>`;
         return;
     }
     
     el.historyContent.innerHTML = records.map((r, i) => {
         let resultColor = r.win ? "text-amber-400" : "text-red-400";
-        let resultText = r.stageName || (r.win ? "勝利" : "失敗");
+        let resultText = r.stageName || (r.win ? "勝利" : "失敗"); // This is saved in DB, so it might be hard to translate retrospectively.
         let dateObj = new Date(r.date);
         let dateStr = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
         let relicHtml = (r.relics && r.relics.length > 0) ? r.relics.map(id => {
             let relicDef = RELIC_DB.find(x => x.id === id);
             if (!relicDef) return '';
-            return `<span class="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300 mr-1 mb-1 inline-block">${relicDef.name}</span>`;
+            let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || relicDef.name);
+            return `<span class="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300 mr-1 mb-1 inline-block">${rName}</span>`;
         }).join('') : '<span class="text-slate-500 text-[10px]">無</span>';
         
         return `
@@ -663,18 +673,19 @@ export function renderEndGameStats(highestDamage, highestDamageCombo, relics) {
         let relicDef = RELIC_DB.find(x => x.id === id);
         if (!relicDef) return '';
         let style = RARITY[relicDef.rarity] || RARITY[1];
-        return `<span class="${style.bg} ${style.color} px-2 py-1 rounded text-xs border ${style.border} inline-block">${relicDef.name}</span>`;
+        let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || relicDef.name);
+        return `<span class="${style.bg} ${style.color} px-2 py-1 rounded text-xs border ${style.border} inline-block">${rName}</span>`;
     }).join(' ') : '<span class="text-slate-500">無</span>';
     
     el.endStats.innerHTML = `
         <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700/50 w-full max-w-sm mx-auto shadow-inner text-left">
             <div class="mb-2 border-b border-slate-700/50 pb-2">
-                <div class="text-xs text-slate-400 mb-1">本局最高傷害</div>
+                <div class="text-xs text-slate-400 mb-1">${i18n.t('messages.history_dmg', '').replace('：', '').replace(': ', '')}</div>
                 <div class="text-2xl md:text-3xl font-black text-white">${Number(highestDamage).toLocaleString()}</div>
                 <div class="text-sm font-bold text-blue-300 mt-1">${highestDamageCombo || '無'}</div>
             </div>
             <div>
-                <div class="text-xs text-slate-400 mb-1.5">最終持有遺物</div>
+                <div class="text-xs text-slate-400 mb-1.5">${i18n.t('messages.history_relics', '').replace('：', '').replace(': ', '')}</div>
                 <div class="flex overflow-x-auto gap-1 pb-1 scroll-smooth hide-scrollbar">${relicHtml}</div>
             </div>
         </div>
@@ -688,18 +699,22 @@ export function renderCollectionModal(tab) {
 
     if (tab === 'hands') {
         const groups = [
-            { key: 'groupA', title: '【A區】同數頻率' },
-            { key: 'groupB', title: '【B區】順子連號' },
-            { key: 'groupC', title: '【C區】複合牌型' },
-            { key: 'groupD', title: '【D區】極端盤面' }
+            { key: 'groupA', titleKey: 'rules.groupA' },
+            { key: 'groupB', titleKey: 'rules.groupB' },
+            { key: 'groupC', titleKey: 'rules.groupC' },
+            { key: 'groupD', titleKey: 'rules.groupD' }
         ];
         groups.forEach(g => {
-            html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-2 mb-1 border-b border-slate-700 pb-1">${g.title}</h3>`;
+            html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-2 mb-1 border-b border-slate-700 pb-1">${i18n.t(g.titleKey)}</h3>`;
             html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">`;
-            RULE_DB[g.key].forEach(rule => {
+            RULE_DB[g.key].forEach((rule, rIdx) => {
                 const unlocked = coll.hands.includes(rule.name);
-                const nameStr = unlocked ? `${rule.name} <span class="text-emerald-400 text-xs ml-1">✅</span>` : `???`;
-                const descStr = unlocked ? rule.desc : '未解鎖';
+                let letter = g.key.replace('group', '').toLowerCase();
+                let ruleName = i18n.t(`rules.rule_${letter}${rIdx}.name`) || rule.name;
+                let ruleDesc = i18n.t(`rules.rule_${letter}${rIdx}.desc`) || rule.desc;
+
+                const nameStr = unlocked ? `${ruleName} <span class="text-emerald-400 text-xs ml-1">✅</span>` : `???`;
+                const descStr = unlocked ? ruleDesc : '未解鎖'; // Hardcoded fallback for now
                 const opacity = unlocked ? 'opacity-100' : 'opacity-50 grayscale';
                 let rStyle = RARITY[rule.rarity] || RARITY[1];
                 let nameColor = unlocked ? rStyle.color : 'text-slate-200';
@@ -721,21 +736,26 @@ export function renderCollectionModal(tab) {
             const unlocked = coll.relics.includes(r.id);
             if (unlocked) {
                 let style = RARITY[r.rarity] || RARITY[1];
+                let rName = r.id.startsWith('cons_') ? i18n.t(`consumables.${r.id}.name`) : (i18n.t(`relics.${r.id}.name`) || r.name);
+                let rDesc = r.id.startsWith('cons_') ? i18n.t(`consumables.${r.id}.desc`) : (i18n.t(`relics.${r.id}.desc`) || r.desc);
+
                 let fusionText = '';
                 if (r.rarity === 5 && FUSION_RECIPES[r.id]) {
                     let mat1Id = FUSION_RECIPES[r.id].mat1;
                     let mat2Id = FUSION_RECIPES[r.id].mat2;
-                    let mat1Name = RELIC_DB.find(x => x.id === mat1Id)?.name || mat1Id;
-                    let mat2Name = RELIC_DB.find(x => x.id === mat2Id)?.name || mat2Id;
+                    let mat1Def = RELIC_DB.find(x => x.id === mat1Id);
+                    let mat2Def = RELIC_DB.find(x => x.id === mat2Id);
+                    let mat1Name = mat1Def ? (i18n.t(`relics.${mat1Id}.name`) || mat1Def.name) : mat1Id;
+                    let mat2Name = mat2Def ? (i18n.t(`relics.${mat2Id}.name`) || mat2Def.name) : mat2Id;
                     fusionText = `<p class="text-xs text-amber-300 mt-1 border-t border-slate-600 pt-1">合成: ${mat1Name} + ${mat2Name}</p>`;
                 }
                 html += `
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-1">
-                        <h3 class="text-sm md:text-base font-black ${style.color}">${r.name} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
+                        <h3 class="text-sm md:text-base font-black ${style.color}">${rName} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
                         <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
                     </div>
-                    <p class="text-xs md:text-sm text-slate-300 font-bold">${r.desc}</p>
+                    <p class="text-xs md:text-sm text-slate-300 font-bold">${rDesc}</p>
                     ${fusionText}
                 </div>`;
             } else {
@@ -756,13 +776,15 @@ export function renderCollectionModal(tab) {
             if (unlocked) {
                 let colorClass = s.type === 'heavy' ? "text-red-400" : "text-amber-400";
                 let typeLabel = s.type === 'heavy' ? "重度" : "輕度";
+                let sName = i18n.t(`shackles.${s.id}.name`) || s.name;
+                let sDesc = i18n.t(`shackles.${s.id}.desc`) || s.desc;
                 html += `
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-1">
-                        <h3 class="text-sm md:text-base font-black ${colorClass}">${s.name} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
+                        <h3 class="text-sm md:text-base font-black ${colorClass}">${sName} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
                         <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-500 font-bold">${typeLabel}</span>
                     </div>
-                    <p class="text-xs md:text-sm text-slate-300 font-bold">${s.desc}</p>
+                    <p class="text-xs md:text-sm text-slate-300 font-bold">${sDesc}</p>
                 </div>`;
             } else {
                 html += `
@@ -806,7 +828,7 @@ if (el.devRelicCancel) {
 
 export function renderSoulsModal(metaData) {
     if (!el.soulsContent) return;
-    el.soulsHeaderText.innerText = `目前持有靈魂：${metaData.souls} 👻`;
+    el.soulsHeaderText.innerText = i18n.t('souls.owned', metaData.souls);
 
     const upgDefs = [
         { id: 'hp', name: '❤️ 體魄鍛鍊', desc: '最大 HP +1', max: 2, cost: 10 },
@@ -820,16 +842,19 @@ export function renderSoulsModal(metaData) {
         let isMax = currentLv >= u.max;
         let canAfford = metaData.souls >= u.cost;
 
+        let uName = i18n.t(`souls.${u.id}.name`) || u.name;
+        let uDesc = i18n.t(`souls.${u.id}.desc`) || u.desc;
+
         let dots = Array(u.max).fill().map((_, i) => i < currentLv ? '🟢' : '⚫').join(' ');
         let btnHtml = isMax
-            ? `<button disabled class="bg-slate-700 text-slate-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed">已滿級</button>`
-            : `<button onclick="window.buySoulUpgrade('${u.id}', ${u.cost})" class="${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_10px_rgba(79,70,229,0.5)]' : 'bg-slate-700 text-slate-500 cursor-not-allowed'} font-black py-2 px-4 rounded-lg transition-transform active:scale-95" ${canAfford ? '' : 'disabled'}>花費 ${u.cost} 👻</button>`;
+            ? `<button disabled class="bg-slate-700 text-slate-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed">${i18n.t('souls.maxed')}</button>`
+            : `<button onclick="window.buySoulUpgrade('${u.id}', ${u.cost})" class="${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_10px_rgba(79,70,229,0.5)]' : 'bg-slate-700 text-slate-500 cursor-not-allowed'} font-black py-2 px-4 rounded-lg transition-transform active:scale-95" ${canAfford ? '' : 'disabled'}>${i18n.t('souls.cost', u.cost)}</button>`;
 
         return `
         <div class="bg-slate-900/50 border border-indigo-900/50 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
-                <div class="text-base font-black text-indigo-300">${u.name}</div>
-                <div class="text-xs text-slate-400 mt-0.5">${u.desc}</div>
+                <div class="text-base font-black text-indigo-300">${uName}</div>
+                <div class="text-xs text-slate-400 mt-0.5">${uDesc}</div>
                 <div class="text-xs mt-1">${dots} (${currentLv}/${u.max})</div>
             </div>
             <div class="w-full sm:w-auto text-right">
@@ -847,5 +872,7 @@ window.buySoulUpgrade = function(id, cost) {
         meta.upgrades[id] = (meta.upgrades[id] || 0) + 1;
         window.saveMetaData();
         renderSoulsModal(meta);
+    } else {
+        showToast(i18n.t('messages.toast_no_money'));
     }
 };
