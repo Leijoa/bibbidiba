@@ -597,7 +597,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     }
 
     if (playerRelics.includes('allin') && playerHp === 1) {
-        let amt = isExploited ? 1.25 : 2.5;
+        let amt = isExploited ? 1.0 : 2.0;
         globalMulti *= amt;
         globalNotes.push(`【孤注一擲】 x${amt.toFixed(2)}`);
     }

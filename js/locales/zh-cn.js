@@ -24,7 +24,7 @@ export const zh_cn_data = {
     'even': { name: '【偶数】', desc: '偶数点数倍率 * 2.5' },
     'sixsmooth': { name: '【六六大顺】', desc: '只要盘面上 6，所有「散牌」（未凑成牌型的骰子）基础点数强制以 15 点计算。' },
     'order': { name: '【宽容】', desc: '只要七颗奇数或偶数就会发动绝对秩序牌型' },
-    'allin': { name: '【孤注一掷】', desc: '当玩家 HP 只剩 1 时，最终伤害 x2.5' },
+    'allin': { name: '【孤注一掷】', desc: '当玩家 HP 只剩 1 时，最终伤害 x2' },
     'brink': { name: '【极限拉扯】', desc: '若发动攻击时，剩余发动攻击次数刚好为 1，最终伤害 x2.5。' },
     'straightfan': { name: '【顺子爱好者】', desc: '只要触发 B 区（顺子连号）的任何牌型，该牌型倍率额外 +2.0。' },
     'fourdeath': { name: '【四死如归】', desc: '只要盘面上「刚好」有四颗 4，总倍率 x4.0。' },
@@ -74,7 +74,7 @@ export const zh_cn_data = {
     'lonely': { name: '【孤立】', desc: '盘面上没有凑成任何牌型的「散牌」，不提供基础点数。' },
     'cursedlock': { name: '【诅咒之锁】', desc: '每回合强制锁定 1 颗点数最小的骰子，且无法解锁。' },
     'fragile': { name: '【易碎骰子】', desc: '本局战斗中完全停用「锁定」功能，每次皆 8 颗全换。' },
-    'fatigue': { name: '【沉重疲劳】', desc: '玩家的初始最大重骰次数直接减 1。' },
+    'fatigue': { name: '【沉重疲劳】', desc: '玩家每回合强制只能重骰 1 次（无视遗物加成）。' },
     'destinychain': { name: '【命运枷锁】', desc: '玩家每回合最高只能重骰 1 次（无视遗物加成）。' },
     'ultimatelock': { name: '【终极封锁】', desc: '盘面正中间的 4 颗骰子位置永远无法被锁定。' },
     'forcedshift': { name: '【强制转换】', desc: '每次重骰结束后，系统随机将 1 颗「已锁定」骰子变更数值。' },
@@ -83,7 +83,8 @@ export const zh_cn_data = {
     'isolated': { name: '【孤立无援】', desc: 'A 区（同数频率）的所有倍率强制减半。' },
     'ordercollapse': { name: '【秩序崩坏】', desc: 'B 区（顺子连号）的倍率判定完全失效。' },
     'banality': { name: '【平庸之恶】', desc: 'D 区（极端盘面）的所有特殊倍率强制失效。' },
-    'chaoslaw': { name: '【混沌法则】', desc: 'A 区（同数）与 B 区（顺子）的倍率计算表互相对调。' }
+    'chaoslaw': { name: '【混沌法则】', desc: 'A 区（同数）与 B 区（顺子）的倍率计算表互相对调。' },
+    'illusionary': { name: '【假象】', desc: '显示虚假的最终伤害。' }
   },
   rules: {
     'groupA': '同数',

@@ -24,7 +24,7 @@ export const ja_data = {
     'even': { name: '【偶数】', desc: '偶数の倍率 * 2.5' },
     'sixsmooth': { name: '【六々大順】', desc: '盤面に6がある場合、役無しダイスの基礎点が15になる' },
     'order': { name: '【寛容】', desc: '奇数または偶数が7つ以上で「絶対秩序」が発動' },
-    'allin': { name: '【乾坤一擲】', desc: 'HPが残り1の時、最終ダメージ x2.5' },
+    'allin': { name: '【乾坤一擲】', desc: 'HPが残り1の時、最終ダメージ x2' },
     'brink': { name: '【極限状態】', desc: '残りターン数が1の時に攻撃すると、最終ダメージ x2.5' },
     'straightfan': { name: '【ストレート愛好家】', desc: 'B区(ストレート)の役が発動すると、その倍率が +2.0' },
     'fourdeath': { name: '【決死の四】', desc: '盤面に4が「ちょうど4つ」ある場合、最終倍率 x4.0' },
@@ -74,7 +74,7 @@ export const ja_data = {
     'lonely': { name: '【孤立】', desc: '役無しのダイスが基礎点を提供しなくなる。' },
     'cursedlock': { name: '【呪いの錠前】', desc: '毎ターン最小のダイス1つが強制ロックされ、解除できなくなる。' },
     'fragile': { name: '【脆いダイス】', desc: 'ロック機能が使用不可になり、常に8個全て振り直す。' },
-    'fatigue': { name: '【疲労困憊】', desc: '初期の最大振り直し回数が-1される。' },
+    'fatigue': { name: '【疲労困憊】', desc: '毎ターン1回しか振り直しできなくなる。' },
     'destinychain': { name: '【運命の鎖】', desc: '毎ターン1回しか振り直しできなくなる。' },
     'ultimatelock': { name: '【絶対封鎖】', desc: '盤面中央の4つのダイスがロック不可になる。' },
     'forcedshift': { name: '【強制変換】', desc: '振り直し後、ランダムなロック済みダイス1つの数値が変化する。' },
@@ -83,7 +83,8 @@ export const ja_data = {
     'isolated': { name: '【孤立無援】', desc: 'A区(同数)の倍率が全て半減する。' },
     'ordercollapse': { name: '【秩序崩壊】', desc: 'B区(ストレート)の倍率が全て無効化される。' },
     'banality': { name: '【凡庸な悪】', desc: 'D区(特殊)の倍率が全て無効化される。' },
-    'chaoslaw': { name: '【混沌の法則】', desc: 'A区(同数)とB区(ストレート)の倍率表が入れ替わる。' }
+    'chaoslaw': { name: '【混沌の法則】', desc: 'A区(同数)とB区(ストレート)の倍率表が入れ替わる。' },
+    'illusionary': { name: '【幻影】', desc: '偽の最終ダメージを表示する。' }
   },
   rules: {
     'groupA': '同数',

@@ -24,7 +24,7 @@ export const en_data = {
     'even': { name: '[Evens]', desc: 'Even number multipliers * 2.5' },
     'sixsmooth': { name: '[Smooth Six]', desc: 'If there is a 6 on the board, all stray dice (not in a hand) count as 15 base points.' },
     'order': { name: '[Tolerance]', desc: 'Trigger Absolute Order with just 7 odds or 7 evens.' },
-    'allin': { name: '[All-In]', desc: 'When your HP is exactly 1, final damage x2.5' },
+    'allin': { name: '[All-In]', desc: 'When your HP is exactly 1, final damage x2' },
     'brink': { name: '[On the Brink]', desc: 'If you attack with exactly 1 turn left, final damage x2.5.' },
     'straightfan': { name: '[Straight Fan]', desc: 'Any Group B (Straight) hand gets an extra +2.0 to its multiplier.' },
     'fourdeath': { name: '[Four of Death]', desc: 'If there are EXACTLY four 4s on the board, total multiplier x4.0.' },
@@ -74,7 +74,7 @@ export const en_data = {
     'lonely': { name: '[Lonely]', desc: 'Stray dice (not part of any hand) provide 0 base points.' },
     'cursedlock': { name: '[Cursed Lock]', desc: 'Forces a lock on the lowest value die each turn, and it cannot be unlocked.' },
     'fragile': { name: '[Fragile Dice]', desc: 'Locking is disabled. All 8 dice are rerolled every time.' },
-    'fatigue': { name: '[Heavy Fatigue]', desc: 'Your starting max rerolls are reduced by 1.' },
+    'fatigue': { name: '[Heavy Fatigue]', desc: 'You can only reroll once per turn (ignores relics).' },
     'destinychain': { name: '[Chains of Destiny]', desc: 'You can only reroll once per turn (ignores relics).' },
     'ultimatelock': { name: '[Ultimate Lockdown]', desc: 'The 4 dice in the center of the board can never be locked.' },
     'forcedshift': { name: '[Forced Shift]', desc: 'After rerolling, a randomly selected locked die changes its value.' },
@@ -83,7 +83,8 @@ export const en_data = {
     'isolated': { name: '[Isolated]', desc: 'All multipliers from Group A (Frequencies) are halved.' },
     'ordercollapse': { name: '[Order Collapse]', desc: 'Group B (Straights) multipliers are completely disabled.' },
     'banality': { name: '[Banality of Evil]', desc: 'Group D (Extreme) special multipliers are completely disabled.' },
-    'chaoslaw': { name: '[Law of Chaos]', desc: 'Group A (Frequencies) and Group B (Straights) multiplier tables are swapped.' }
+    'chaoslaw': { name: '[Law of Chaos]', desc: 'Group A (Frequencies) and Group B (Straights) multiplier tables are swapped.' },
+    'illusionary': { name: '[Illusionary]', desc: 'Displays a fake final damage number.' }
   },
   rules: {
     'groupA': 'Freqs',

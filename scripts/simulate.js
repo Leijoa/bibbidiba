@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { ENEMY_DB, RELIC_DB, SHACKLE_DB, RULE_DB, FUSION_RECIPES } from '../js/data.js';
+import { RELIC_DB, ENEMY_DB, getEnemy, FUSION_RECIPES, isElite, isBoss, SHACKLE_DB } from '../js/data.js';
 import { calculateEngineScore } from '../js/engine.js';
 
 // --- Mocks for Node.js environment ---
@@ -13,21 +13,6 @@ global.document = { createElement: () => ({}) };
 const NUM_SIMULATIONS = 100000;
 
 // --- Mock Logic ---
-function getEnemy(levelIndex) {
-    if (levelIndex < ENEMY_DB.length) {
-        return ENEMY_DB[levelIndex];
-    } else {
-        let infiniteLevel = levelIndex - ENEMY_DB.length + 1;
-        let m = ((infiniteLevel - 1) % 3) + 1;
-        let n = Math.floor((infiniteLevel - 1) / 3) + 1;
-
-        let baseHp = ENEMY_DB[ENEMY_DB.length - 1].hp;
-        let hp = Math.floor(baseHp * Math.pow(1.5, infiniteLevel));
-        if (hp > Number.MAX_SAFE_INTEGER) hp = Number.MAX_SAFE_INTEGER;
-        return { name: `Infinite ${infiniteLevel}`, hp: hp, turns: 3 };
-    }
-}
-
 function assignShackleForStage(levelIndex) {
     let shackleType = null;
     if (levelIndex < ENEMY_DB.length) {
@@ -101,7 +86,7 @@ async function run() {
 
 
             // Enemy Defeated - Drop Elite/Boss Relic
-            if ([2, 5, 8, 9].includes(stage.level)) {
+            if (isElite(stage.level) || isBoss(stage.level)) {
                 let drops = RELIC_DB.filter(r => !player.relics.includes(r.id) && r.rarity !== 5);
                 if (drops.length > 0) {
                     let drop = drops[Math.floor(Math.random() * drops.length)];
