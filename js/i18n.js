@@ -33,7 +33,16 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': '你未能擊敗敵人，旅程到此為止。',
       'btn_restart': '回到標題畫面',
-      'btn_infinite': '進入無限塔',
+      'btn_infinite': '進入無限塔',      'btn_rules': '📖 牌型表',      'empty_inventory': '背包空空如也',
+      'fusion_condition': '\n\n合成條件: {0} + {1}',
+      'fusion_text_short': '合成: {0} + {1}',
+      'fusion_limit_msg': '你必須選擇捨棄並<span class="text-red-400">分解</span>其中一件遺物（退回基礎素材），才能容納新的力量！',      'empty_inventory': '背包空空如也',
+      'fusion_condition': '\n\n合成条件: {0} + {1}',
+      'fusion_text_short': '合成: {0} + {1}',
+      'fusion_limit_msg': '你必须选择舍弃并<span class="text-red-400">分解</span>其中一件遗物（退回基础素材），才能容纳新的力量！',
+
+
+
       'rules_title': '📖 全牌型倍率表',
       'tab_hands': '牌型',
       'tab_relics': '遺物',
@@ -69,7 +78,8 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': '你未能击败敌人，旅程到此为止。',
       'btn_restart': '回到标题画面',
-      'btn_infinite': '进入无限塔',
+      'btn_infinite': '进入无限塔',      'btn_rules': '📖 牌型表',
+
       'rules_title': '📖 全牌型倍率表',
       'tab_hands': '牌型',
       'tab_relics': '遗物',
@@ -105,7 +115,12 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': 'You failed to defeat the enemy. Your journey ends here.',
       'btn_restart': 'Back to Title',
-      'btn_infinite': 'Enter Infinite Tower',
+      'btn_infinite': 'Enter Infinite Tower',      'btn_rules': '📖 Hands',      'empty_inventory': 'Inventory is empty',
+      'fusion_condition': '\n\nFusion Req: {0} + {1}',
+      'fusion_text_short': 'Fusion: {0} + {1}',
+      'fusion_limit_msg': 'You must choose to discard and <span class="text-red-400">dismantle</span> one of your relics (returning base materials) to make room for new power!',
+
+
       'rules_title': '📖 Hands Multipliers',
       'tab_hands': 'Hands',
       'tab_relics': 'Relics',
@@ -141,7 +156,12 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': '敵を倒せませんでした。旅はここで終わります。',
       'btn_restart': 'タイトルへ戻る',
-      'btn_infinite': '無限の塔へ',
+      'btn_infinite': '無限の塔へ',      'btn_rules': '📖 役一覧',      'empty_inventory': 'バッグは空っぽです',
+      'fusion_condition': '\n\n合成条件: {0} + {1}',
+      'fusion_text_short': '合成: {0} + {1}',
+      'fusion_limit_msg': '新しい力を得るには、遺物を1つ捨てて<span class="text-red-400">分解</span>（基礎素材に戻す）する必要があります！',
+
+
       'rules_title': '📖 役の倍率表',
       'tab_hands': '役',
       'tab_relics': '遺物',
