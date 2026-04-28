@@ -215,5 +215,12 @@ export const en_data = {
     'history_dmg_label': 'Highest Dmg',
     'history_combo_label': 'Best Hand',
     'history_relics_label': 'Final Relics',
+    'history_personal_best': 'Personal Best Records',
+    'history_highest_dmg_label': 'Highest Damage',
+    'history_highest_dmg_combo_label': 'Highest Dmg Combo',
+    'history_highest_dmg_relics_label': 'Highest Dmg Relics',
+    'history_highest_multi_label': 'Highest Multiplier',
+    'history_highest_multi_combo_label': 'Highest Multi Combo',
+    'history_highest_infinite_label': 'Highest Infinite Level',
   }
 };
