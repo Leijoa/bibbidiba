@@ -505,7 +505,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
                 }
                 
                 setTimeout(() => {
-                    UI.showToast(i18n.t('messages.toast_shackle_found', sDef.name, sDef.desc, extraMsg));
+                    UI.showToast(i18n.t('messages.toast_shackle_found', (i18n.t(`shackles.${sDef.id}.name`) || sDef.name), (i18n.t(`shackles.${sDef.id}.desc`) || sDef.desc), extraMsg));
                 }, 500);
             }
         }
@@ -1008,7 +1008,7 @@ function checkRelicFusion() {
                 unlockCollectionItem('relic', fid);
 
                 let relicDef = RELIC_DB.find(x => x.id === fid);
-                UI.showToast(i18n.t('messages.toast_fusion_res', RELIC_DB.find(x=>x.id===rec.mat1).name, RELIC_DB.find(x=>x.id===rec.mat2).name, relicDef.name));
+                UI.showToast(i18n.t('messages.toast_fusion_res', (i18n.t(`relics.${rec.mat1}.name`) || RELIC_DB.find(x=>x.id===rec.mat1).name), (i18n.t(`relics.${rec.mat2}.name`) || RELIC_DB.find(x=>x.id===rec.mat2).name), (i18n.t(`relics.${relicDef.id}.name`) || relicDef.name)));
 
                 fusedAny = true;
                 keepChecking = true;
