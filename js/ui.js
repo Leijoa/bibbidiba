@@ -32,7 +32,6 @@ export const el = {
     btnNewGame: document.getElementById('btn-new-game'),
     btnHistory: document.getElementById('btn-history'),
     historyModal: document.getElementById('history-modal'),
-    personalBestsContainer: document.getElementById('personal-bests-container'),
     historyContent: document.getElementById('history-content'),
     btnCloseHistory: document.getElementById('btn-close-history'),
     endStats: document.getElementById('end-stats'),
@@ -541,7 +540,7 @@ export function renderShopItems(shopItems, player) {
                     <div class="flex justify-between items-start">
                         <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
                         <div class="flex flex-col items-end gap-1">
-                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${r.rarity}`) || style.label}</span>
                             ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ 可融合</span>` : ''}
                         </div>
                     </div>
@@ -549,7 +548,7 @@ export function renderShopItems(shopItems, player) {
                 <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${rDesc}</p>
             </div>
             <button onclick="window.buyItem(${idx})" class="w-full font-black py-2.5 rounded-lg transition-all relative z-10 text-sm md:text-base ${btnClass}">
-                ✅ 選擇
+                ${i18n.t('shop_select')}
             </button>
         </div>`;
     }).join('');
@@ -585,7 +584,7 @@ export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
             <div>
                 <div class="flex justify-between items-start mb-2">
                     <h3 class="text-base md:text-lg font-black ${style.color}">${relic.name}</h3>
-                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${relic.rarity}`) || style.label}</span>
                 </div>
                 <p class="text-xs md:text-sm text-slate-300 font-bold mb-3">${relic.desc}</p>
                 ${materialsHtml}
@@ -622,65 +621,13 @@ export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFu
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
         el.shopRerollBtn.disabled = false;
     } else {
-        el.shopRerollBtn.innerHTML = `🚫 已刷新過`;
+        el.shopRerollBtn.innerHTML = i18n.t('shop_rerolled');
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 text-slate-400 font-black py-3 rounded-xl cursor-not-allowed text-base md:text-lg border-b-4 border-slate-900";
         el.shopRerollBtn.disabled = true;
     }
 }
 
 export function renderHistoryModal(records) {
-    // Render Personal Bests
-    let meta = window.getMetaData ? window.getMetaData() : {};
-    if (el.personalBestsContainer) {
-        let bestDamage = meta.highestDamage || 0;
-        let bestDamageCombo = meta.highestDamageCombo || i18n.t('messages.none');
-        let bestMulti = meta.highestMultiplier || 0;
-        let bestMultiCombo = meta.highestMultiplierCombo || i18n.t('messages.none');
-        let bestInfinite = meta.highestInfiniteLevel || 0;
-
-        let relicHtml = (meta.highestDamageRelics && meta.highestDamageRelics.length > 0) ? meta.highestDamageRelics.map(id => {
-            let relicDef = RELIC_DB.find(x => x.id === id);
-            if (!relicDef) return '';
-            let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || relicDef.name);
-            return `<span class="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300 mr-1 mb-1 inline-block">${rName}</span>`;
-        }).join('') : '<span class="text-slate-500 text-[10px]">' + i18n.t('messages.none') + '</span>';
-
-        el.personalBestsContainer.innerHTML = `
-        <div class="bg-slate-900 border-2 border-amber-500/50 p-3 rounded-lg flex flex-col gap-2 relative overflow-hidden shadow-[0_0_15px_rgba(245,158,11,0.15)] mb-2">
-            <div class="flex items-center gap-2 border-b border-amber-500/30 pb-1 mb-1">
-                <span class="text-lg">🏆</span>
-                <span class="font-black text-amber-400 text-sm md:text-base">${i18n.t("history_personal_best") || "個人最高紀錄"}</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="flex flex-col gap-1">
-                    <div class="text-xs md:text-sm text-slate-300">
-                        <span class="text-slate-500">${i18n.t("history_highest_dmg_label") || "最高傷害"}:</span> <span class="font-black text-white">${Number(bestDamage).toLocaleString()}</span>
-                    </div>
-                    <div class="text-xs md:text-sm text-slate-300">
-                        <span class="text-slate-500">${i18n.t("history_highest_dmg_combo_label") || "最高傷害牌型"}:</span> <span class="font-bold text-blue-300">${bestDamageCombo}</span>
-                    </div>
-                    <div class="mt-1">
-                        <div class="text-[10px] text-slate-500 mb-0.5">${i18n.t("history_highest_dmg_relics_label") || "最高傷害持有遺物"}:</div>
-                        <div class="flex flex-wrap">${relicHtml}</div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-1">
-                    <div class="text-xs md:text-sm text-slate-300">
-                        <span class="text-slate-500">${i18n.t("history_highest_multi_label") || "最高倍率"}:</span> <span class="font-black text-white">x${Number(bestMulti).toFixed(2)}</span>
-                    </div>
-                    <div class="text-xs md:text-sm text-slate-300">
-                        <span class="text-slate-500">${i18n.t("history_highest_multi_combo_label") || "最高倍率組合"}:</span> <span class="font-bold text-purple-300">${bestMultiCombo}</span>
-                    </div>
-                    <div class="mt-2 text-xs md:text-sm text-slate-300 pt-2 border-t border-slate-700/50">
-                        <span class="text-slate-500">${i18n.t("history_highest_infinite_label") || "最高無限塔層數"}:</span> <span class="font-black text-emerald-400">${bestInfinite}</span>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    }
-
     if (!records || records.length === 0) {
         el.historyContent.innerHTML = `<div class="text-center text-slate-500 py-6 font-bold">${i18n.t('messages.history_empty')}</div>`;
         return;
@@ -806,7 +753,7 @@ export function renderCollectionModal(tab) {
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-1">
                         <h3 class="text-sm md:text-base font-black ${style.color}">${rName} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
-                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${r.rarity}`) || style.label}</span>
                     </div>
                     <p class="text-xs md:text-sm text-slate-300 font-bold">${rDesc}</p>
                     ${fusionText}

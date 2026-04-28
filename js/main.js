@@ -26,24 +26,11 @@ let metaData = {
         rerolls: 0,    // 等級 0~2 (+1 初始重骰)
         startRelic: 0, // 等級 0~1 (+1 初始遺物)
         finalDamage: 0 // 等級 0~5 (+10% 最終傷害)
-    },
-    highestDamage: 0,
-    highestDamageCombo: '',
-    highestDamageRelics: [],
-    highestInfiniteLevel: 0,
-    highestMultiplier: 0,
-    highestMultiplierCombo: ''
+    }
 };
 
 function loadMetaData() {
     metaData = secureParseStorage(META_KEY, metaData, (data) => typeof data.souls === 'number');
-    // 確保舊存檔也有新欄位
-    if (metaData.highestDamage === undefined) metaData.highestDamage = 0;
-    if (metaData.highestDamageCombo === undefined) metaData.highestDamageCombo = '';
-    if (metaData.highestDamageRelics === undefined) metaData.highestDamageRelics = [];
-    if (metaData.highestInfiniteLevel === undefined) metaData.highestInfiniteLevel = 0;
-    if (metaData.highestMultiplier === undefined) metaData.highestMultiplier = 0;
-    if (metaData.highestMultiplierCombo === undefined) metaData.highestMultiplierCombo = '';
 }
 function saveMetaData() {
     localStorage.setItem(META_KEY, JSON.stringify(metaData));
@@ -814,17 +801,6 @@ window.fireAttack = function() {
     UI.renderControls(battle);
     Audio.playAttackSound();
 
-    if (battle.scoreResult && battle.scoreResult.finalMultiplier > metaData.highestMultiplier) {
-        metaData.highestMultiplier = battle.scoreResult.finalMultiplier;
-        let combos = [];
-        if (battle.scoreResult.tagA.name !== '無') { combos.push(battle.scoreResult.tagA.name); }
-        if (battle.scoreResult.tagB.name !== '無') { combos.push(battle.scoreResult.tagB.name); }
-        if (battle.scoreResult.tagC.name !== '無') { combos.push(battle.scoreResult.tagC.name); }
-        if (battle.scoreResult.tagD.name !== '無') { combos.push(battle.scoreResult.tagD.name); }
-        metaData.highestMultiplierCombo = combos.join(' + ') || '無';
-        saveMetaData();
-    }
-
     let finalDamage = Math.floor(battle.scoreResult.finalScore);
 
     if (player.relics.includes('dragonslayer') && (isElite(stage.level) || isBoss(stage.level))) {
@@ -903,13 +879,6 @@ window.fireAttack = function() {
         if (battle.scoreResult.tagC.name !== '無') { combos.push(battle.scoreResult.tagC.name); }
         if (battle.scoreResult.tagD.name !== '無') { combos.push(battle.scoreResult.tagD.name); }
         player.highestDamageCombo = combos.join(' + ') || '無';
-
-        if (dmg > metaData.highestDamage) {
-            metaData.highestDamage = dmg;
-            metaData.highestDamageCombo = player.highestDamageCombo;
-            metaData.highestDamageRelics = [...player.relics];
-            saveMetaData();
-        }
     }
     
     // Always unlock hands regardless of highest damage
@@ -1286,16 +1255,7 @@ window.buyItem = function(idx) {
     nextStage();
 };
 
-function nextStage() {
-    if (player.isInfiniteMode) {
-        let currentInfiniteLevel = (stage.level + 1) - ENEMY_DB.length + 1;
-        if (currentInfiniteLevel > metaData.highestInfiniteLevel) {
-            metaData.highestInfiniteLevel = currentInfiniteLevel;
-            saveMetaData();
-        }
-    }
-    loadStage(stage.level + 1);
-}
+function nextStage() { loadStage(stage.level + 1); }
 
 function recordHistory(win) {
     if (stage.shackleTimer) {
@@ -1303,17 +1263,10 @@ function recordHistory(win) {
         stage.shackleTimer = null;
     }
     let history = secureParseStorage(HISTORY_KEY, [], (data) => Array.isArray(data));
-
-    let currentInfiniteLevel = player.isInfiniteMode ? (stage.level - ENEMY_DB.length + 1) : 0;
-    if (currentInfiniteLevel > metaData.highestInfiniteLevel) {
-        metaData.highestInfiniteLevel = currentInfiniteLevel;
-        saveMetaData();
-    }
-
     let currentRecord = {
         win: win,
         isInfiniteMode: player.isInfiniteMode,
-        infiniteLevel: currentInfiniteLevel,
+        infiniteLevel: player.isInfiniteMode ? (stage.level - ENEMY_DB.length + 1) : 0,
         stageName: getEnemy(stage.level).name,
         date: new Date().toISOString(),
         highestDamage: player.highestDamage || 0,
