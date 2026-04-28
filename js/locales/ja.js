@@ -215,5 +215,12 @@ export const ja_data = {
     'history_dmg_label': '最高ダメージ',
     'history_combo_label': '最高役',
     'history_relics_label': '最終所持遺物',
+    'history_personal_best': '自己ベスト',
+    'history_highest_dmg_label': '最高ダメージ',
+    'history_highest_dmg_combo_label': '最高ダメージ役',
+    'history_highest_dmg_relics_label': '最高ダメージ時の遺物',
+    'history_highest_multi_label': '最高倍率',
+    'history_highest_multi_combo_label': '最高倍率の役',
+    'history_highest_infinite_label': '最高無限到達階',
   }
 };

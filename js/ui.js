@@ -32,6 +32,7 @@ export const el = {
     btnNewGame: document.getElementById('btn-new-game'),
     btnHistory: document.getElementById('btn-history'),
     historyModal: document.getElementById('history-modal'),
+    personalBestsContainer: document.getElementById('personal-bests-container'),
     historyContent: document.getElementById('history-content'),
     btnCloseHistory: document.getElementById('btn-close-history'),
     endStats: document.getElementById('end-stats'),
@@ -628,6 +629,58 @@ export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFu
 }
 
 export function renderHistoryModal(records) {
+    // Render Personal Bests
+    let meta = window.getMetaData ? window.getMetaData() : {};
+    if (el.personalBestsContainer) {
+        let bestDamage = meta.highestDamage || 0;
+        let bestDamageCombo = meta.highestDamageCombo || i18n.t('messages.none');
+        let bestMulti = meta.highestMultiplier || 0;
+        let bestMultiCombo = meta.highestMultiplierCombo || i18n.t('messages.none');
+        let bestInfinite = meta.highestInfiniteLevel || 0;
+
+        let relicHtml = (meta.highestDamageRelics && meta.highestDamageRelics.length > 0) ? meta.highestDamageRelics.map(id => {
+            let relicDef = RELIC_DB.find(x => x.id === id);
+            if (!relicDef) return '';
+            let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || relicDef.name);
+            return `<span class="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300 mr-1 mb-1 inline-block">${rName}</span>`;
+        }).join('') : '<span class="text-slate-500 text-[10px]">' + i18n.t('messages.none') + '</span>';
+
+        el.personalBestsContainer.innerHTML = `
+        <div class="bg-slate-900 border-2 border-amber-500/50 p-3 rounded-lg flex flex-col gap-2 relative overflow-hidden shadow-[0_0_15px_rgba(245,158,11,0.15)] mb-2">
+            <div class="flex items-center gap-2 border-b border-amber-500/30 pb-1 mb-1">
+                <span class="text-lg">🏆</span>
+                <span class="font-black text-amber-400 text-sm md:text-base">${i18n.t("history_personal_best") || "個人最高紀錄"}</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                    <div class="text-xs md:text-sm text-slate-300">
+                        <span class="text-slate-500">${i18n.t("history_highest_dmg_label") || "最高傷害"}:</span> <span class="font-black text-white">${Number(bestDamage).toLocaleString()}</span>
+                    </div>
+                    <div class="text-xs md:text-sm text-slate-300">
+                        <span class="text-slate-500">${i18n.t("history_highest_dmg_combo_label") || "最高傷害牌型"}:</span> <span class="font-bold text-blue-300">${bestDamageCombo}</span>
+                    </div>
+                    <div class="mt-1">
+                        <div class="text-[10px] text-slate-500 mb-0.5">${i18n.t("history_highest_dmg_relics_label") || "最高傷害持有遺物"}:</div>
+                        <div class="flex flex-wrap">${relicHtml}</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <div class="text-xs md:text-sm text-slate-300">
+                        <span class="text-slate-500">${i18n.t("history_highest_multi_label") || "最高倍率"}:</span> <span class="font-black text-white">x${Number(bestMulti).toFixed(2)}</span>
+                    </div>
+                    <div class="text-xs md:text-sm text-slate-300">
+                        <span class="text-slate-500">${i18n.t("history_highest_multi_combo_label") || "最高倍率組合"}:</span> <span class="font-bold text-purple-300">${bestMultiCombo}</span>
+                    </div>
+                    <div class="mt-2 text-xs md:text-sm text-slate-300 pt-2 border-t border-slate-700/50">
+                        <span class="text-slate-500">${i18n.t("history_highest_infinite_label") || "最高無限塔層數"}:</span> <span class="font-black text-emerald-400">${bestInfinite}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
     if (!records || records.length === 0) {
         el.historyContent.innerHTML = `<div class="text-center text-slate-500 py-6 font-bold">${i18n.t('messages.history_empty')}</div>`;
         return;

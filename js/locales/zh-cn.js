@@ -215,5 +215,12 @@ export const zh_cn_data = {
     'history_dmg_label': '最高伤害',
     'history_combo_label': '最佳牌型',
     'history_relics_label': '最终持有遗物',
+    'history_personal_best': '个人最高纪录',
+    'history_highest_dmg_label': '最高伤害',
+    'history_highest_dmg_combo_label': '最高伤害牌型',
+    'history_highest_dmg_relics_label': '最高伤害持有遗物',
+    'history_highest_multi_label': '最高倍率',
+    'history_highest_multi_combo_label': '最高倍率组合',
+    'history_highest_infinite_label': '最高无限塔层数',
   }
 };
