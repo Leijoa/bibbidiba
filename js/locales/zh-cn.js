@@ -34,7 +34,15 @@ export const zh_cn_data = {
     'fusion_pillar': { name: '【中流砥柱】', desc: '4, 5 的点数倍率为 3x。每击破一只敌人，此倍率永久增加 +0.2x。' },
     'fusion_nebula': { name: '【微缩星云】', desc: '1, 2, 3 的倍率随「目前无标签骰子数」成长（每有一颗散牌，倍率 +1.0x）。' },
     'fusion_samsara': { name: '【六道轮回】', desc: '散牌点数基础为 20。盘面上每多一颗 6，此数值随关卡层数(E)额外增加（E x 2）。' },
-    'fusion_fortune': { name: '【五福中天】', desc: '4, 5 的倍率随「5 的出现次数」累计成长。每出现过一次 5，倍率 +0.05x。' }
+    'fusion_fortune': { name: '【五福中天】', desc: '4, 5 的倍率随「5 的出现次数」累计成长。每出现过一次 5，倍率 +0.05x。' },
+    'refresh': { name: '【刷新幣】', desc: '初始重骰次數 +2' },
+    'balance': { name: '【動態平衡】', desc: '每回合的「第一次重骰」不消耗重骰次數。' },
+    'pansy': { name: '【雷爪狮的祝福】', desc: '场上有 1 时总伤害 x3' },
+    'pongo': { name: '【苹果的祝福】', desc: '场上有 8 时总伤害 x3' },
+    'firstaid': { name: '【急救包】', desc: '每擊敗 3 個敵人時，若 HP 不滿，恢復 1 點 HP。' },
+    'royalflush': { name: '【同花順】', desc: '若本次攻擊「同時」觸發了 A 區（同數）與 B 區（順子），總倍率 x2.0。' },
+    'berserker': { name: '【越戰越勇】', desc: '每次因回合耗盡或反傷扣除 1 HP 時，永久增加 1 次初始重骰次數。' },
+    'dragonslayer': { name: '【屠龍者】', desc: '面對「Boss」或「菁英怪」時，總傷害 x1.5。' }
   },
   consumables: {
     'cons_power': { name: '【力量药剂】', desc: '下场战斗中，总伤害 x1.5 倍（单次消耗）' },
@@ -215,5 +223,13 @@ export const zh_cn_data = {
     'history_dmg_label': '最高伤害',
     'history_combo_label': '最佳牌型',
     'history_relics_label': '最终持有遗物',
+    'rarity_1': '普通',
+    'rarity_2': '稀有',
+    'rarity_3': '史诗',
+    'rarity_4': '传说',
+    'rarity_5': '神话',
+    'shop_select': '✅ 选择',
+    'shop_rerolled': '🚫 已刷新过',
+    'shop_leave': '离开商店前往下一关 👉'
   }
 };

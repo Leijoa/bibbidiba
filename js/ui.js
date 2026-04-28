@@ -540,7 +540,7 @@ export function renderShopItems(shopItems, player) {
                     <div class="flex justify-between items-start">
                         <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
                         <div class="flex flex-col items-end gap-1">
-                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${r.rarity}`) || style.label}</span>
                             ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ 可融合</span>` : ''}
                         </div>
                     </div>
@@ -548,7 +548,7 @@ export function renderShopItems(shopItems, player) {
                 <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${rDesc}</p>
             </div>
             <button onclick="window.buyItem(${idx})" class="w-full font-black py-2.5 rounded-lg transition-all relative z-10 text-sm md:text-base ${btnClass}">
-                ✅ 選擇
+                ${i18n.t('shop_select')}
             </button>
         </div>`;
     }).join('');
@@ -584,7 +584,7 @@ export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
             <div>
                 <div class="flex justify-between items-start mb-2">
                     <h3 class="text-base md:text-lg font-black ${style.color}">${relic.name}</h3>
-                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${relic.rarity}`) || style.label}</span>
                 </div>
                 <p class="text-xs md:text-sm text-slate-300 font-bold mb-3">${relic.desc}</p>
                 ${materialsHtml}
@@ -621,7 +621,7 @@ export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFu
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
         el.shopRerollBtn.disabled = false;
     } else {
-        el.shopRerollBtn.innerHTML = `🚫 已刷新過`;
+        el.shopRerollBtn.innerHTML = i18n.t('shop_rerolled');
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-slate-700 text-slate-400 font-black py-3 rounded-xl cursor-not-allowed text-base md:text-lg border-b-4 border-slate-900";
         el.shopRerollBtn.disabled = true;
     }
@@ -753,7 +753,7 @@ export function renderCollectionModal(tab) {
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-1">
                         <h3 class="text-sm md:text-base font-black ${style.color}">${rName} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
-                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${style.label}</span>
+                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${r.rarity}`) || style.label}</span>
                     </div>
                     <p class="text-xs md:text-sm text-slate-300 font-bold">${rDesc}</p>
                     ${fusionText}
