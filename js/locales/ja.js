@@ -34,7 +34,15 @@ export const ja_data = {
     'fusion_pillar': { name: '【中流の柱】', desc: '4, 5の倍率が3x。敵を倒す毎に、永久に倍率 +0.2x' },
     'fusion_nebula': { name: '【微小星雲】', desc: '1, 2, 3の倍率が「役無しダイス」の数で成長（1つにつき+1.0x）' },
     'fusion_samsara': { name: '【六道輪廻】', desc: '役無しの基礎点20。6がある毎に階層(E)×2追加' },
-    'fusion_fortune': { name: '【五福中天】', desc: '4, 5の倍率が「5が出た回数」で永続成長（1回につき+0.05x）' }
+    'fusion_fortune': { name: '【五福中天】', desc: '4, 5の倍率が「5が出た回数」で永続成長（1回につき+0.05x）' },
+    'refresh': { name: '【刷新幣】', desc: '初始重骰次數 +2' },
+    'balance': { name: '【動態平衡】', desc: '每回合的「第一次重骰」不消耗重骰次數。' },
+    'pansy': { name: '【雷爪獅の祝福】', desc: '場に 1 がある時、総ダメージ x3' },
+    'pongo': { name: '【リンゴの祝福】', desc: '場に 8 がある時、総ダメージ x3' },
+    'firstaid': { name: '【急救包】', desc: '每擊敗 3 個敵人時，若 HP 不滿，恢復 1 點 HP。' },
+    'royalflush': { name: '【同花順】', desc: '若本次攻擊「同時」觸發了 A 區（同數）與 B 區（順子），總倍率 x2.0。' },
+    'berserker': { name: '【越戰越勇】', desc: '每次因回合耗盡或反傷扣除 1 HP 時，永久增加 1 次初始重骰次數。' },
+    'dragonslayer': { name: '【屠龍者】', desc: '面對「Boss」或「菁英怪」時，總傷害 x1.5。' }
   },
   consumables: {
     'cons_power': { name: '【力の秘薬】', desc: '次の戦闘で最終ダメージ x1.5倍（消耗品）' },
@@ -215,12 +223,13 @@ export const ja_data = {
     'history_dmg_label': '最高ダメージ',
     'history_combo_label': '最高役',
     'history_relics_label': '最終所持遺物',
-    'history_personal_best': '自己ベスト',
-    'history_highest_dmg_label': '最高ダメージ',
-    'history_highest_dmg_combo_label': '最高ダメージ役',
-    'history_highest_dmg_relics_label': '最高ダメージ時の遺物',
-    'history_highest_multi_label': '最高倍率',
-    'history_highest_multi_combo_label': '最高倍率の役',
-    'history_highest_infinite_label': '最高無限到達階',
+    'rarity_1': 'ノーマル',
+    'rarity_2': 'レア',
+    'rarity_3': 'エピック',
+    'rarity_4': 'レジェンダリー',
+    'rarity_5': 'ミシック',
+    'shop_select': '✅ 選択',
+    'shop_rerolled': '🚫 更新済み',
+    'shop_leave': '店を出て次のステージへ 👉'
   }
 };

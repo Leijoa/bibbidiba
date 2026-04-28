@@ -34,7 +34,15 @@ export const en_data = {
     'fusion_pillar': { name: '[Mainstay Pillar]', desc: '4 and 5 multiplier is 3x. Permanently gain +0.2x for each enemy defeated.' },
     'fusion_nebula': { name: '[Micro Nebula]', desc: 'Multiplier for 1, 2, 3 increases based on stray dice (+1.0x per stray).' },
     'fusion_samsara': { name: '[Six Paths]', desc: 'Stray dice base points become 20. If 6 is present, this scales by (Stage x 2).' },
-    'fusion_fortune': { name: '[Fortune Zenith]', desc: '4 and 5 multiplier grows permanently by +0.05x every time a 5 appears on board.' }
+    'fusion_fortune': { name: '[Fortune Zenith]', desc: '4 and 5 multiplier grows permanently by +0.05x every time a 5 appears on board.' },
+    'refresh': { name: '【刷新幣】', desc: '初始重骰次數 +2' },
+    'balance': { name: '【動態平衡】', desc: '每回合的「第一次重骰」不消耗重骰次數。' },
+    'pansy': { name: '【LeijoaLion\'s Blessing】', desc: 'Total damage x3 when 1 is on the board.' },
+    'pongo': { name: '【Apple\'s Blessing】', desc: 'Total damage x3 when 8 is on the board.' },
+    'firstaid': { name: '【急救包】', desc: '每擊敗 3 個敵人時，若 HP 不滿，恢復 1 點 HP。' },
+    'royalflush': { name: '【同花順】', desc: '若本次攻擊「同時」觸發了 A 區（同數）與 B 區（順子），總倍率 x2.0。' },
+    'berserker': { name: '【越戰越勇】', desc: '每次因回合耗盡或反傷扣除 1 HP 時，永久增加 1 次初始重骰次數。' },
+    'dragonslayer': { name: '【屠龍者】', desc: '面對「Boss」或「菁英怪」時，總傷害 x1.5。' }
   },
   consumables: {
     'cons_power': { name: '[Elixir of Power]', desc: 'Total damage x1.5 in the next battle (consumed upon use)' },
@@ -215,12 +223,13 @@ export const en_data = {
     'history_dmg_label': 'Highest Dmg',
     'history_combo_label': 'Best Hand',
     'history_relics_label': 'Final Relics',
-    'history_personal_best': 'Personal Best Records',
-    'history_highest_dmg_label': 'Highest Damage',
-    'history_highest_dmg_combo_label': 'Highest Dmg Combo',
-    'history_highest_dmg_relics_label': 'Highest Dmg Relics',
-    'history_highest_multi_label': 'Highest Multiplier',
-    'history_highest_multi_combo_label': 'Highest Multi Combo',
-    'history_highest_infinite_label': 'Highest Infinite Level',
+    'rarity_1': 'Common',
+    'rarity_2': 'Rare',
+    'rarity_3': 'Epic',
+    'rarity_4': 'Legendary',
+    'rarity_5': 'Mythic',
+    'shop_select': '✅ Select',
+    'shop_rerolled': '🚫 Already Rerolled',
+    'shop_leave': 'Leave Shop & Next Stage 👉'
   }
 };
