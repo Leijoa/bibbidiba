@@ -79,7 +79,7 @@ if (UI.el.devRelicConfirm) {
     UI.el.devRelicConfirm.onclick = () => {
         let select = UI.el.devRelicSelect;
         if (!select || !select.value) {
-            UI.showToast("請選擇一個遺物！");
+            UI.showToast(i18n.t('messages.toast_need_relic'));
             return;
         }
         let rId = select.value;
@@ -174,10 +174,10 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
             player.hp--;
             if (player.relics.includes('berserker')) {
                 player.berserkerBonus = (player.berserkerBonus || 0) + 1;
-                UI.showToast("💢 【越戰越勇】發動：永久增加 1 次重骰次數！");
+                UI.showToast(i18n.t('messages.toast_berserker'));
             }
             UI.updateHeaderUI(player, stage);
-            UI.showToast(`🛡️ 【反傷裝甲】發動：傷害過低，受到 1 點反傷！`);
+            UI.showToast(i18n.t('messages.toast_thornarmor'));
             if (player.hp <= 0) playerDied = true;
         }
     }
@@ -187,11 +187,11 @@ function applyCombatShackles(dmg, actualDamage, isEnemyDefeated) {
         if (recoil > 0) {
             player.hp -= recoil;
             UI.updateHeaderUI(player, stage);
-            UI.showToast(`💥 【同歸於盡】發動：受到 ${recoil} 點反傷！`);
+            UI.showToast(i18n.t('messages.toast_mutual_destruct', recoil));
             if (player.hp <= 0) {
                 player.hp = 1;
                 UI.updateHeaderUI(player, stage);
-                UI.showToast(`💥 【同歸於盡】發動：血量只剩 1，免於致死反彈！`);
+                UI.showToast(i18n.t('messages.toast_mutual_destruct_survive'));
             }
         }
     }
@@ -366,7 +366,7 @@ function initTitleScreen() {
     if (btnSound) {
         btnSound.onclick = () => {
             let enabled = Audio.toggleSound();
-            btnSound.innerText = enabled ? '🔈 音效: 開' : '🔈 音效: 關';
+            btnSound.innerText = enabled ? i18n.t('ui.sound_on') : i18n.t('ui.sound_off');
         };
     }
 }
@@ -505,7 +505,7 @@ function loadStage(levelIndex, isLoad = false, parsedData = null) {
                 }
                 
                 setTimeout(() => {
-                    UI.showToast(`⚠️ 發現枷鎖！\n${sDef.name}: ${sDef.desc}${extraMsg}`);
+                    UI.showToast(i18n.t('messages.toast_shackle_found', (i18n.t(`shackles.${sDef.id}.name`) || sDef.name), (i18n.t(`shackles.${sDef.id}.desc`) || sDef.desc), extraMsg));
                 }, 500);
             }
         }
@@ -550,7 +550,7 @@ function startTurn() {
         if (stage.enemyHp < stage.enemyMaxHp) {
             stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
             UI.updateEnemyUI(stage);
-            UI.showToast(`🍖 【貪吃】發動：敵人恢復 ${healAmount} HP！`);
+            UI.showToast(i18n.t('messages.toast_gluttony', healAmount));
         }
     }
     
@@ -585,7 +585,7 @@ function renderAll() {
 window.toggleLock = function(idx) {
     if (battle.state === 'WAIT_ACTION' && !activeHighlight) {
         if (stage.activeShackle === 'fragile') {
-            return UI.showToast("⚠️ 【易碎骰子】無法鎖定骰子！");
+            return UI.showToast(i18n.t('messages.toast_fragile'));
         }
         
         if (stage.activeShackle === 'cursedlock' && stage.shackleMeta && battle.dice[idx].id === stage.shackleMeta.cursedId) {
@@ -595,7 +595,7 @@ window.toggleLock = function(idx) {
                 void diceEl.offsetWidth;
                 diceEl.classList.add('shake-hard');
             }
-            return UI.showToast("⛓️ 【詛咒之鎖】無法解鎖此骰子！");
+            return UI.showToast(i18n.t('messages.toast_cursedlock'));
         }
 
         if (stage.activeShackle === 'ultimatelock' && [2, 3, 4, 5].includes(idx)) {
@@ -605,7 +605,7 @@ window.toggleLock = function(idx) {
                 void diceEl.offsetWidth;
                 diceEl.classList.add('shake-hard');
             }
-            return UI.showToast("🔒 【終極封鎖】中間位置的骰子無法鎖定！");
+            return UI.showToast(i18n.t('messages.toast_ultimatelock'));
         }
         
         let willLock = !battle.dice[idx].locked;
@@ -619,7 +619,7 @@ window.toggleLock = function(idx) {
                     void diceEl.offsetWidth;
                     diceEl.classList.add('shake-hard');
                 }
-                return UI.showToast("🔒 【上限鎖死】最多只能鎖定 4 顆骰子！");
+                return UI.showToast(i18n.t('messages.toast_hardcap'));
             }
         }
         
@@ -632,7 +632,7 @@ window.toggleLock = function(idx) {
                     void diceEl.offsetWidth;
                     diceEl.classList.add('shake-hard');
                 }
-                return UI.showToast("🔒 【生鏽的鎖】最多只能鎖定 6 顆骰子！");
+                return UI.showToast(i18n.t('messages.toast_rusty'));
             }
         }
 
@@ -674,11 +674,11 @@ window.executeRoll = function(isInitial = false) {
                     freed++;
                 }
             });
-            if (freed > 0) UI.showToast(`😡 【叛逆】發動：${freed} 顆骰子掙脫鎖定！`);
+            if (freed > 0) UI.showToast(i18n.t('messages.toast_rebel', freed));
         }
         
         if (player.relics.includes('balance') && battle.rollsLeft === player.maxRolls && !battle.balanceUsedThisTurn) {
-            UI.showToast("⚖️ 【動態平衡】發動：首次重骰不消耗次數！");
+            UI.showToast(i18n.t('messages.toast_balance'));
             battle.balanceUsedThisTurn = true;
         } else {
             battle.rollsLeft--;
@@ -709,7 +709,7 @@ window.executeRoll = function(isInitial = false) {
                     let target = lockedDice[Math.floor(Math.random() * lockedDice.length)];
                     target.val = Math.floor(Math.random() * 8) + 1;
                     battle.dice.sort((a, b) => a.val - b.val);
-                    UI.showToast(`🌀 【強制轉換】發動：已鎖定骰子數值被改變！`);
+                    UI.showToast(i18n.t('messages.toast_forcedshift'));
                 }
             }
             
@@ -791,7 +791,7 @@ window.fireAttack = function() {
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
             battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
-            UI.showToast(`🖐️ 【手抖】發動：強制重骰了 1 顆未鎖定的骰子！`);
+            UI.showToast(i18n.t('messages.toast_tremor'));
         }
     }
     
@@ -805,7 +805,7 @@ window.fireAttack = function() {
 
     if (player.relics.includes('dragonslayer') && (isElite(stage.level) || isBoss(stage.level))) {
         finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * 1.5));
-        UI.showToast("🐉 【屠龍者】發動：對 Boss/菁英怪傷害 x1.5！");
+        UI.showToast(i18n.t('messages.toast_dragonslayer'));
     }
 
     // Meta-progression final damage buff
@@ -816,20 +816,20 @@ window.fireAttack = function() {
 
     if (stage.damageBuffMulti > 1.0) {
         finalDamage = Math.floor(Math.min(Number.MAX_SAFE_INTEGER, finalDamage * stage.damageBuffMulti));
-        UI.showToast(`💪 力量藥劑發動：總傷害 x${stage.damageBuffMulti}！`);
+        UI.showToast(i18n.t('messages.toast_power', stage.damageBuffMulti));
     }
 
     let dmg = finalDamage;
 
     if (stage.activeShackle === 'ironwall') {
         dmg = Math.floor(dmg * 0.8);
-        UI.showToast("🛡️ 【鐵壁】發動：最終傷害減少 20%！");
+        UI.showToast(i18n.t('messages.toast_ironwall'));
     }
 
     if (stage.activeShackle === 'absolutebarrier' && !stage.hasAttackedThisStage) {
         dmg = 0;
         stage.hasAttackedThisStage = true;
-        UI.showToast("🛡️ 【絕對屏障】發動：第一次攻擊無效化！");
+        UI.showToast(i18n.t('messages.toast_absolutebarrier'));
     } else {
         stage.hasAttackedThisStage = true;
     }
@@ -838,7 +838,7 @@ window.fireAttack = function() {
         let healAmount = dmg;
         dmg = 0;
         stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
-        UI.showToast(`👁️ 【深淵凝視】發動：傷害過低，轉為治療 Boss ${healAmount} HP！`);
+        UI.showToast(i18n.t('messages.toast_abyssgaze', healAmount));
     }
 
     let actualDamage = Math.min(dmg, stage.enemyHp);
@@ -849,7 +849,7 @@ window.fireAttack = function() {
         if (count2 > 0) {
             let healAmount = Math.floor(count2 * stage.enemyMaxHp * 0.03);
             stage.enemyHp = Math.min(stage.enemyMaxHp, stage.enemyHp + healAmount);
-            UI.showToast(`💉 【治癒之骰】發動：敵人恢復 ${healAmount} HP！`);
+            UI.showToast(i18n.t('messages.toast_healingdice', healAmount));
         }
     }
 
@@ -867,7 +867,7 @@ window.fireAttack = function() {
         if (hasLegendary) {
             player.hp -= 1;
             UI.updateHeaderUI(player, stage);
-            UI.showToast(`⚡ 【天譴】發動：觸發傳說牌型，強制扣除 1 HP！`);
+            UI.showToast(i18n.t('messages.toast_wrath'));
         }
     }
 
@@ -925,7 +925,7 @@ window.fireAttack = function() {
         // 統一依據當下的真實 HP 進行一次性判定
         if (player.hp <= 0) {
             // 根據 playerDied 來決定死因文字
-            let deathReason = playerDied ? "受到反傷，血量耗盡！" : "血量耗盡，旅程結束！";
+            let deathReason = playerDied ? i18n.t('messages.death_thorns') : i18n.t('messages.death_hp');
             playerTakesFatalDamage(deathReason);
 
             // 如果經過急救（破財消災）後 HP 仍然 <= 0，才中斷後續邏輯
@@ -946,20 +946,20 @@ window.fireAttack = function() {
                 player.hp--;
                 if (player.relics.includes('berserker')) {
                     player.berserkerBonus = (player.berserkerBonus || 0) + 1;
-                    UI.showToast("💢 【越戰越勇】發動：永久增加 1 次重骰次數！");
+                    UI.showToast(i18n.t('messages.toast_berserker'));
                 }
                 if (player.hp <= 0) {
-                    playerTakesFatalDamage("血量耗盡，旅程結束！");
+                    playerTakesFatalDamage(i18n.t('messages.death_hp'));
                     if (player.hp <= 0) return;
                     // IF we are here, playerTakesFatalDamage rescued the player (hp is now 1)
-                    UI.showToast(`⚠️ 未在回合內擊殺！\n破財消災發動，重新挑戰！`, () => {
+                    UI.showToast(i18n.t('messages.toast_timeout_wealth'), () => {
                         stage.turnsLeft = getEnemy(stage.level).turns;
                         if (stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
                         startTurn();
                     });
                 }
                 else {
-                    UI.showToast(`⚠️ 未在回合內擊殺！\n扣除 1 HP，重新挑戰！`, () => {
+                    UI.showToast(i18n.t('messages.toast_timeout_retry'), () => {
                         stage.turnsLeft = getEnemy(stage.level).turns;
                         if (stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
                         startTurn();
@@ -1008,7 +1008,7 @@ function checkRelicFusion() {
                 unlockCollectionItem('relic', fid);
 
                 let relicDef = RELIC_DB.find(x => x.id === fid);
-                UI.showToast(`✨ 遺物共鳴！\n【${RELIC_DB.find(x=>x.id===rec.mat1).name}】與【${RELIC_DB.find(x=>x.id===rec.mat2).name}】\n融合成了 ${relicDef.name}！`);
+                UI.showToast(i18n.t('messages.toast_fusion_res', (i18n.t(`relics.${rec.mat1}.name`) || RELIC_DB.find(x=>x.id===rec.mat1).name), (i18n.t(`relics.${rec.mat2}.name`) || RELIC_DB.find(x=>x.id===rec.mat2).name), (i18n.t(`relics.${relicDef.id}.name`) || relicDef.name)));
 
                 fusedAny = true;
                 keepChecking = true;
@@ -1035,7 +1035,7 @@ window.triggerFusionReplace = function(currentFusions, newFusionId, mat1, mat2) 
         if (discardedId === newFusionId) {
             // Discarding the new one, return its materials to inventory
             player.relics.push(mat1, mat2);
-            UI.showToast(`已捨棄並分解【${discardedName}】，退回基礎素材。`);
+            UI.showToast(i18n.t('messages.toast_dismantle', discardedName));
         } else {
             // Discarding an old one. Return its materials.
             let oldRec = FUSION_RECIPES[discardedId];
@@ -1051,7 +1051,7 @@ window.triggerFusionReplace = function(currentFusions, newFusionId, mat1, mat2) 
             unlockCollectionItem('relic', newFusionId);
 
             let newDef = RELIC_DB.find(x => x.id === newFusionId);
-            UI.showToast(`✨ 遺物共鳴！\n捨棄了【${discardedName}】並退回素材。\n全新的力量【${newDef.name}】已加入！`);
+            UI.showToast(i18n.t('messages.toast_fusion_replace', discardedName, newDef.name));
         }
 
         // Re-check just in case the returned materials can form something else
@@ -1071,7 +1071,7 @@ function enemyDefeated() {
     let shouldTriggerFirstAid = (stage.level + 1) % 3 === 0;
     if (player.relics.includes('firstaid') && shouldTriggerFirstAid && player.hp < window.getMaxHp()) {
         player.hp++;
-        UI.showToast("🚑 【急救包】發動：恢復 1 點 HP！");
+        UI.showToast(i18n.t('messages.toast_firstaid'));
     }
 
     if (stage.activeShackle === 'wither' && stage.shackleMeta && stage.shackleMeta.originalHp) {
@@ -1159,7 +1159,7 @@ function openShop() {
 
 window.rerollShop = function(isInitial = false) {
     if (!isInitial) {
-        if (shopRerollsUsed > 0) return UI.showToast("⚠️ 只能刷新一次！");
+        if (shopRerollsUsed > 0) return UI.showToast(i18n.t('messages.toast_shop_limit'));
         shopRerollsUsed++;
         UI.updateShopRerollBtn(shopRerollsUsed, false, false);
         UI.updateHeaderUI(player, stage);
@@ -1216,7 +1216,7 @@ window.rerollShop = function(isInitial = false) {
 window.showFusionInfo = function(fusionId) {
     let relic = RELIC_DB.find(r => r.id === fusionId);
     if (relic) {
-        UI.showToast(`✨ 融合預覽：【${relic.name}】\n${relic.desc}`);
+        UI.showToast(i18n.t('messages.toast_fusion_preview', relic.name, relic.desc));
     }
 };
 
@@ -1230,13 +1230,13 @@ window.buyItem = function(idx) {
         // Consumable logic
         if (r.id === 'cons_power') {
             player.nextDamageMulti = (player.nextDamageMulti || 1.0) * 1.5;
-            UI.showToast("💪 【力量藥劑】使用成功！下場戰鬥傷害提升！");
+            UI.showToast(i18n.t('messages.toast_cons_power'));
         } else if (r.id === 'cons_potential') {
             player.bonusBasePoints = (player.bonusBasePoints || 0) + 50;
-            UI.showToast("🔥 【潛能秘藥】使用成功！永久基礎點數 +50！");
+            UI.showToast(i18n.t('messages.toast_cons_potential'));
         } else if (r.id === 'cons_hp') {
             player.hp = Math.min(window.getMaxHp(), player.hp + 1);
-            UI.showToast("❤️ 【生命紅藥】使用成功！回復 1 HP！");
+            UI.showToast(i18n.t('messages.toast_cons_hp'));
         }
     } else {
         // Relic logic

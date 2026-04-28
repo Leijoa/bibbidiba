@@ -56,7 +56,7 @@ export const el = {
 };
 
 if (document.getElementById('btn-rules')) {
-    document.getElementById('btn-rules').innerHTML = "📖 牌型表";
+    document.getElementById('btn-rules').innerHTML = i18n.t('ui.btn_rules') || "📖 牌型表";
     document.getElementById('btn-rules').className = "bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-black py-2 px-4 rounded-lg shadow-[0_0_15px_rgba(217,119,6,0.6)] active:scale-95 flex items-center border border-amber-400";
 }
 
@@ -215,7 +215,7 @@ window.showShackleInfo = function(id) {
 export function renderInventory(player, battle) {
     el.inventoryGrid.className = "flex overflow-x-auto gap-1.5 pb-2 scroll-smooth items-center hide-scrollbar";
     if (player.relics.length === 0) {
-        el.inventoryGrid.innerHTML = `<div class="text-[10px] text-slate-500 font-bold p-1">背包空空如也</div>`;
+        el.inventoryGrid.innerHTML = `<div class="text-[10px] text-slate-500 font-bold p-1">${i18n.t("ui.empty_inventory")}</div>`;
         return;
     }
     let sortedRelics = [...player.relics].sort((a,b) => RELIC_DB.find(x=>x.id===b).rarity - RELIC_DB.find(x=>x.id===a).rarity);
@@ -225,7 +225,7 @@ export function renderInventory(player, battle) {
     el.inventoryGrid.innerHTML = sortedRelics.map(id => {
         if (isNoise) {
             return `
-            <div onclick="window.showToast('🔇 【噪音】干擾，無法查看遺物效果！')" class="bg-slate-700/50 px-2 py-1 rounded-full border border-slate-500 shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform active:scale-95">
+            <div onclick="window.showToast(i18n.t('messages.toast_noise_interfere'))" class="bg-slate-700/50 px-2 py-1 rounded-full border border-slate-500 shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform active:scale-95">
                 <span class="text-[10px] md:text-xs font-black text-slate-400 whitespace-nowrap">????</span>
             </div>`;
         }
@@ -276,7 +276,7 @@ window.showRelicInfo = function(id) {
             let mat2Def = RELIC_DB.find(x => x.id === mat2Id);
             let mat1Name = mat1Def ? (i18n.t(`relics.${mat1Id}.name`) || mat1Def.name) : mat1Id;
             let mat2Name = mat2Def ? (i18n.t(`relics.${mat2Id}.name`) || mat2Def.name) : mat2Id;
-            fusionText = `\n\n合成條件: ${mat1Name} + ${mat2Name}`;
+            fusionText = i18n.t('ui.fusion_condition', mat1Name, mat2Name);
         }
 
         descSpan.textContent = rDesc + fusionText;
@@ -644,7 +644,7 @@ export function renderHistoryModal(records) {
             if (!relicDef) return '';
             let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || relicDef.name);
             return `<span class="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300 mr-1 mb-1 inline-block">${rName}</span>`;
-        }).join('') : '<span class="text-slate-500 text-[10px]">無</span>';
+        }).join('') : '<span class="text-slate-500 text-[10px]">' + i18n.t('messages.none') + '</span>';
         
         return `
         <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col gap-1 relative overflow-hidden">
@@ -653,13 +653,13 @@ export function renderHistoryModal(records) {
                 <span class="text-[10px] md:text-xs text-slate-400">${dateStr}</span>
             </div>
             <div class="text-xs md:text-sm text-slate-300">
-                <span class="text-slate-500">最高傷害:</span> <span class="font-black text-white">${Number(r.highestDamage).toLocaleString()}</span>
+                <span class="text-slate-500">${i18n.t("messages.history_dmg_label")}:</span> <span class="font-black text-white">${Number(r.highestDamage).toLocaleString()}</span>
             </div>
             <div class="text-xs md:text-sm text-slate-300">
-                <span class="text-slate-500">最佳牌型:</span> <span class="font-bold text-blue-300">${r.combo || '無'}</span>
+                <span class="text-slate-500">${i18n.t("messages.history_combo_label")}:</span> <span class="font-bold text-blue-300">${r.combo || i18n.t('messages.none')}</span>
             </div>
             <div class="mt-1">
-                <div class="text-[10px] text-slate-500 mb-0.5">最終持有遺物:</div>
+                <div class="text-[10px] text-slate-500 mb-0.5">${i18n.t("messages.history_relics_label")}:</div>
                 <div class="flex flex-wrap">${relicHtml}</div>
             </div>
         </div>`;
@@ -675,17 +675,17 @@ export function renderEndGameStats(highestDamage, highestDamageCombo, relics) {
         let style = RARITY[relicDef.rarity] || RARITY[1];
         let rName = id.startsWith('cons_') ? i18n.t(`consumables.${id}.name`) : (i18n.t(`relics.${id}.name`) || relicDef.name);
         return `<span class="${style.bg} ${style.color} px-2 py-1 rounded text-xs border ${style.border} inline-block">${rName}</span>`;
-    }).join(' ') : '<span class="text-slate-500">無</span>';
+    }).join(' ') : '<span class="text-slate-500">' + i18n.t('messages.none') + '</span>';
     
     el.endStats.innerHTML = `
         <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700/50 w-full max-w-sm mx-auto shadow-inner text-left">
             <div class="mb-2 border-b border-slate-700/50 pb-2">
-                <div class="text-xs text-slate-400 mb-1">${i18n.t('messages.history_dmg', '').replace('：', '').replace(': ', '')}</div>
+                <div class="text-xs text-slate-400 mb-1">${i18n.t('messages.history_dmg_label')}</div>
                 <div class="text-2xl md:text-3xl font-black text-white">${Number(highestDamage).toLocaleString()}</div>
-                <div class="text-sm font-bold text-blue-300 mt-1">${highestDamageCombo || '無'}</div>
+                <div class="text-sm font-bold text-blue-300 mt-1">${highestDamageCombo || i18n.t('messages.none')}</div>
             </div>
             <div>
-                <div class="text-xs text-slate-400 mb-1.5">${i18n.t('messages.history_relics', '').replace('：', '').replace(': ', '')}</div>
+                <div class="text-xs text-slate-400 mb-1.5">${i18n.t('messages.history_relics_label')}</div>
                 <div class="flex overflow-x-auto gap-1 pb-1 scroll-smooth hide-scrollbar">${relicHtml}</div>
             </div>
         </div>
@@ -747,7 +747,7 @@ export function renderCollectionModal(tab) {
                     let mat2Def = RELIC_DB.find(x => x.id === mat2Id);
                     let mat1Name = mat1Def ? (i18n.t(`relics.${mat1Id}.name`) || mat1Def.name) : mat1Id;
                     let mat2Name = mat2Def ? (i18n.t(`relics.${mat2Id}.name`) || mat2Def.name) : mat2Id;
-                    fusionText = `<p class="text-xs text-amber-300 mt-1 border-t border-slate-600 pt-1">合成: ${mat1Name} + ${mat2Name}</p>`;
+                    fusionText = `<p class="text-xs text-amber-300 mt-1 border-t border-slate-600 pt-1">${i18n.t('ui.fusion_text_short', mat1Name, mat2Name)}</p>`;
                 }
                 html += `
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
