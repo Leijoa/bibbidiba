@@ -5,6 +5,25 @@ import * as UI from './ui.js';
 import * as Audio from './audio.js';
 import { i18n } from './i18n.js';
 
+
+export function getEnemyWithMeta(levelIndex) {
+    let baseEnemy = getEnemy(levelIndex);
+    let burstLevel = metaData.upgrades.soulBurst || 0;
+
+    if (burstLevel > 0) {
+        let prefix = "LV." + burstLevel;
+        if (levelIndex >= ENEMY_DB.length) {
+            prefix += "層";
+        }
+        return {
+            ...baseEnemy,
+            name: prefix + " " + baseEnemy.name,
+            hp: baseEnemy.hp * (burstLevel + 1)
+        };
+    }
+    return baseEnemy;
+}
+
 // --- 遊戲狀態 ---
 let player = { hp: 3, relics: [], maxRolls: 3, dismantledFusions: [] };
 let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
@@ -25,7 +44,8 @@ let metaData = {
         startGold: 0,  // 等級 0~3 (+10 初始金幣)
         rerolls: 0,    // 等級 0~2 (+1 初始重骰)
         startRelic: 0, // 等級 0~1 (+1 初始遺物)
-        finalDamage: 0 // 等級 0~5 (+10% 最終傷害)
+        finalDamage: 0, // 等級 0~5 (+10% 最終傷害)
+        soulBurst: 0   // 等級 0~10 (敵血+等級倍, 靈魂+等級)
     }
 };
 
@@ -241,8 +261,9 @@ function loadGame() {
             stage.level = parsed.stage.level;
             stage.activeShackle = parsed.stage.activeShackle || null;
             stage.shackleMeta = parsed.stage.shackleMeta || null;
-            let enemy = getEnemy(stage.level);
+            let enemy = getEnemyWithMeta(stage.level);
             stage.enemyMaxHp = enemy.hp;
+            stage.enemyName = enemy.name;
             stage.enemyHp = 0; // 已經擊敗
             stage.turnsLeft = enemy.turns;
 
@@ -447,8 +468,9 @@ function assignShackleForStage(levelIndex) {
 function loadStage(levelIndex, isLoad = false, parsedData = null) {
     if (levelIndex >= ENEMY_DB.length && !player.isInfiniteMode) return gameWin();
     stage.level = levelIndex;
-    let enemy = getEnemy(levelIndex);
+    let enemy = getEnemyWithMeta(levelIndex);
     stage.enemyMaxHp = enemy.hp;
+            stage.enemyName = enemy.name;
 
     if (isLoad && parsedData && parsedData.stage) {
         stage.enemyHp = parsedData.stage.enemyHp ?? enemy.hp;
@@ -953,14 +975,14 @@ window.fireAttack = function() {
                     if (player.hp <= 0) return;
                     // IF we are here, playerTakesFatalDamage rescued the player (hp is now 1)
                     UI.showToast(i18n.t('messages.toast_timeout_wealth'), () => {
-                        stage.turnsLeft = getEnemy(stage.level).turns;
+                        stage.turnsLeft = getEnemyWithMeta(stage.level).turns;
                         if (stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
                         startTurn();
                     });
                 }
                 else {
                     UI.showToast(i18n.t('messages.toast_timeout_retry'), () => {
-                        stage.turnsLeft = getEnemy(stage.level).turns;
+                        stage.turnsLeft = getEnemyWithMeta(stage.level).turns;
                         if (stage.activeShackle === 'timecompress') stage.turnsLeft = 2;
                         startTurn();
                     });
@@ -1103,11 +1125,13 @@ function enemyDefeated() {
         }
 
         // Handle Souls
-        let enemyName = getEnemy(stage.level).name;
+        let enemyName = getEnemyWithMeta(stage.level).name;
         let enemyNameI18n = i18n.t(`enemies.enemy_${stage.level}`) || enemyName;
         let earnedSouls = isBoss(stage.level) && !player.isInfiniteMode ? 2 : 1;
         if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
 
+        let burstLevel = metaData.upgrades.soulBurst || 0;
+        earnedSouls += burstLevel;
         metaData.souls += earnedSouls;
         saveMetaData();
         let soulMsg = i18n.t('messages.toast_soul_gain', earnedSouls);
@@ -1119,11 +1143,16 @@ function enemyDefeated() {
             UI.showToast(i18n.t('messages.toast_elite_defeat', '', soulMsg, randomRelicName), nextStep);
         }
     } else {
-        let enemyName = getEnemy(stage.level).name;
+        let enemyName = getEnemyWithMeta(stage.level).name;
         let enemyNameI18n = i18n.t(`enemies.enemy_${stage.level}`) || enemyName;
         let earnedSouls = 0;
         if (isBoss(stage.level) && !player.isInfiniteMode) earnedSouls = 2;
         else if (player.isInfiniteMode || stage.level >= ENEMY_DB.length) earnedSouls = 1;
+
+        let burstLevel = metaData.upgrades.soulBurst || 0;
+        if (earnedSouls > 0 || burstLevel > 0) {
+            earnedSouls += burstLevel;
+        }
 
         if (isBoss(stage.level) && !player.isInfiniteMode) {
             nextStep = gameWin;
@@ -1267,7 +1296,7 @@ function recordHistory(win) {
         win: win,
         isInfiniteMode: player.isInfiniteMode,
         infiniteLevel: player.isInfiniteMode ? (stage.level - ENEMY_DB.length + 1) : 0,
-        stageName: getEnemy(stage.level).name,
+        stageName: getEnemyWithMeta(stage.level).name,
         date: new Date().toISOString(),
         highestDamage: player.highestDamage || 0,
         combo: player.highestDamageCombo || '無',
@@ -1331,3 +1360,5 @@ function gameWin() {
 // 啟動遊戲
 loadCollection();
 initTitleScreen();
+
+window.getEnemyWithMeta = getEnemyWithMeta;

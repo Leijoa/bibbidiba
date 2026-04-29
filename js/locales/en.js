@@ -154,6 +154,7 @@ export const en_data = {
     'rerolls': { name: '🎲 Dice Mastery', desc: 'Starting Rerolls +1' },
     'startRelic': { name: '🎁 Starter Kit', desc: 'Start with 1 random Common Relic' },
     'finalDamage': { name: '⚔️ Power Awakening', desc: 'Final Damage +10%' },
+    'soulBurst': { name: '🔥 Soul Burst', desc: 'Enemy HP x(Level+1), Souls Gained +(Level)' },
     'cost': 'Cost {0} 👻',
     'maxed': 'Max Level',
     'owned': 'Owned Souls: {0} 👻'

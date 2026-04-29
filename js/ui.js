@@ -2,6 +2,15 @@
 import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, SHACKLE_DB, getEnemy, FUSION_RECIPES } from './data.js';
 import { i18n } from './i18n.js';
 
+const SOULS_UPG_DEFS = [
+    { id: 'hp', name: '❤️ 體魄鍛鍊', desc: '最大 HP +1', max: 2, cost: (lv) => 10 },
+    { id: 'rerolls', name: '🎲 骰子掌握', desc: '初始重骰次數 +1', max: 2, cost: (lv) => 15 },
+    { id: 'startRelic', name: '🎁 初始裝備', desc: '開局隨機獲得 1 個普通遺物', max: 1, cost: (lv) => 30 },
+    { id: 'finalDamage', name: '⚔️ 力量覺醒', desc: '最終傷害 +10%', max: 5, cost: (lv) => 20 },
+    { id: 'soulBurst', name: '🔥 靈魂爆發', desc: '敵人血量x(等級+1), 靈魂獲得量+(等級)', max: 10, cost: (lv) => 100 + (lv || 0) * 100 }
+];
+
+
 // 緩存 DOM 元素
 export const el = {
     stageInfo: document.getElementById('stage-info'),
@@ -158,7 +167,7 @@ export function updateHeaderUI(player, stage) {
 }
 
 export function updateEnemyUI(stage) {
-    let enemy = getEnemy(stage.level);
+    let enemy = window.getEnemyWithMeta ? window.getEnemyWithMeta(stage.level) : getEnemy(stage.level);
     
     let shackleHtml = '';
     // legacy support if stage.shackles array exists
@@ -830,17 +839,11 @@ export function renderSoulsModal(metaData) {
     if (!el.soulsContent) return;
     el.soulsHeaderText.innerText = i18n.t('souls.owned', metaData.souls);
 
-    const upgDefs = [
-        { id: 'hp', name: '❤️ 體魄鍛鍊', desc: '最大 HP +1', max: 2, cost: 10 },
-        { id: 'rerolls', name: '🎲 骰子掌握', desc: '初始重骰次數 +1', max: 2, cost: 15 },
-        { id: 'startRelic', name: '🎁 初始裝備', desc: '開局隨機獲得 1 個普通遺物', max: 1, cost: 30 },
-        { id: 'finalDamage', name: '⚔️ 力量覺醒', desc: '最終傷害 +10%', max: 5, cost: 20 }
-    ];
-
-    el.soulsContent.innerHTML = upgDefs.map(u => {
+    el.soulsContent.innerHTML = SOULS_UPG_DEFS.map(u => {
         let currentLv = metaData.upgrades[u.id] || 0;
         let isMax = currentLv >= u.max;
-        let canAfford = metaData.souls >= u.cost;
+        let currentCost = u.cost(currentLv);
+        let canAfford = metaData.souls >= currentCost;
 
         let uName = i18n.t(`souls.${u.id}.name`) || u.name;
         let uDesc = i18n.t(`souls.${u.id}.desc`) || u.desc;
@@ -848,7 +851,7 @@ export function renderSoulsModal(metaData) {
         let dots = Array(u.max).fill().map((_, i) => i < currentLv ? '🟢' : '⚫').join(' ');
         let btnHtml = isMax
             ? `<button disabled class="bg-slate-700 text-slate-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed">${i18n.t('souls.maxed')}</button>`
-            : `<button onclick="window.buySoulUpgrade('${u.id}', ${u.cost})" class="${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_10px_rgba(79,70,229,0.5)]' : 'bg-slate-700 text-slate-500 cursor-not-allowed'} font-black py-2 px-4 rounded-lg transition-transform active:scale-95" ${canAfford ? '' : 'disabled'}>${i18n.t('souls.cost', u.cost)}</button>`;
+            : `<button onclick="window.buySoulUpgrade('${u.id}', ${currentCost})" class="${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_10px_rgba(79,70,229,0.5)]' : 'bg-slate-700 text-slate-500 cursor-not-allowed'} font-black py-2 px-4 rounded-lg transition-transform active:scale-95" ${canAfford ? '' : 'disabled'}>${i18n.t('souls.cost', currentCost)}</button>`;
 
         return `
         <div class="bg-slate-900/50 border border-indigo-900/50 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -863,6 +866,12 @@ export function renderSoulsModal(metaData) {
         </div>
         `;
     }).join('');
+
+    el.soulsContent.innerHTML += `
+        <div class="mt-4 pt-4 border-t border-slate-700/50">
+            <button onclick="window.resetSouls()" class="w-full bg-red-600/80 hover:bg-red-500/80 text-white py-2 rounded font-bold transition-colors">${i18n.t('ui.reset_souls') || '重置靈魂 (退還所有花費)'}</button>
+        </div>
+    `;
 }
 
 window.buySoulUpgrade = function(id, cost) {
@@ -875,4 +884,23 @@ window.buySoulUpgrade = function(id, cost) {
     } else {
         showToast(i18n.t('messages.toast_no_money'));
     }
+};
+
+
+window.resetSouls = function() {
+    let meta = window.getMetaData();
+    let totalRefund = 0;
+
+    for (let u of SOULS_UPG_DEFS) {
+        let level = meta.upgrades[u.id] || 0;
+        for (let i = 0; i < level; i++) {
+            totalRefund += u.cost(i);
+        }
+        meta.upgrades[u.id] = 0;
+    }
+
+    meta.souls += totalRefund;
+    window.saveMetaData();
+
+    renderSoulsModal(meta);
 };

@@ -154,6 +154,7 @@ export const ja_data = {
     'rerolls': { name: '🎲 ダイスマスタリー', desc: '初期振り直し回数 +1' },
     'startRelic': { name: '🎁 初期装備', desc: '開始時にランダムな遺物を1つ獲得' },
     'finalDamage': { name: '⚔️ 力の覚醒', desc: '最終ダメージ +10%' },
+    'soulBurst': { name: '🔥 ソウルバースト', desc: '敵のHP x(レベル+1), 獲得ソウル +(レベル)' },
     'cost': 'コスト {0} 👻',
     'maxed': '最大レベル',
     'owned': '所持ソウル: {0} 👻'

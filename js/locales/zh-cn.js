@@ -154,6 +154,7 @@ export const zh_cn_data = {
     'rerolls': { name: '🎲 骰子掌握', desc: '初始重骰次数 +1' },
     'startRelic': { name: '🎁 初始装备', desc: '开局随机获得 1 个普通遗物' },
     'finalDamage': { name: '⚔️ 力量觉醒', desc: '最终伤害 +10%' },
+    'soulBurst': { name: '🔥 灵魂爆发', desc: '敌人血量 x(等级+1)，灵魂获得量 +(等级)' },
     'cost': '花费 {0} 👻',
     'maxed': '已满级',
     'owned': '目前持有灵魂：{0} 👻'
