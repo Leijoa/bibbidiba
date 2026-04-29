@@ -647,7 +647,8 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
     let rerollMulti = 1.0 + (rollsLeft * 0.5);
     if (rollsLeft > 0) {
         globalMulti *= rerollMulti;
-        globalNotes.push(`剩餘資源加成 (剩 ${rollsLeft} 次) x${rerollMulti.toFixed(1)}`);
+        let resourceBonusMsg = typeof window !== 'undefined' && window.i18n ? window.i18n.t('ui.bonus_reroll', rollsLeft) : `剩餘資源加成 (剩 ${rollsLeft} 次)`;
+        globalNotes.push(`${resourceBonusMsg} x${rerollMulti.toFixed(1)}`);
     }
 
     let result = {

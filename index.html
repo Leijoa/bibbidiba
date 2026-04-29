@@ -59,7 +59,7 @@
     <div class="flex items-end gap-2">
       <div>
         <h1 class="text-lg md:text-2xl font-black text-amber-400 flex items-center gap-1 tracking-tight">BIBBIDIBA</h1>
-        <div class="text-[10px] md:text-sm text-slate-400 font-bold" id="stage-info">關卡 1-1</div>
+        <div class="text-[10px] md:text-sm text-slate-400 font-bold" id="stage-info" data-i18n="ui.stage" data-i18n-args="1-1">關卡 1-1</div>
       </div>
     </div>
     <div class="flex gap-2.5 md:gap-4 text-right items-center">
@@ -89,7 +89,7 @@
       <div class="bg-slate-800 p-1.5 md:p-3 rounded-lg border border-slate-700 shrink-0 relative shadow-md">
         <div class="flex justify-between items-center mb-1">
           <h2 class="text-sm md:text-lg font-bold text-red-300 flex items-center gap-1" id="enemy-name">⚔️ 史萊姆</h2>
-          <span class="text-[9px] md:text-xs bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-bold" id="turns-left" data-i18n="ui.turns_left">剩餘 3 回合</span>
+          <span class="text-[9px] md:text-xs bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-bold" id="turns-left" data-i18n="ui.turns_left" data-i18n-args="3">剩餘 3 回合</span>
         </div>
         <div class="w-full bg-slate-900 rounded-full h-4 md:h-6 relative border border-slate-700 overflow-hidden">
           <div id="enemy-hp-bar" class="bg-gradient-to-r from-red-700 to-red-500 h-full rounded-full transition-all duration-300" style="width: 100%"></div>
@@ -107,7 +107,7 @@
       <div class="bg-slate-800 p-1.5 md:p-3 rounded-lg border border-slate-700 shrink-0 shadow-md flex flex-col relative flex-grow lg:flex-grow-0">
         <div class="flex justify-between items-center mb-1 px-1">
           <h2 class="text-sm md:text-lg font-bold text-slate-200" data-i18n="ui.board">盤面</h2>
-          <span id="rolls-left-badge" class="bg-slate-700 px-1.5 py-0.5 rounded text-[9px] md:text-xs font-bold text-amber-300" data-i18n="ui.rolls_left">剩餘重骰：2</span>
+          <span id="rolls-left-badge" class="bg-slate-700 px-1.5 py-0.5 rounded text-[9px] md:text-xs font-bold text-amber-300" data-i18n="ui.rolls_left" data-i18n-args="2">剩餘重骰：2</span>
         </div>
         <div class="flex flex-row gap-1 items-stretch justify-between h-full">
           <div id="dice-container" class="grid grid-cols-4 gap-x-1 gap-y-1 flex-grow px-1 py-1 items-center justify-items-center"></div>
