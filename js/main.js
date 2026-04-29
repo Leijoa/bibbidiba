@@ -388,6 +388,7 @@ function initTitleScreen() {
         btnSound.onclick = () => {
             let enabled = Audio.toggleSound();
             btnSound.innerText = enabled ? i18n.t('ui.sound_on') : i18n.t('ui.sound_off');
+            btnSound.setAttribute('data-i18n', enabled ? 'ui.sound_on' : 'ui.sound_off');
         };
     }
 }

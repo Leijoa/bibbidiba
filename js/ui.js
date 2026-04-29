@@ -1,6 +1,7 @@
 // js/ui.js
 import { RARITY, RELIC_DB, ENEMY_DB, RULE_DB, SHACKLE_DB, getEnemy, FUSION_RECIPES } from './data.js';
 import { i18n } from './i18n.js';
+window.i18n = i18n;
 
 const SOULS_UPG_DEFS = [
     { id: 'hp', name: '❤️ 體魄鍛鍊', desc: '最大 HP +1', max: 2, cost: (lv) => 10 },
@@ -115,24 +116,28 @@ export function showToast(msg, callback) {
 export function renderRulesDB() {
     let html = '';
     const groups = [
-        { key: 'groupA', title: '【A區】同數頻率' },
-        { key: 'groupB', title: '【B區】順子連號' },
-        { key: 'groupC', title: '【C區】複合牌型' },
-        { key: 'groupD', title: '【D區】極端盤面' }
+        { key: 'groupA', titleKey: 'rules.groupA_desc' },
+        { key: 'groupB', titleKey: 'rules.groupB_desc' },
+        { key: 'groupC', titleKey: 'rules.groupC_desc' },
+        { key: 'groupD', titleKey: 'rules.groupD_desc' }
     ];
     
     groups.forEach(g => {
-        html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-4 mb-2 border-b border-slate-700 pb-1">${g.title}</h3>`;
+        html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-4 mb-2 border-b border-slate-700 pb-1">${i18n.t(g.titleKey)}</h3>`;
         html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">`;
-        RULE_DB[g.key].forEach(rule => {
+        RULE_DB[g.key].forEach((rule, rIdx) => {
             let rStyle = RARITY[rule.rarity] || RARITY[1];
+            let letter = g.key.replace('group', '').toLowerCase();
+            let ruleName = i18n.t(`rules.rule_${letter}${rIdx}.name`) || rule.name;
+            let ruleDesc = i18n.t(`rules.rule_${letter}${rIdx}.desc`) || rule.desc;
+
             html += `
             <div class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-700">
                 <div>
                     <div class="flex items-center gap-2">
-                        <div class="text-sm md:text-base font-bold ${rStyle.color}">${rule.name}</div>
+                        <div class="text-sm md:text-base font-bold ${rStyle.color}">${ruleName}</div>
                     </div>
-                    <div class="text-[10px] md:text-sm text-slate-400">${rule.desc}</div>
+                    <div class="text-[10px] md:text-sm text-slate-400">${ruleDesc}</div>
                 </div>
                 <div class="text-base md:text-lg font-black text-amber-400">${rule.multi}</div>
             </div>`;
@@ -145,12 +150,14 @@ export function renderRulesDB() {
 // --- 更新 UI 狀態 ---
 export function updateHeaderUI(player, stage) {
     if (stage.level < ENEMY_DB.length) {
-        el.stageInfo.innerText = `${i18n.t('ui.stage')} ${stage.level + 1} / ${ENEMY_DB.length}`;
+        el.stageInfo.innerText = i18n.t('ui.stage', `${stage.level + 1} / ${ENEMY_DB.length}`);
+        el.stageInfo.setAttribute('data-i18n-args', `${stage.level + 1} / ${ENEMY_DB.length}`);
     } else {
         let infiniteLevel = stage.level - ENEMY_DB.length + 1;
         let n = Math.floor((infiniteLevel - 1) / 3) + 1;
         let m = ((infiniteLevel - 1) % 3) + 1;
-        el.stageInfo.innerText = `無限塔 ${n}-${m}`; // Will be migrated later
+        el.stageInfo.innerText = i18n.t('ui.stage', `∞ ${n}-${m}`);
+        el.stageInfo.setAttribute('data-i18n-args', `∞ ${n}-${m}`); // Will be migrated later
     }
     
     let maxHp = window.getMaxHp ? window.getMaxHp() : 3;
@@ -177,10 +184,17 @@ export function updateEnemyUI(stage) {
 
     // new logic using activeShackle
     if (window.getStageActiveShackle && window.getStageActiveShackle()) {
-        shackleHtml += `<span onclick="window.showShackleInfo('${window.getStageActiveShackle()}')" class="ml-2 bg-red-900/80 hover:bg-red-800 text-[10px] md:text-xs text-red-300 px-1.5 py-0.5 rounded cursor-pointer border border-red-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ 當前枷鎖</span>`;
+        shackleHtml += `<span onclick="window.showShackleInfo('${window.getStageActiveShackle()}')" class="ml-2 bg-red-900/80 hover:bg-red-800 text-[10px] md:text-xs text-red-300 px-1.5 py-0.5 rounded cursor-pointer border border-red-500/50 shadow-sm transition-colors active:scale-95 flex-shrink-0">⛓️ ${i18n.t('ui.tab_shackles') || '當前枷鎖'}</span>`;
+    }
+
+    let localizedEnemyName = enemy.name;
+    if (stage.level < ENEMY_DB.length) {
+        localizedEnemyName = i18n.t(`enemies.enemy_${stage.level}`) || enemy.name;
+    } else {
+        localizedEnemyName = enemy.name.replace('虛空幻影', i18n.t('infinite_enemy_prefix') || '虛空幻影');
     }
     
-    el.enemyName.innerHTML = `⚔️ ${enemy.name}${shackleHtml}`;
+    el.enemyName.innerHTML = `⚔️ ${localizedEnemyName}${shackleHtml}`;
 
     el.enemyName.className = "text-xl font-bold flex-1 flex items-center";
     if (stage.level >= ENEMY_DB.length) {
@@ -439,12 +453,12 @@ export function renderControls(battle) {
 
     el.controlsContainer.innerHTML = `
     <button onclick="window.executeRoll(false)" ${rollDisabled} class="w-full flex-1 bg-blue-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
-        <span class="text-sm md:text-lg leading-tight">重骰</span>
-        <span class="text-[8px] md:text-[10px] opacity-90 mt-0.5 font-bold">(可點擊骰子保留)</span>
+        <span class="text-sm md:text-lg leading-tight">${i18n.t('ui.btn_roll')}</span>
+        <span class="text-[8px] md:text-[10px] opacity-90 mt-0.5 font-bold">${i18n.t('ui.btn_roll_hint')}</span>
     </button>
     <button onclick="window.fireAttack()" ${scoreDisabled} class="w-full flex-[1.5] bg-red-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
         <span class="text-lg md:text-2xl mb-0.5">🗡️</span>
-        <span class="text-xs md:text-base leading-tight">攻擊</span>
+        <span class="text-xs md:text-base leading-tight">${i18n.t('ui.btn_attack')}</span>
     </button>
     `;
 }
@@ -476,7 +490,7 @@ export function renderScore(battle, activeHighlight) {
 
     el.scoreDisplay.innerHTML = `
     <div class="flex flex-col gap-1.5 bg-slate-900 px-2 py-1.5 rounded-lg border border-slate-700 mb-1.5 shadow-inner">
-        <div class="text-[11px] md:text-sm font-bold text-slate-400 whitespace-nowrap">骰子點數加成後總和: <span class="text-sm md:text-base font-black text-white ml-1">${res.totalBase.toFixed(1)}</span></div>
+        <div class="text-[11px] md:text-sm font-bold text-slate-400 whitespace-nowrap">${i18n.t('ui.score_total_base')}: <span class="text-sm md:text-base font-black text-white ml-1">${res.totalBase.toFixed(1)}</span></div>
         <div class="flex overflow-x-auto gap-1 pb-1 scroll-smooth hide-scrollbar">${notesHtml}</div>
     </div>
     
@@ -550,7 +564,7 @@ export function renderShopItems(shopItems, player) {
                         <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
                         <div class="flex flex-col items-end gap-1">
                             <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${r.rarity}`) || style.label}</span>
-                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ 可融合</span>` : ''}
+                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('shop_fusion_hint') || '可融合'}</span>` : ''}
                         </div>
                     </div>
                 </div>
