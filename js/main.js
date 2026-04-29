@@ -25,7 +25,7 @@ export function getEnemyWithMeta(levelIndex) {
 }
 
 // --- 遊戲狀態 ---
-let player = { hp: 3, relics: [], maxRolls: 3, dismantledFusions: [] };
+let player = { hp: 3, relics: [], maxRolls: 3, dismantledFusions: [], fivesRolled: 0, fivesRolled: 0 };
 let stage = { level: 0, enemyMaxHp: 0, enemyHp: 0, turnsLeft: 0, activeShackle: null, shackleMeta: null };
 let battle = { state: 'IDLE', dice: Array(8).fill().map((_, i) => ({ val: 1, locked: false, id: i, matchedGroups: {A:false, B:false, C:false, D:false} })), rollsLeft: 0, scoreResult: null };
 let shopItems = [];
@@ -255,6 +255,7 @@ function loadGame() {
     if (parsed) {
         player = parsed.player;
         player.dismantledFusions = player.dismantledFusions || [];
+        player.fivesRolled = player.fivesRolled || 0;
         UI.el.titleScreen.classList.add('hidden');
 
         if (parsed.shop && parsed.shop.active) {
@@ -304,7 +305,7 @@ function initTitleScreen() {
     }
 
     i18n.subscribe(() => {
-        UI.updatePlayerHp(player.hp, getMaxHp());
+        UI.updateHeaderUI(player, stage);
         if (battle.state !== 'IDLE' && battle.state !== 'SHOP') {
             updateUI();
         }
@@ -406,7 +407,7 @@ function initNewGame() {
         highestDamage: 0,
         highestDamageCombo: '',
         isInfiniteMode: false, bonusBasePoints: 0, nextDamageMulti: 1.0,
-        dismantledFusions: []
+        dismantledFusions: [], fivesRolled: 0
     };
 
     if (metaData.upgrades.startRelic > 0) {
@@ -726,6 +727,8 @@ window.executeRoll = function(isInitial = false) {
             clearInterval(timer);
             battle.dice.sort((a, b) => a.val - b.val);
 
+            player.fivesRolled += battle.dice.filter(d => d.val === 5).length;
+
             if (!isInitial && stage.activeShackle === 'forcedshift') {
                 let lockedDice = battle.dice.filter(d => d.locked);
                 if (lockedDice.length > 0) {
@@ -757,7 +760,7 @@ window.executeRoll = function(isInitial = false) {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp(), fivesRolled: player.fivesRolled });
 
             if (stage.activeShackle === 'blind' && stage.shackleMeta) {
                 let unlockedIndices = battle.dice.map((d, i) => !d.locked ? i : -1).filter(i => i !== -1);
@@ -813,7 +816,7 @@ window.fireAttack = function() {
             }
 
             let isInitialRoll = (battle.rollsLeft === player.maxRolls);
-            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp() });
+            battle.scoreResult = calculateEngineScore(battle.dice, activeRelics, battle.rollsLeft, player.hp, shackleConfig ? [shackleConfig] : [], isInitialRoll, stage.turnsLeft, { level: stage.level, relics: player.relics, unlockedHands: Object.keys(window.getCollection ? window.getCollection().hands : {}).length, playerHp: player.hp, maxHp: window.getMaxHp(), fivesRolled: player.fivesRolled });
             UI.showToast(i18n.t('messages.toast_tremor'));
         }
     }
@@ -1347,7 +1350,7 @@ function gameWin() {
     let btnRestart = document.getElementById('btn-restart');
     let btnInfinite = document.getElementById('btn-infinite');
 
-    if (btnRestart) btnRestart.classList.add('hidden');
+    if (btnRestart) btnRestart.classList.remove('hidden');
     if (btnInfinite) btnInfinite.classList.remove('hidden');
 
     UI.el.endTitle.className = "text-5xl md:text-7xl font-black text-amber-400 mb-4 pop-anim";

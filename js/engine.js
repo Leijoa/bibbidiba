@@ -204,7 +204,14 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
             }
 
             if ([1,2,3].includes(v) && playerRelics.includes('small')) multi *= (isExploited ? 2.5 : 5.0);
-            if ([4,5].includes(v) && playerRelics.includes('mid')) multi *= (isExploited ? 1.5 : 3.0);
+                        if ([4,5].includes(v)) {
+                let midMulti = 1.0;
+                if (playerRelics.includes('mid')) midMulti *= (isExploited ? 1.5 : 3.0);
+                if (playerRelics.includes('fusion_fortune')) {
+                    midMulti += (env.fivesRolled || 0) * 0.05;
+                }
+                multi *= midMulti;
+            }
             if ([6,7,8].includes(v) && playerRelics.includes('big')) multi *= (isExploited ? 1.0 : 2.0);
             if (v % 2 !== 0 && playerRelics.includes('odd')) multi *= (isExploited ? 1.25 : 2.5);
             if (v % 2 === 0 && playerRelics.includes('even')) multi *= (isExploited ? 1.25 : 2.5);
@@ -550,12 +557,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         globalNotes.push(`【中流砥柱】 x${amt.toFixed(1)}`);
     }
 
-    if (playerRelics.includes('fusion_fortune') && (counts[4] > 0 || counts[5] > 0)) {
-        let fiveCount = kills * 2 + counts[5];
-        let amt = 1.0 + (fiveCount * 0.05);
-        globalMulti *= amt;
-        globalNotes.push(`【五福中天】 x${amt.toFixed(2)}`);
-    }
+
 
 
     let baseABCD = 1.0;
