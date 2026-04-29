@@ -563,7 +563,7 @@ export function renderShopItems(shopItems, player) {
                     <div class="flex justify-between items-start">
                         <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
                         <div class="flex flex-col items-end gap-1">
-                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${r.rarity}`) || style.label}</span>
+                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`messages.rarity_${r.rarity}`) || style.label}</span>
                             ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('shop_fusion_hint') || '可融合'}</span>` : ''}
                         </div>
                     </div>
@@ -571,7 +571,7 @@ export function renderShopItems(shopItems, player) {
                 <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${rDesc}</p>
             </div>
             <button onclick="window.buyItem(${idx})" class="w-full font-black py-2.5 rounded-lg transition-all relative z-10 text-sm md:text-base ${btnClass}">
-                ${i18n.t('shop_select')}
+                ${i18n.t('messages.shop_select')}
             </button>
         </div>`;
     }).join('');
@@ -607,7 +607,7 @@ export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
             <div>
                 <div class="flex justify-between items-start mb-2">
                     <h3 class="text-base md:text-lg font-black ${style.color}">${relic.name}</h3>
-                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${relic.rarity}`) || style.label}</span>
+                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`messages.rarity_${relic.rarity}`) || style.label}</span>
                 </div>
                 <p class="text-xs md:text-sm text-slate-300 font-bold mb-3">${relic.desc}</p>
                 ${materialsHtml}
@@ -722,10 +722,10 @@ export function renderCollectionModal(tab) {
 
     if (tab === 'hands') {
         const groups = [
-            { key: 'groupA', titleKey: 'rules.groupA' },
-            { key: 'groupB', titleKey: 'rules.groupB' },
-            { key: 'groupC', titleKey: 'rules.groupC' },
-            { key: 'groupD', titleKey: 'rules.groupD' }
+            { key: 'groupA', titleKey: 'rules.groupA_desc' },
+            { key: 'groupB', titleKey: 'rules.groupB_desc' },
+            { key: 'groupC', titleKey: 'rules.groupC_desc' },
+            { key: 'groupD', titleKey: 'rules.groupD_desc' }
         ];
         groups.forEach(g => {
             html += `<h3 class="text-base md:text-lg font-black text-slate-300 mt-2 mb-1 border-b border-slate-700 pb-1">${i18n.t(g.titleKey)}</h3>`;
@@ -737,7 +737,7 @@ export function renderCollectionModal(tab) {
                 let ruleDesc = i18n.t(`rules.rule_${letter}${rIdx}.desc`) || rule.desc;
 
                 const nameStr = unlocked ? `${ruleName} <span class="text-emerald-400 text-xs ml-1">✅</span>` : `???`;
-                const descStr = unlocked ? ruleDesc : '未解鎖'; // Hardcoded fallback for now
+                const descStr = unlocked ? ruleDesc : i18n.t('locked'); // Hardcoded fallback for now
                 const opacity = unlocked ? 'opacity-100' : 'opacity-50 grayscale';
                 let rStyle = RARITY[rule.rarity] || RARITY[1];
                 let nameColor = unlocked ? rStyle.color : 'text-slate-200';
@@ -776,7 +776,7 @@ export function renderCollectionModal(tab) {
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-1">
                         <h3 class="text-sm md:text-base font-black ${style.color}">${rName} <span class="text-emerald-400 text-xs ml-1">✅</span></h3>
-                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`rarity_${r.rarity}`) || style.label}</span>
+                        <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`messages.rarity_${r.rarity}`) || style.label}</span>
                     </div>
                     <p class="text-xs md:text-sm text-slate-300 font-bold">${rDesc}</p>
                     ${fusionText}
@@ -787,7 +787,7 @@ export function renderCollectionModal(tab) {
                     <div class="flex justify-between items-start mb-1">
                         <h3 class="text-sm md:text-base font-black text-slate-500">???</h3>
                     </div>
-                    <p class="text-xs md:text-sm text-slate-600 font-bold">未解鎖遺物</p>
+                    <p class="text-xs md:text-sm text-slate-600 font-bold">${i18n.t('locked_relic')}</p>
                 </div>`;
             }
         });
@@ -815,7 +815,7 @@ export function renderCollectionModal(tab) {
                     <div class="flex justify-between items-start mb-1">
                         <h3 class="text-sm md:text-base font-black text-slate-500">???</h3>
                     </div>
-                    <p class="text-xs md:text-sm text-slate-600 font-bold">未解鎖枷鎖</p>
+                    <p class="text-xs md:text-sm text-slate-600 font-bold">${i18n.t('locked_shackle')}</p>
                 </div>`;
             }
         });

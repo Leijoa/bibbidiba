@@ -96,7 +96,13 @@ export const translations = {
       'game_over': 'GAME OVER',
       'game_over_desc': '你未能击败敌人，旅程到此为止。',
       'btn_restart': '回到标题画面',
-      'btn_infinite': '进入无限塔',      'btn_rules': '📖 牌型表',
+      'btn_infinite': '进入无限塔',      'btn_rules': '📖 牌型表',      'empty_inventory': '背包空空如也',
+      'fusion_condition': '\n\n合成条件: {0} + {1}',
+      'fusion_text_short': '合成: {0} + {1}',
+      'fusion_limit_msg': '你必须选择舍弃并<span class="text-red-400">分解</span>其中一件遗物（退回基础素材），才能容纳新的力量！',
+      'locked': '未解锁',
+      'locked_relic': '未解锁遗物',
+      'locked_shackle': '未解锁枷锁',
 
       'rules_title': '📖 全牌型倍率表',
       'tab_hands': '牌型',
@@ -146,6 +152,9 @@ export const translations = {
       'fusion_condition': '\n\nFusion Req: {0} + {1}',
       'fusion_text_short': 'Fusion: {0} + {1}',
       'fusion_limit_msg': 'You must choose to discard and <span class="text-red-400">dismantle</span> one of your relics (returning base materials) to make room for new power!',
+      'locked': 'Locked',
+      'locked_relic': 'Locked Relic',
+      'locked_shackle': 'Locked Shackle',
 
 
       'rules_title': '📖 Hands Multipliers',
@@ -196,6 +205,9 @@ export const translations = {
       'fusion_condition': '\n\n合成条件: {0} + {1}',
       'fusion_text_short': '合成: {0} + {1}',
       'fusion_limit_msg': '新しい力を得るには、遺物を1つ捨てて<span class="text-red-400">分解</span>（基礎素材に戻す）する必要があります！',
+      'locked': '未解放',
+      'locked_relic': '未解放の遺物',
+      'locked_shackle': '未解放の枷鎖',
 
 
       'rules_title': '📖 役の倍率表',
