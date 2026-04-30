@@ -475,6 +475,17 @@ export function renderScore(battle, activeHighlight) {
 
     let notesHtml = res.globalNotes.map(n => `<span class="text-[9px] text-amber-400 bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-900/50 font-bold whitespace-nowrap">${isAmnesia ? '???' : n}</span>`).join('');
 
+
+    const getTagLocalName = (tagName) => {
+        if (!tagName) return '';
+        const map = {"無":"messages.none","undefined":"rules.groupD_desc.name","八重奏":"rules.rule_a0.name","七同":"rules.rule_a1.name","六同":"rules.rule_a2.name","五同":"rules.rule_a3.name","四同":"rules.rule_a4.name","三同":"rules.rule_a5.name","對子":"rules.rule_a6.name","大滿貫":"rules.rule_b0.name","七連順":"rules.rule_b1.name","六連順":"rules.rule_b2.name","五連順":"rules.rule_b3.name","四連順":"rules.rule_b4.name","三連順":"rules.rule_b5.name","雙子星":"rules.rule_c0.name","葫蘆":"rules.rule_c1.name","豪華四對子":"rules.rule_c2.name","三龍會":"rules.rule_c3.name","經典四對子":"rules.rule_c4.name","雙四連順":"rules.rule_c5.name","中葫蘆":"rules.rule_c6.name","平胡":"rules.rule_c7.name","碰碰胡":"rules.rule_c8.name","順碰交響曲":"rules.rule_c9.name","雙三連順":"rules.rule_c10.name","雙三同":"rules.rule_c11.name","小葫蘆":"rules.rule_c12.name","三對子":"rules.rule_c13.name","雙對子":"rules.rule_c14.name","兩極":"rules.rule_d0.name","絕對秩序":"rules.rule_d1.name","全異":"rules.rule_d2.name","中庸之道":"rules.rule_d3.name"};
+        let key = map[tagName];
+        if (key) {
+            return window.i18n ? window.i18n.t(key) : tagName;
+        }
+        return tagName;
+    };
+
     let getBoxStyle = (group, tag) => {
         if(tag.name === '無') return 'text-slate-500 border-slate-700/50 opacity-40 bg-slate-900/50';
         let base = '';
@@ -496,19 +507,19 @@ export function renderScore(battle, activeHighlight) {
     
     <div class="grid grid-cols-4 gap-1.5 mb-1">
         <div onclick="window.setHighlight('A')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('A', res.tagA)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagA.name}</div>
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagA.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagA.multi.toFixed(1)}</div>
         </div>
         <div onclick="window.setHighlight('B')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('B', res.tagB)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagB.name}</div>
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagB.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagB.multi.toFixed(1)}</div>
         </div>
         <div onclick="window.setHighlight('C')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('C', res.tagC)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagC.name}</div>
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagC.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagC.multi.toFixed(1)}</div>
         </div>
         <div onclick="window.setHighlight('D')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('D', res.tagD)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${res.tagD.name}</div>
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagD.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagD.multi.toFixed(1)}</div>
         </div>
     </div>
@@ -650,13 +661,60 @@ export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFu
     }
 }
 
-export function renderHistoryModal(records) {
+export function renderHistoryModal(records, metaData) {
+
+    let pbHtml = '';
+    if (metaData && metaData.stats) {
+        // Find best combination local name using existing DB
+        let comboTag = metaData.stats.highestDamageCombo;
+        let comboKey = '';
+        if(comboTag === '無') comboKey = 'messages.none';
+        else {
+           for (let g of ['groupA', 'groupB', 'groupC', 'groupD']) {
+               let found = window.RULE_DB?.[g]?.find(r=>r.name === comboTag);
+               if(found) {
+                  let idx = window.RULE_DB[g].indexOf(found);
+                  if(g==='groupA') comboKey = 'rules.rule_a'+idx+'.name';
+                  else if(g==='groupB') comboKey = 'rules.rule_b'+idx+'.name';
+                  else if(g==='groupC') comboKey = 'rules.rule_c'+idx+'.name';
+                  else if(g==='groupD') comboKey = 'rules.rule_d'+idx+'.name';
+                  break;
+               }
+           }
+        }
+        let highestDamageComboTranslated = (comboKey && window.i18n) ? window.i18n.t(comboKey) : comboTag;
+
+        pbHtml = `
+            <div class="bg-amber-900/40 border border-amber-600/50 p-4 rounded-xl mb-6 shadow-inner">
+                <h3 class="text-lg font-black text-amber-400 mb-3 flex items-center gap-2">${i18n.t('ui.pb_title') || '🏆 個人最佳紀錄'}</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <div class="text-xs text-amber-200/70 font-bold">${i18n.t('ui.pb_highest_dmg') || '最高傷害'}</div>
+                        <div class="text-xl font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">${Math.floor(metaData.stats.highestDamage).toLocaleString()}</div>
+                        <div class="text-[10px] text-amber-400/80 mt-0.5">${highestDamageComboTranslated}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-amber-200/70 font-bold">${i18n.t('ui.pb_highest_multi') || '最高倍率'}</div>
+                        <div class="text-xl font-black text-emerald-400">x${metaData.stats.highestMulti.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-amber-200/70 font-bold">${i18n.t('ui.pb_highest_infinite') || '最高無限層數'}</div>
+                        <div class="text-xl font-black text-purple-400">${metaData.stats.highestInfiniteLevel > 0 ? metaData.stats.highestInfiniteLevel : '-'}</div>
+                    </div>
+                </div>
+                <div class="mt-3 flex overflow-x-auto gap-1 hide-scrollbar">
+                    ${metaData.stats.highestDamageRelics.map(r => `<img src="${window.RELIC_DB[r]?.icon || 'img/relic_placeholder.png'}" class="w-6 h-6 rounded-md border border-slate-600 shadow-sm" title="${window.RELIC_DB[r]?.name}">`).join('')}
+                </div>
+            </div>
+        `;
+    }
+
     if (!records || records.length === 0) {
-        el.historyContent.innerHTML = `<div class="text-center text-slate-500 py-6 font-bold">${i18n.t('messages.history_empty')}</div>`;
+        el.historyContent.innerHTML = pbHtml + `<div class="text-center text-slate-500 py-6 font-bold">${i18n.t('messages.history_empty')}</div>`;
         return;
     }
     
-    el.historyContent.innerHTML = records.map((r, i) => {
+    el.historyContent.innerHTML = pbHtml + records.map((r, i) => {
         let resultColor = r.win ? "text-amber-400" : "text-red-400";
         let resultText = r.stageName || (r.win ? "勝利" : "失敗"); // This is saved in DB, so it might be hard to translate retrospectively.
         let dateObj = new Date(r.date);
