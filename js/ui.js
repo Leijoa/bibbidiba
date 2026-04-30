@@ -8,7 +8,7 @@ const SOULS_UPG_DEFS = [
     { id: 'rerolls', name: '🎲 骰子掌握', desc: '初始重骰次數 +1', max: 2, cost: (lv) => 15 },
     { id: 'startRelic', name: '🎁 初始裝備', desc: '開局隨機獲得 1 個普通遺物', max: 1, cost: (lv) => 30 },
     { id: 'finalDamage', name: '⚔️ 力量覺醒', desc: '最終傷害 +10%', max: 5, cost: (lv) => 20 },
-    { id: 'soulBurst', name: '🔥 靈魂爆發', desc: '敵人血量x(等級+1), 靈魂獲得量+(等級)', max: 10, cost: (lv) => 100 + (lv || 0) * 100 }
+    { id: 'soulBurst', name: '🔥 靈魂爆發', desc: '敵人血量x(等級+1), 靈魂獲得量+(等級), 在2,5,8,10級時神話遺物上限+1', max: 10, cost: (lv) => 100 + (lv || 0) * 100 }
 ];
 
 

@@ -349,6 +349,9 @@ function initTitleScreen() {
 
     document.getElementById('btn-rules').onclick = () => UI.el.rulesModal.classList.remove('hidden');
     document.getElementById('btn-close-rules').onclick = () => UI.el.rulesModal.classList.add('hidden');
+    if (document.getElementById('btn-back-to-title')) {
+        document.getElementById('btn-back-to-title').onclick = () => location.reload();
+    }
 
         if (UI.el.btnSouls) {
         UI.el.btnSouls.onclick = () => {
@@ -1059,8 +1062,17 @@ function checkRelicFusion() {
                     return rDef && rDef.rarity === 5;
                 });
 
-                if (currentRarity5.length >= 2) {
-                    // Maximum of 2 rarity 5 items reached
+                let burstLevel = metaData.upgrades.soulBurst || 0;
+                let extraLimit = 0;
+                if (burstLevel >= 10) extraLimit = 4;
+                else if (burstLevel >= 8) extraLimit = 3;
+                else if (burstLevel >= 5) extraLimit = 2;
+                else if (burstLevel >= 2) extraLimit = 1;
+
+                let maxMythic = 2 + extraLimit;
+
+                if (currentRarity5.length >= maxMythic) {
+                    // Maximum of maxMythic rarity 5 items reached
                     // Trigger modal and pause the checking loop
                     player.relics = player.relics.filter(r => r !== rec.mat1 && r !== rec.mat2);
                     window.triggerFusionReplace(currentRarity5, fid, rec.mat1, rec.mat2);
