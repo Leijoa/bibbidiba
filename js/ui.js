@@ -597,6 +597,11 @@ export function renderShopItems(shopItems, player) {
 export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
     if (!el.fusionReplaceModal || !el.fusionReplaceContent) return;
 
+    let titleEl = document.getElementById('fusion-limit-title');
+    if (titleEl) {
+        titleEl.innerHTML = `⚠️ 力量超載！再生遺物達上限 (${currentFusions.length}/${currentFusions.length})`;
+    }
+
     let html = '';
     const allRelics = [...currentFusions, newFusionId];
 
