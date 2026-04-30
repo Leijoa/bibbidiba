@@ -38,6 +38,13 @@ const COLLECTION_KEY = 'bibbidiba_collection_v60';
 const META_KEY = 'bibbidiba_meta_v1';
 let metaData = {
     souls: 0,
+    stats: {
+        highestDamage: 0,
+        highestDamageCombo: '無',
+        highestDamageRelics: [],
+        highestMulti: 0,
+        highestInfiniteLevel: 0
+    },
     upgrades: {
         hp: 0,         // 等級 0~2 (+1 最大生命)
         discount: 0,   // 等級 0~3 (-2 商店金幣)
@@ -339,7 +346,7 @@ function initTitleScreen() {
     if (UI.el.btnHistory && UI.el.historyModal && UI.el.btnCloseHistory) {
         UI.el.btnHistory.onclick = () => {
             let history = secureParseStorage(HISTORY_KEY, [], (data) => Array.isArray(data));
-            UI.renderHistoryModal(history);
+            UI.renderHistoryModal(history, metaData);
             UI.el.historyModal.classList.remove('hidden');
         };
         UI.el.btnCloseHistory.onclick = () => UI.el.historyModal.classList.add('hidden');
@@ -907,6 +914,23 @@ window.fireAttack = function() {
         player.highestDamageCombo = combos.join(' + ') || '無';
     }
     
+    if (dmg > metaData.stats.highestDamage) {
+        metaData.stats.highestDamage = dmg;
+        let combos = [];
+        if (battle.scoreResult.tagA.name !== '無') { combos.push(battle.scoreResult.tagA.name); }
+        if (battle.scoreResult.tagB.name !== '無') { combos.push(battle.scoreResult.tagB.name); }
+        if (battle.scoreResult.tagC.name !== '無') { combos.push(battle.scoreResult.tagC.name); }
+        if (battle.scoreResult.tagD.name !== '無') { combos.push(battle.scoreResult.tagD.name); }
+        metaData.stats.highestDamageCombo = combos.join(' + ') || '無';
+        metaData.stats.highestDamageRelics = [...player.relics];
+        saveMetaData();
+    }
+
+    if (battle.scoreResult.finalMultiplier > metaData.stats.highestMulti) {
+        metaData.stats.highestMulti = battle.scoreResult.finalMultiplier;
+        saveMetaData();
+    }
+
     // Always unlock hands regardless of highest damage
     if (battle.scoreResult.tagA.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagA.name);
     if (battle.scoreResult.tagB.name !== '無') unlockCollectionItem('hand', battle.scoreResult.tagB.name);
