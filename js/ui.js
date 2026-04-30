@@ -448,15 +448,19 @@ export function renderDice(battle, activeHighlight, player) {
 export function renderControls(battle) {
     if (battle.state === 'IDLE') { el.controlsContainer.innerHTML = ''; return; }
     let isRolling = battle.state === 'ROLLING', isAttacking = battle.state === 'ATTACKING';
-    let rollDisabled = (battle.rollsLeft <= 0 || isRolling || isAttacking) ? "disabled opacity-50 cursor-not-allowed" : "hover:bg-blue-500 active:scale-95";
-    let scoreDisabled = (isRolling || isAttacking) ? "disabled opacity-50 cursor-not-allowed" : "hover:bg-red-500 active:scale-95 shadow-lg shadow-red-900/50";
+
+    let isRollDisabled = (battle.rollsLeft <= 0 || isRolling || isAttacking);
+    let rollClass = isRollDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-500 active:scale-95";
+
+    let isScoreDisabled = (isRolling || isAttacking);
+    let scoreClass = isScoreDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-red-500 active:scale-95 shadow-lg shadow-red-900/50";
 
     el.controlsContainer.innerHTML = `
-    <button onclick="window.executeRoll(false)" ${rollDisabled} class="w-full flex-1 bg-blue-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
+    <button onclick="window.executeRoll(false)" ${isRollDisabled ? 'disabled="disabled"' : ''} class="w-full flex-1 bg-blue-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 ${rollClass}">
         <span class="text-sm md:text-lg leading-tight">${i18n.t('ui.btn_roll')}</span>
         <span class="text-[8px] md:text-[10px] opacity-90 mt-0.5 font-bold">${i18n.t('ui.btn_roll_hint')}</span>
     </button>
-    <button onclick="window.fireAttack()" ${scoreDisabled} class="w-full flex-[1.5] bg-red-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
+    <button onclick="window.fireAttack()" ${isScoreDisabled ? 'disabled="disabled"' : ''} class="w-full flex-[1.5] bg-red-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-red-800 active:border-b-0 active:translate-y-1 ${scoreClass}">
         <span class="text-lg md:text-2xl mb-0.5">🗡️</span>
         <span class="text-xs md:text-base leading-tight">${i18n.t('ui.btn_attack')}</span>
     </button>

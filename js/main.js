@@ -57,7 +57,22 @@ let metaData = {
 };
 
 function loadMetaData() {
-    metaData = secureParseStorage(META_KEY, metaData, (data) => typeof data.souls === 'number');
+    let parsed = secureParseStorage(META_KEY, metaData, (data) => typeof data.souls === 'number');
+    if (!parsed.stats) {
+        parsed.stats = {
+            highestDamage: 0,
+            highestDamageCombo: '無',
+            highestDamageRelics: [],
+            highestMulti: 0,
+            highestInfiniteLevel: 0
+        };
+    }
+    if (!parsed.upgrades) {
+        parsed.upgrades = {
+            hp: 0, discount: 0, startGold: 0, rerolls: 0, startRelic: 0, finalDamage: 0, soulBurst: 0
+        };
+    }
+    metaData = parsed;
 }
 function saveMetaData() {
     localStorage.setItem(META_KEY, JSON.stringify(metaData));
@@ -800,7 +815,7 @@ window.executeRoll = function(isInitial = false) {
 };
 
 window.fireAttack = function() {
-    if (battle.state !== 'WAIT_ACTION') return;
+    if (battle.state !== 'WAIT_ACTION' || !battle.scoreResult) return;
     battle.state = 'ATTACKING';
     activeHighlight = null;
     
