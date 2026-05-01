@@ -193,6 +193,10 @@ ui: {
     pb_title: '🏆 自己ベスト',
     pb_highest_dmg: '最高ダメージ',
     pb_highest_multi: '最高倍率',
+    fusion_limit_title: '⚠️ 力の暴走！神話遺物の上限に到達 (2/2)',
+    fusion_materials: '返還される素材：',
+    fusion_new_item: '今回合成',
+    fusion_discard_btn: '破棄して分解する',
     pb_highest_infinite: '最高到達無限階層'
   },
   souls: {
