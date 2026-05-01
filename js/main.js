@@ -1300,7 +1300,12 @@ window.rerollShop = function(isInitial = false) {
 window.showFusionInfo = function(fusionId) {
     let relic = RELIC_DB.find(r => r.id === fusionId);
     if (relic) {
-        UI.showToast(i18n.t('messages.toast_fusion_preview', relic.name, relic.desc));
+        // 先動態翻譯遺物的名稱與描述
+        let rName = i18n.t(`relics.${fusionId}.name`) || relic.name;
+        let rDesc = i18n.t(`relics.${fusionId}.desc`) || relic.desc;
+        
+        // 再把翻譯好的名稱與描述塞進去
+        UI.showToast(i18n.t('messages.toast_fusion_preview', rName, rDesc));
     }
 };
 
