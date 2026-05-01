@@ -530,7 +530,7 @@ export function renderScore(battle, activeHighlight) {
             <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagD.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagD.multi.toFixed(1)}</div>
         </div>
-    </div>
+    `;
     if (el.finalScoreValue) {
         if (window.getStageActiveShackle && window.getStageActiveShackle() === 'bluff') {
             el.finalScoreValue.innerText = '???';
@@ -692,9 +692,9 @@ export function renderHistoryModal(records, metaData) {
         if(comboTag === '無') comboKey = 'messages.none';
         else {
            for (let g of ['groupA', 'groupB', 'groupC', 'groupD']) {
-               let found = window.RULE_DB?.[g]?.find(r=>r.name === comboTag);
+               let found = RULE_DB?.[g]?.find(r=>r.name === comboTag);
                if(found) {
-                  let idx = window.RULE_DB[g].indexOf(found);
+                  let idx = RULE_DB[g].indexOf(found);
                   if(g==='groupA') comboKey = 'rules.rule_a'+idx+'.name';
                   else if(g==='groupB') comboKey = 'rules.rule_b'+idx+'.name';
                   else if(g==='groupC') comboKey = 'rules.rule_c'+idx+'.name';
@@ -724,7 +724,7 @@ export function renderHistoryModal(records, metaData) {
                     </div>
                 </div>
                 <div class="mt-3 flex overflow-x-auto gap-1 hide-scrollbar">
-                    ${metaData.stats.highestDamageRelics.map(r => `<img src="${window.RELIC_DB[r]?.icon || 'img/relic_placeholder.png'}" class="w-6 h-6 rounded-md border border-slate-600 shadow-sm" title="${window.RELIC_DB[r]?.name}">`).join('')}
+                    ${metaData.stats.highestDamageRelics.map(r => `<img src="${RELIC_DB.find(x => x.id === r)?.icon || 'img/relic_placeholder.png'}" class="w-6 h-6 rounded-md border border-slate-600 shadow-sm" title="${RELIC_DB.find(x => x.id === r)?.name}">`).join('')}
                 </div>
             </div>
         `;
