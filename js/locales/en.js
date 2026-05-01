@@ -151,6 +151,10 @@ export const en_data = {
     'rule_d3': { name: 'The Middle Way', desc: 'Board contains exactly zero 1s and 8s' }
   },
 ui: {
+    btn_settings: '⚙️ Settings',
+    settings_title: '⚙️ Game Settings',
+    bgm_volume: '🎵 BGM Volume',
+    sfx_volume: '🔊 SFX Volume',
     title_main: 'BIBBIDIBA',
     title_sub: 'BIBBIDIBA',
     title_desc: 'Roll 8 dice to form combinations and stack multipliers! Reroll twice per turn. Defeat enemies within the turn limit to gain relics and strengthen your build. Challenge 10 consecutive stages!',
@@ -189,7 +193,7 @@ ui: {
     pb_title: '🏆 Personal Bests',
     pb_highest_dmg: 'Highest Damage',
     pb_highest_multi: 'Highest Multiplier',
-    pb_highest_infinite: 'Max Infinite Lvl'
+    pb_highest_infinite: 'Highest Infinite Floor'
   },
   souls: {
     'hp': { name: '❤️ Physique', desc: 'Max HP +1' },
@@ -273,6 +277,7 @@ ui: {
     'rarity_5': 'Mythic',
     'shop_select': '✅ Select',
     'shop_rerolled': '🚫 Already Rerolled',
-    'shop_leave': 'Leave Shop & Next Stage 👉'
+    'shop_leave': 'Leave Shop & Next Stage 👉',
+    'confirm_back_title': 'Are you sure you want to return to the title?'
   }
 };

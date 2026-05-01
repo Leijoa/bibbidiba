@@ -317,6 +317,7 @@ function checkSaveExists() {
 // --- 初始化與主流程 ---
 function initTitleScreen() {
     i18n.updateDOM(); // Initialize standard DOM texts
+    if (window.i18n) { i18n.updateDOM(); }
 
     const langSelect = document.getElementById('lang-select');
     if (langSelect) {
@@ -350,7 +351,11 @@ function initTitleScreen() {
     document.getElementById('btn-rules').onclick = () => UI.el.rulesModal.classList.remove('hidden');
     document.getElementById('btn-close-rules').onclick = () => UI.el.rulesModal.classList.add('hidden');
     if (document.getElementById('btn-back-to-title')) {
-        document.getElementById('btn-back-to-title').onclick = () => location.reload();
+        document.getElementById('btn-back-to-title').onclick = () => {
+            if (window.confirm(i18n.t('ui.confirm_back_title'))) {
+                location.reload();
+            }
+        };
     }
 
         if (UI.el.btnSouls) {
@@ -409,12 +414,91 @@ function initTitleScreen() {
         };
     }
 
-    let btnSound = document.getElementById('btn-sound-toggle');
-    if (btnSound) {
-        btnSound.onclick = () => {
-            let enabled = Audio.toggleSound();
-            btnSound.innerText = enabled ? i18n.t('ui.sound_on') : i18n.t('ui.sound_off');
-            btnSound.setAttribute('data-i18n', enabled ? 'ui.sound_on' : 'ui.sound_off');
+    const settingsModal = document.getElementById('settings-modal');
+    const bgmSlider = document.getElementById('bgm-volume-slider');
+    const sfxSlider = document.getElementById('sfx-volume-slider');
+    const settingsLangSelect = document.getElementById('settings-lang-select');
+
+    // Load saved settings
+    let savedSettingsStr = localStorage.getItem('bibbidiba_settings');
+    if (savedSettingsStr) {
+        try {
+            const savedSettings = JSON.parse(savedSettingsStr);
+            if (savedSettings.bgmVolume !== undefined) {
+                Audio.setBGMVolume(savedSettings.bgmVolume);
+                if (bgmSlider) bgmSlider.value = savedSettings.bgmVolume;
+            }
+            if (savedSettings.sfxVolume !== undefined) {
+                Audio.setSFXVolume(savedSettings.sfxVolume);
+                if (sfxSlider) sfxSlider.value = savedSettings.sfxVolume;
+            }
+        } catch (e) {
+            console.error("Failed to parse settings", e);
+        }
+    }
+
+    const saveSettings = () => {
+        localStorage.setItem('bibbidiba_settings', JSON.stringify({
+            bgmVolume: parseFloat(bgmSlider.value),
+            sfxVolume: parseFloat(sfxSlider.value)
+        }));
+    };
+
+    if (bgmSlider) {
+        bgmSlider.addEventListener('input', (e) => {
+            Audio.setBGMVolume(parseFloat(e.target.value));
+            saveSettings();
+        });
+    }
+
+    if (sfxSlider) {
+        sfxSlider.addEventListener('input', (e) => {
+            Audio.setSFXVolume(parseFloat(e.target.value));
+            saveSettings();
+            Audio.playClickSound(); // Preview SFX volume
+        });
+    }
+
+    if (settingsLangSelect) {
+        settingsLangSelect.value = i18n.getLocale();
+        settingsLangSelect.addEventListener('change', (e) => {
+            i18n.setLocale(e.target.value);
+            const langSelect = document.getElementById('lang-select');
+            if (langSelect) langSelect.value = e.target.value; // Sync with home screen select
+        });
+        // Sync the other way around: home screen changing -> settings select changes
+        const langSelect = document.getElementById('lang-select');
+        if (langSelect) {
+            langSelect.addEventListener('change', (e) => {
+                settingsLangSelect.value = e.target.value;
+            });
+        }
+    }
+
+    const openSettings = () => {
+        Audio.initAudio();
+        if (settingsModal) settingsModal.classList.remove('hidden');
+    };
+
+    const btnTitleSettings = document.getElementById('btn-title-settings');
+    if (btnTitleSettings) btnTitleSettings.onclick = openSettings;
+
+    const btnHeaderSettings = document.getElementById('btn-header-settings');
+    if (btnHeaderSettings) btnHeaderSettings.onclick = openSettings;
+
+    const btnCloseSettings = document.getElementById('btn-close-settings');
+    if (btnCloseSettings) {
+        btnCloseSettings.onclick = () => {
+            if (settingsModal) settingsModal.classList.add('hidden');
+        };
+    }
+
+    const btnSettingsBack = document.getElementById('btn-settings-back-to-title');
+    if (btnSettingsBack) {
+        btnSettingsBack.onclick = () => {
+            if (window.confirm(i18n.t('ui.confirm_back_title'))) {
+                location.reload();
+            }
         };
     }
 }
@@ -1303,7 +1387,7 @@ window.showFusionInfo = function(fusionId) {
         // 先動態翻譯遺物的名稱與描述
         let rName = i18n.t(`relics.${fusionId}.name`) || relic.name;
         let rDesc = i18n.t(`relics.${fusionId}.desc`) || relic.desc;
-        
+
         // 再把翻譯好的名稱與描述塞進去
         UI.showToast(i18n.t('messages.toast_fusion_preview', rName, rDesc));
     }

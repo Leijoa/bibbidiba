@@ -660,7 +660,7 @@ export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
 export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFusionRecycle = false) {
     if (shopRerollsUsed === 0) {
         // 動態抓取 ui.btn_reroll 語系鍵
-        el.shopRerollBtn.innerHTML = i18n.t('ui.btn_reroll') || "🔄 刷新商店 (限1次)"; 
+        el.shopRerollBtn.innerHTML = i18n.t('ui.btn_reroll') || "🔄 刷新商店 (限1次)";
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
         el.shopRerollBtn.disabled = false;
     } else {

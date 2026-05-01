@@ -151,6 +151,10 @@ export const ja_data = {
     'rule_d3': { name: '中庸の道', desc: '盤面に1と8が一つも無い' }
   },
 ui: {
+    btn_settings: '⚙️ 設定',
+    settings_title: '⚙️ ゲーム設定',
+    bgm_volume: '🎵 BGM音量',
+    sfx_volume: '🔊 SE音量',
     title_main: 'BIBBIDIBA',
     title_sub: 'ビビディバ',
     title_desc: '8つのダイスを振って役を作り、倍率を重ねよう！毎ターン2回振り直し可能。制限ターン内に敵を倒して遺物を獲得し、ビルドを強化。10ステージ連続クリアを目指せ！',
@@ -189,7 +193,7 @@ ui: {
     pb_title: '🏆 自己ベスト',
     pb_highest_dmg: '最高ダメージ',
     pb_highest_multi: '最高倍率',
-    pb_highest_infinite: '最高無限階層'
+    pb_highest_infinite: '最高到達無限階層'
   },
   souls: {
     'hp': { name: '❤️ 体力鍛錬', desc: '最大 HP +1' },
@@ -273,6 +277,7 @@ ui: {
     'rarity_5': 'ミシック',
     'shop_select': '✅ 選択',
     'shop_rerolled': '🚫 更新済み',
-    'shop_leave': '店を出て次のステージへ 👉'
+    'shop_leave': '店を出て次のステージへ 👉',
+    'confirm_back_title': 'タイトルに戻りますか？'
   }
 };
