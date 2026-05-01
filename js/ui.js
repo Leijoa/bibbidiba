@@ -218,14 +218,18 @@ export function updateEnemyUI(stage) {
 window.showShackleInfo = function(id) {
     let s = SHACKLE_DB.find(x => x.id === id);
     if(s) {
+        // 使用 i18n 翻譯，若語系檔找不到則退回原本的中文 s.name / s.desc
+        let sName = i18n.t(`shackles.${s.id}.name`) || s.name;
+        let sDesc = i18n.t(`shackles.${s.id}.desc`) || s.desc;
+
         let container = document.createElement('div');
         let nameSpan = document.createElement('span');
         nameSpan.className = s.type === 'heavy' ? "text-red-400 font-black" : "text-amber-400 font-black";
-        nameSpan.textContent = s.name;
+        nameSpan.textContent = sName; // 使用翻譯後的名稱
 
         let descSpan = document.createElement('span');
         descSpan.className = "text-sm md:text-lg text-slate-200 mt-2 block";
-        descSpan.textContent = s.desc;
+        descSpan.textContent = sDesc; // 使用翻譯後的描述
 
         container.appendChild(nameSpan);
         container.appendChild(descSpan);
@@ -579,7 +583,7 @@ export function renderShopItems(shopItems, player) {
                         <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
                         <div class="flex flex-col items-end gap-1">
                             <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`messages.rarity_${r.rarity}`) || style.label}</span>
-                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('shop_fusion_hint') || '可融合'}</span>` : ''}
+                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('ui.shop_fusion_hint') || '可融合'}</span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -655,7 +659,8 @@ export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
 
 export function updateShopRerollBtn(shopRerollsUsed, hasScavenger = false, hasFusionRecycle = false) {
     if (shopRerollsUsed === 0) {
-        el.shopRerollBtn.innerHTML = "🔄 刷新商店 (限1次)";
+        // 動態抓取 ui.btn_reroll 語系鍵
+        el.shopRerollBtn.innerHTML = i18n.t('ui.btn_reroll') || "🔄 刷新商店 (限1次)";
         el.shopRerollBtn.className = "w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors active:scale-95 text-base md:text-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-lg shadow-emerald-900/50";
         el.shopRerollBtn.disabled = false;
     } else {

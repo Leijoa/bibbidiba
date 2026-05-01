@@ -18,6 +18,11 @@ export const translations = {
             'bonus_reroll': '剩餘資源加成 (剩 {0} 次)',
       'btn_continue': '繼續旅程',
       'btn_new_game': '開始新遊戲',
+      'btn_settings': '⚙️ 設定',
+      'settings_title': '⚙️ 遊戲設定',
+      'bgm_volume': '🎵 音樂音量',
+      'sfx_volume': '🔊 音效音量',
+      'confirm_back_title': '確定要回到標題嗎？',
       'btn_back_to_title': '🏠 回標題',
       'btn_collection': '📖 收集冊',
       'btn_history': '歷史牌局',
@@ -81,6 +86,11 @@ export const translations = {
             'bonus_reroll': '剩余资源加成 (剩 {0} 次)',
       'btn_continue': '继续旅程',
       'btn_new_game': '开始新游戏',
+      'btn_settings': '⚙️ 设置',
+      'settings_title': '⚙️ 游戏设置',
+      'bgm_volume': '🎵 音乐音量',
+      'sfx_volume': '🔊 音效音量',
+      'confirm_back_title': '确定要回到标题吗？',
       'btn_back_to_title': '🏠 回标题',
       'btn_collection': '📖 收集册',
       'btn_history': '历史牌局',
@@ -142,6 +152,11 @@ export const translations = {
             'bonus_reroll': 'Reroll Bonus ({0} left)',
       'btn_continue': 'Continue Journey',
       'btn_new_game': 'Start New Game',
+      'btn_settings': '⚙️ Settings',
+      'settings_title': '⚙️ Game Settings',
+      'bgm_volume': '🎵 BGM Volume',
+      'sfx_volume': '🔊 SFX Volume',
+      'confirm_back_title': 'Are you sure you want to return to the title?',
       'btn_back_to_title': '🏠 Title',
       'btn_collection': '📖 Collection',
       'btn_history': 'Match History',
@@ -322,5 +337,6 @@ class I18nManager {
 }
 
 export const i18n = new I18nManager();
+if (typeof window !== 'undefined') window.i18n = i18n;
 if (typeof window !== 'undefined') window.i18n = i18n;
 window.i18n = i18n; // For easy console access and inline event handlers

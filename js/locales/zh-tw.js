@@ -151,6 +151,10 @@ export const zh_tw_data = {
     'rule_d3': { name: '中庸之道', desc: '盤面完全沒有 1 和 8' }
   },
 ui: {
+    btn_settings: '⚙️ 設定',
+    settings_title: '⚙️ 遊戲設定',
+    bgm_volume: '🎵 音樂音量',
+    sfx_volume: '🔊 音效音量',
     title_main: 'BIBBIDIBA',
     title_sub: '比比丟八',
     title_desc: '擲八顆骰子湊牌型疊加倍率！每回合重骰兩次，在限制回合內打倒敵人獲取遺物強化流派，挑戰連過十關！',
@@ -273,6 +277,7 @@ ui: {
     'rarity_5': '神話',
     'shop_select': '✅ 選擇',
     'shop_rerolled': '🚫 已刷新過',
-    'shop_leave': '離開商店前往下一關 👉'
+    'shop_leave': '離開商店前往下一關 👉',
+    'confirm_back_title': '確定要回到標題嗎？'
   }
 };
