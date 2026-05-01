@@ -572,18 +572,21 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         baseABCD = tagA.multi * tagB.multi * tagC.multi * tagD.multi;
     }
 
+// 建立一個小助手，安全抓取語系檔中的遺物名稱
+    const getRelicName = (id, fallback) => window.i18n ? window.i18n.t(`relics.${id}.name`) : fallback;
+
     // ★ 更新：【雷爪獅的祝福】條件改為場上有 1
     if (playerRelics.includes('pansy') && counts[1] > 0) {
         let amt = isExploited ? 1.5 : 3.0;
         globalMulti *= amt;
-        globalNotes.push(`【雷爪獅的祝福】 x${amt.toFixed(1)}`);
+        globalNotes.push(`${getRelicName('pansy', '【雷爪獅的祝福】')} x${amt.toFixed(1)}`);
     }
 
     // ★ 新增：【捧夠的祝福】條件為場上有 8
     if (playerRelics.includes('pongo') && counts[8] > 0) {
         let amt = isExploited ? 1.5 : 3.0;
         globalMulti *= amt;
-        globalNotes.push(`【捧夠的祝福】 x${amt.toFixed(1)}`);
+        globalNotes.push(`${getRelicName('pongo', '【捧夠的祝福】')} x${amt.toFixed(1)}`);
     }
 
     if (playerRelics.includes('highlow') && counts[1] > 0 && counts[8] > 0) {
