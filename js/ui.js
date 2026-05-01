@@ -514,25 +514,23 @@ export function renderScore(battle, activeHighlight) {
     </div>
     
     <div class="grid grid-cols-4 gap-1.5 mb-1">
-        <div onclick="window.setHighlight('A')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('A', res.tagA)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagA.name)}</div>
+        <div onclick="window.setHighlight('A')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('A', res.tagA)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagA.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagA.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('B')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('B', res.tagB)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagB.name)}</div>
+        <div onclick="window.setHighlight('B')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('B', res.tagB)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagB.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagB.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('C')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('C', res.tagC)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagC.name)}</div>
+        <div onclick="window.setHighlight('C')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('C', res.tagC)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagC.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagC.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('D')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border ${getBoxStyle('D', res.tagD)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90">${getTagLocalName(res.tagD.name)}</div>
+        <div onclick="window.setHighlight('D')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('D', res.tagD)}">
+            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagD.name)}</div>
             <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagD.multi.toFixed(1)}</div>
         </div>
     </div>
-    `;
-
     if (el.finalScoreValue) {
         if (window.getStageActiveShackle && window.getStageActiveShackle() === 'bluff') {
             el.finalScoreValue.innerText = '???';
