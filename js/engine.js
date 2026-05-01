@@ -1,4 +1,4 @@
-engine_js_content = """// js/engine.js
+// js/engine.js
 // 負責處理所有骰子數值的結算與配對邏輯
 
 const relicBaseVals = { 1: 10, 2: 10, 3: 11, 4: 11, 5: 11, 6: 11, 7: 12, 8: 12 };
@@ -652,9 +652,3 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     return result;
 }
-"""
-
-file_path = "engine_v2.js"
-with open(file_path, "w", encoding="utf-8") as f:
-    f.write(engine_js_content)
-print(f"File generated successfully: {file_path}")
