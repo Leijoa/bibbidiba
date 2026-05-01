@@ -611,29 +611,43 @@ export function showFusionReplaceModal(currentFusions, newFusionId, callback) {
         let style = RARITY[relic.rarity] || RARITY[1];
         let isNew = (id === newFusionId);
 
+        let rName = i18n.t(`relics.${relic.id}.name`) || relic.name;
+        let rDesc = i18n.t(`relics.${relic.id}.desc`) || relic.desc;
+
         let materialsHtml = '';
         if (FUSION_RECIPES[id]) {
             let mat1 = RELIC_DB.find(x => x.id === FUSION_RECIPES[id].mat1);
             let mat2 = RELIC_DB.find(x => x.id === FUSION_RECIPES[id].mat2);
+            // 取得素材的翻譯名稱
+            let mat1Name = mat1 ? (i18n.t(`relics.${mat1.id}.name`) || mat1.name) : FUSION_RECIPES[id].mat1;
+            let mat2Name = mat2 ? (i18n.t(`relics.${mat2.id}.name`) || mat2.name) : FUSION_RECIPES[id].mat2;
+            
+            // 使用語系檔中的 ui.fusion_materials (需要去語系檔補上這個 key)
+            let returnMatText = i18n.t('ui.fusion_materials') || '退回素材：';
             materialsHtml = `<div class="text-[10px] md:text-xs text-amber-300/80 mt-2 border-t border-amber-900/50 pt-2">
-                退回素材：<br/>• ${mat1 ? mat1.name : FUSION_RECIPES[id].mat1}<br/>• ${mat2 ? mat2.name : FUSION_RECIPES[id].mat2}
+                ${returnMatText}<br/>• ${mat1Name}<br/>• ${mat2Name}
             </div>`;
         }
 
+        // 取得標籤與按鈕的翻譯 (需要去語系檔補上這些 key)
+        let newFusionText = i18n.t('ui.fusion_new_item') || '本次合成';
+        let discardBtnText = i18n.t('ui.fusion_discard_btn') || '捨棄並分解';
+
+        // 修正右上角文字看不清楚的問題：將原本的 right-8 改為 right-6，並稍微增加 padding
         html += `
         <div class="bg-slate-900/80 border-2 ${isNew ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]' : 'border-slate-600'} rounded-xl p-3 md:p-4 flex flex-col justify-between h-full relative overflow-hidden">
-            ${isNew ? '<div class="absolute -top-1 -right-8 bg-amber-500 text-slate-900 text-[10px] font-black px-8 py-1 rotate-45">本次合成</div>' : ''}
+            ${isNew ? `<div class="absolute -top-1 -right-6 bg-amber-500 text-slate-900 text-[10px] font-black px-10 py-1 rotate-45">${newFusionText}</div>` : ''}
             <div>
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-base md:text-lg font-black ${style.color}">${relic.name}</h3>
-                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`messages.rarity_${relic.rarity}`) || style.label}</span>
+                <div class="flex justify-between items-start mb-2 mt-2">
+                    <h3 class="text-base md:text-lg font-black ${style.color}">${rName}</h3>
+                    <span class="text-[10px] md:text-xs px-2 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold z-10 relative">${i18n.t(`messages.rarity_${relic.rarity}`) || style.label}</span>
                 </div>
-                <p class="text-xs md:text-sm text-slate-300 font-bold mb-3">${relic.desc}</p>
+                <p class="text-xs md:text-sm text-slate-300 font-bold mb-3">${rDesc}</p>
                 ${materialsHtml}
             </div>
 
             <button onclick="window.selectFusionDiscard('${id}')" class="w-full mt-4 bg-red-950/80 hover:bg-red-900 border border-red-800 hover:border-red-500 text-red-400 hover:text-white font-black py-2.5 rounded-lg transition-all active:scale-95 text-sm md:text-base">
-                捨棄並分解
+                ${discardBtnText}
             </button>
         </div>
         `;
