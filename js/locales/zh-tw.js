@@ -193,6 +193,10 @@ ui: {
     pb_title: '🏆 個人最佳紀錄',
     pb_highest_dmg: '最高傷害',
     pb_highest_multi: '最高倍率',
+    fusion_limit_title: '⚠️ 力量超載！再生遺物達上限 (2/2)',
+    fusion_materials: '退回素材：',
+    fusion_new_item: '本次合成',
+    fusion_discard_btn: '捨棄並分解',
     pb_highest_infinite: '最高無限層數'
   },
   souls: {
