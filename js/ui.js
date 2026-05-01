@@ -583,7 +583,7 @@ export function renderShopItems(shopItems, player) {
                         <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
                         <div class="flex flex-col items-end gap-1">
                             <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`messages.rarity_${r.rarity}`) || style.label}</span>
-                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('shop_fusion_hint') || '可融合'}</span>` : ''}
+                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('ui.shop_fusion_hint') || '可融合'}</span>` : ''}
                         </div>
                     </div>
                 </div>
