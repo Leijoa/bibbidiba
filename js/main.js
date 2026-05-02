@@ -329,8 +329,23 @@ function initTitleScreen() {
 
     i18n.subscribe(() => {
         UI.updateHeaderUI(player, stage);
-        if (battle.state !== 'IDLE' && battle.state !== 'SHOP') {
-            updateUI();
+        if (battle.state !== 'IDLE') {
+            renderAll();
+        }
+        if (!UI.el.shopOverlay.classList.contains('hidden')) {
+            UI.renderShopItems(shopItems, player);
+            UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), player.relics.includes('recycle'));
+        }
+        UI.renderRulesDB();
+
+        if (document.getElementById('history-modal') && !document.getElementById('history-modal').classList.contains('hidden')) {
+            window.renderHistoryModal();
+        }
+        if (document.getElementById('collection-modal') && !document.getElementById('collection-modal').classList.contains('hidden')) {
+            window.renderCollectionModal();
+        }
+        if (document.getElementById('souls-modal') && !document.getElementById('souls-modal').classList.contains('hidden')) {
+            window.renderSoulsModal();
         }
     });
 
