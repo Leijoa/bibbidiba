@@ -195,7 +195,7 @@ ui: {
     pb_highest_multi: 'Highest Multiplier',
     fusion_limit_title: '⚠️ Power Overload! Mythic Limit Reached (2/2)',
     fusion_materials: 'Materials Returned:',
-    fusion_new_item: 'New Power',
+    fusion_new_item: 'NEW',
     fusion_discard_btn: 'Discard & Dismantle',
     pb_highest_infinite: 'Highest Infinite Floor'
   },
