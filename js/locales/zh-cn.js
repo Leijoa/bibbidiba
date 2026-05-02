@@ -195,7 +195,7 @@ ui: {
     pb_highest_multi: '最高倍率',
     fusion_limit_title: '⚠️ 力量超载！再生遗物达上限 (2/2)',
     fusion_materials: '退回素材：',
-    fusion_new_item: '本次合成',
+    fusion_new_item: 'NEW',
     fusion_discard_btn: '舍弃并分解',
     pb_highest_infinite: '最高无限层数'
   },
