@@ -187,7 +187,7 @@ ui: {
     tab_hands: '牌型',
     tab_relics: '遺物',
     tab_shackles: '枷鎖',
-    fusion_limit_msg: '你必須選擇捨棄並<span class="text-red-400">分解</span>其中一件遺物（退回基礎素材），才能容納新的力量！',
+    fusion_limit_msg: '你必須選擇捨棄並分解其中一件遺物（退回基礎素材），才能容納新的力量！',
     score_total_base: '骰子點數加成後總和',
     bonus_reroll: '剩餘資源加成 (剩 {0} 次)',
     pb_title: '🏆 個人最佳紀錄',

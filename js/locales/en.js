@@ -187,7 +187,7 @@ ui: {
     tab_hands: 'Hands',
     tab_relics: 'Relics',
     tab_shackles: 'Shackles',
-    fusion_limit_msg: 'You must discard and <span class="text-red-400">dismantle</span> one of your relics (return to base materials) to make room for new power!',
+    fusion_limit_msg: 'You must discard and dismantle one of your relics (return to base materials) to make room for new power!',
     score_total_base: 'Total Base Score',
     bonus_reroll: 'Reroll Bonus ({0} left)',
     pb_title: '🏆 Personal Bests',
