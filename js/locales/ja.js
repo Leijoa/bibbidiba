@@ -187,7 +187,7 @@ ui: {
     tab_hands: '役',
     tab_relics: '遺物',
     tab_shackles: '枷鎖',
-    fusion_limit_msg: '新たな力を得るためには、遺物を1つ捨てて<span class="text-red-400">分解</span>（基礎素材に戻す）する必要があります！',
+    fusion_limit_msg: '新たな力を得るためには、遺物を1つ捨てて分解（基礎素材に戻す）する必要があります！',
     score_total_base: 'ダイス基本点合計',
     bonus_reroll: '残りリソースボーナス (残り {0} 回)',
     pb_title: '🏆 自己ベスト',
