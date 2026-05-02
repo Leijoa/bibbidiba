@@ -337,7 +337,7 @@ function initTitleScreen() {
             UI.updateShopRerollBtn(shopRerollsUsed, player.relics.includes('scavenger'), player.relics.includes('recycle'));
         }
         UI.renderRulesDB();
-
+        
         if (document.getElementById('history-modal') && !document.getElementById('history-modal').classList.contains('hidden')) {
             window.renderHistoryModal();
         }
