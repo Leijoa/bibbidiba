@@ -67,7 +67,7 @@ export const el = {
 
 if (document.getElementById('btn-rules')) {
     document.getElementById('btn-rules').innerHTML = i18n.t('ui.btn_rules') || "📖 牌型表";
-    document.getElementById('btn-rules').className = "bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-black py-2 px-4 rounded-lg shadow-[0_0_15px_rgba(217,119,6,0.6)] active:scale-95 flex items-center border border-amber-400";
+    document.getElementById('btn-rules').className = "btn-secondary text-xs md:text-sm font-black py-2 px-4 rounded-lg active:scale-95 flex items-center";
 }
 
 // --- 動畫與特效 ---
@@ -80,7 +80,7 @@ let activeToasts = [];
 
 export function showToast(msg, callback) {
     let toast = document.createElement('div');
-    toast.className = 'fixed left-1/2 -translate-x-1/2 bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-amber-500 z-[100] text-lg md:text-2xl text-center flex flex-col gap-2 toast-enter whitespace-pre-wrap leading-relaxed transition-all duration-300';
+    toast.className = 'fixed left-1/2 -translate-x-1/2 bg-slate-900 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_0_50px_rgba(122,59,245,0.4)] border-2 border-violet-500/60 z-[100] text-lg md:text-2xl text-center flex flex-col gap-2 toast-enter whitespace-pre-wrap leading-relaxed transition-all duration-300';
 
     if (msg instanceof Node) {
         toast.appendChild(msg);
@@ -139,7 +139,7 @@ export function renderRulesDB() {
                     </div>
                     <div class="text-[10px] md:text-sm text-slate-400">${ruleDesc}</div>
                 </div>
-                <div class="text-base md:text-lg font-black text-amber-400">${rule.multi}</div>
+                <div class="text-base md:text-lg font-black text-violet-300">${rule.multi}</div>
             </div>`;
         });
         html += `</div>`;
@@ -323,9 +323,9 @@ export function renderDice(battle, activeHighlight, player) {
     el.diceContainer.innerHTML = battle.dice.map((d, idx) => {
         let wrapperClass = "w-11 h-11 md:w-16 md:h-16 relative mx-auto my-0.5 cursor-pointer dice-btn transition-transform duration-200";
         
-        let outerColor = "bg-slate-500";
-        let innerColor = "bg-slate-700";
-        let innerHover = "hover:bg-slate-600";
+        let outerColor = "bg-slate-600";
+        let innerColor = "bg-slate-900";
+        let innerHover = "hover:bg-slate-800";
         let textColor = "text-white";
         let extraClass = "";
         let displayOrderStyle = "";
@@ -403,7 +403,8 @@ export function renderDice(battle, activeHighlight, player) {
         }
 
         let baseBadgeHtml = '';
-        if (battle.state !== 'IDLE' && battle.state !== 'ROLLING') {
+        const isBlinded = shackleId === 'blind' && battle.state === 'WAIT_ACTION' && shackleMeta && shackleMeta.blindIndices && shackleMeta.blindIndices.includes(idx);
+        if (battle.state !== 'IDLE' && battle.state !== 'ROLLING' && !isBlinded) {
              let badgeClass = isEnhanced ? "bg-amber-500 text-amber-950 shadow-[0_0_8px_rgba(245,158,11,0.8)]" : "bg-slate-700 text-slate-300 border border-slate-500";
              baseBadgeHtml = `<div class="absolute -top-2 -left-2 ${badgeClass} text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full z-20">${Math.floor(baseVal)}</div>`;
         }
@@ -445,7 +446,7 @@ export function renderDice(battle, activeHighlight, player) {
     }).join('');
 
     el.rollsBadge.innerText = i18n.t('ui.rolls_left', battle.rollsLeft);
-    el.rollsBadge.className = battle.rollsLeft === 0 ? "bg-slate-700 px-2 py-0.5 rounded-full text-[10px] md:text-sm font-bold text-slate-400 transition-colors" : "bg-slate-700 px-2 py-0.5 rounded-full text-[10px] md:text-sm font-bold text-amber-300 transition-colors";
+    el.rollsBadge.className = battle.rollsLeft === 0 ? "bg-slate-800 px-2 py-0.5 rounded-full text-[10px] md:text-sm font-bold text-slate-500 transition-colors" : "bg-slate-800 px-2 py-0.5 rounded-full text-[10px] md:text-sm font-bold text-violet-300 transition-colors";
 }
 
 // --- 控制器渲染 ---
@@ -454,17 +455,17 @@ export function renderControls(battle) {
     let isRolling = battle.state === 'ROLLING', isAttacking = battle.state === 'ATTACKING';
 
     let isRollDisabled = (battle.rollsLeft <= 0 || isRolling || isAttacking);
-    let rollClass = isRollDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-500 active:scale-95";
+    let rollClass = isRollDisabled ? "opacity-40 cursor-not-allowed" : "hover:bg-violet-600 active:border-b-0 active:translate-y-1 shadow-lg shadow-violet-950/60";
 
     let isScoreDisabled = (isRolling || isAttacking);
-    let scoreClass = isScoreDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-red-500 active:scale-95 shadow-lg shadow-red-900/50";
+    let scoreClass = isScoreDisabled ? "opacity-40 cursor-not-allowed" : "hover:bg-red-500 active:border-b-0 active:translate-y-1 shadow-lg shadow-red-950/60";
 
     el.controlsContainer.innerHTML = `
-    <button onclick="window.executeRoll(false)" ${isRollDisabled ? 'disabled="disabled"' : ''} class="w-full flex-1 bg-blue-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 ${rollClass}">
+    <button onclick="window.executeRoll(false)" ${isRollDisabled ? 'disabled="disabled"' : ''} class="w-full flex-1 bg-violet-700 text-violet-100 font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-violet-900 ${rollClass}">
         <span class="text-sm md:text-lg leading-tight">${i18n.t('ui.btn_roll')}</span>
-        <span class="text-[8px] md:text-[10px] opacity-90 mt-0.5 font-bold">${i18n.t('ui.btn_roll_hint')}</span>
+        <span class="text-[8px] md:text-[10px] opacity-75 mt-0.5 font-semibold">${i18n.t('ui.btn_roll_hint')}</span>
     </button>
-    <button onclick="window.fireAttack()" ${isScoreDisabled ? 'disabled="disabled"' : ''} class="w-full flex-[1.5] bg-red-600 text-white font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-red-800 active:border-b-0 active:translate-y-1 ${scoreClass}">
+    <button onclick="window.fireAttack()" ${isScoreDisabled ? 'disabled="disabled"' : ''} class="w-full flex-[1.5] bg-red-700 text-red-100 font-black rounded-lg md:rounded-xl transition-all flex flex-col items-center justify-center border-b-4 border-red-900 ${scoreClass}">
         <span class="text-lg md:text-2xl mb-0.5">🗡️</span>
         <span class="text-xs md:text-base leading-tight">${i18n.t('ui.btn_attack')}</span>
     </button>
@@ -481,7 +482,7 @@ export function renderScore(battle, activeHighlight) {
     let res = battle.scoreResult;
     let isAmnesia = window.getStageActiveShackle && window.getStageActiveShackle() === 'amnesia';
 
-    let notesHtml = res.globalNotes.map(n => `<span class="text-[9px] text-amber-400 bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-900/50 font-bold whitespace-nowrap">${isAmnesia ? '???' : n}</span>`).join('');
+    let notesHtml = res.globalNotes.map(n => `<span class="text-[9px] text-violet-300 bg-violet-950/50 px-1.5 py-0.5 rounded border border-violet-800/50 font-bold whitespace-nowrap">${isAmnesia ? '???' : n}</span>`).join('');
 
 
     const getTagLocalName = (tagName) => {
@@ -508,51 +509,68 @@ export function renderScore(battle, activeHighlight) {
     };
 
     el.scoreDisplay.innerHTML = `
-    <div class="flex flex-col gap-1.5 bg-slate-900 px-2 py-1.5 rounded-lg border border-slate-700 mb-1.5 shadow-inner">
-        <div class="text-[11px] md:text-sm font-bold text-slate-400 whitespace-nowrap">${i18n.t('ui.score_total_base')}: <span class="text-sm md:text-base font-black text-white ml-1">${res.totalBase.toFixed(1)}</span></div>
-        <div class="flex overflow-x-auto gap-1 pb-1 scroll-smooth hide-scrollbar">${notesHtml}</div>
+    <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border mb-1.5" style="background:#0e0e10;border-color:#2a2a2c;">
+        <div class="flex items-baseline gap-2 whitespace-nowrap">
+            <span class="text-[9px] md:text-[10px] font-semibold tracking-widest uppercase text-slate-600">${i18n.t('ui.score_total_base')}</span>
+            <span class="text-base md:text-lg font-black text-white">${res.totalBase.toFixed(1)}</span>
+        </div>
+        <div class="flex overflow-x-auto gap-1 pb-0.5 scroll-smooth hide-scrollbar">${notesHtml}</div>
     </div>
-    
-    <div class="grid grid-cols-4 gap-1.5 mb-1">
-        <div onclick="window.setHighlight('A')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('A', res.tagA)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagA.name)}</div>
-            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagA.multi.toFixed(1)}</div>
+
+    <div class="grid grid-cols-4 gap-1 mb-1">
+        <div onclick="window.setHighlight('A')" class="flex flex-col items-center justify-center py-2.5 md:py-3 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('A', res.tagA)}">
+            <div class="text-[8px] md:text-[10px] font-bold truncate opacity-70 w-full px-1 text-center leading-tight">${getTagLocalName(res.tagA.name)}</div>
+            <div class="font-black text-xl md:text-2xl leading-none mt-1">x${res.tagA.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('B')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('B', res.tagB)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagB.name)}</div>
-            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagB.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('B')" class="flex flex-col items-center justify-center py-2.5 md:py-3 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('B', res.tagB)}">
+            <div class="text-[8px] md:text-[10px] font-bold truncate opacity-70 w-full px-1 text-center leading-tight">${getTagLocalName(res.tagB.name)}</div>
+            <div class="font-black text-xl md:text-2xl leading-none mt-1">x${res.tagB.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('C')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('C', res.tagC)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagC.name)}</div>
-            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagC.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('C')" class="flex flex-col items-center justify-center py-2.5 md:py-3 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('C', res.tagC)}">
+            <div class="text-[8px] md:text-[10px] font-bold truncate opacity-70 w-full px-1 text-center leading-tight">${getTagLocalName(res.tagC.name)}</div>
+            <div class="font-black text-xl md:text-2xl leading-none mt-1">x${res.tagC.multi.toFixed(1)}</div>
         </div>
-        <div onclick="window.setHighlight('D')" class="flex flex-col items-center justify-center py-1.5 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('D', res.tagD)}">
-            <div class="text-[11px] md:text-xs font-bold truncate opacity-90 w-full px-1 text-center">${getTagLocalName(res.tagD.name)}</div>
-            <div class="font-black text-sm md:text-lg mt-0.5 leading-none">x${res.tagD.multi.toFixed(1)}</div>
+        <div onclick="window.setHighlight('D')" class="flex flex-col items-center justify-center py-2.5 md:py-3 rounded-lg border min-w-0 overflow-hidden ${getBoxStyle('D', res.tagD)}">
+            <div class="text-[8px] md:text-[10px] font-bold truncate opacity-70 w-full px-1 text-center leading-tight">${getTagLocalName(res.tagD.name)}</div>
+            <div class="font-black text-xl md:text-2xl leading-none mt-1">x${res.tagD.multi.toFixed(1)}</div>
         </div>
+    </div>
     `;
     if (el.finalScoreValue) {
         if (window.getStageActiveShackle && window.getStageActiveShackle() === 'bluff') {
             el.finalScoreValue.innerText = '???';
-            el.finalScoreValue.classList.add('text-white');
-            el.finalScoreValue.classList.remove('text-amber-300');
+            el.finalScoreValue.classList.add('score-normal');
+            el.finalScoreValue.classList.remove('score-hot');
         } else {
             el.finalScoreValue.innerText = Math.floor(res.finalScore).toLocaleString();
             if(res.finalMultiplier > 50) {
-                el.finalScoreValue.classList.add('text-amber-300');
-                el.finalScoreValue.classList.remove('text-white');
+                el.finalScoreValue.classList.add('score-hot');
+                el.finalScoreValue.classList.remove('score-normal');
             } else {
-                el.finalScoreValue.classList.add('text-white');
-                el.finalScoreValue.classList.remove('text-amber-300');
+                el.finalScoreValue.classList.add('score-normal');
+                el.finalScoreValue.classList.remove('score-hot');
             }
         }
     }
 }
 
 // --- 商店渲染邏輯 ---
+const RARITY_TOP_COLOR = {
+    1: 'rgba(100,116,139,0.55)',
+    2: 'rgba(59,130,246,0.7)',
+    3: 'rgba(147,51,234,0.75)',
+    4: 'rgba(245,158,11,0.8)',
+    5: 'rgba(6,182,212,0.85)'
+};
+const RARITY_LEFT_COLOR = {
+    1: 'rgba(100,116,139,0.3)',
+    2: 'rgba(59,130,246,0.4)',
+    3: 'rgba(147,51,234,0.45)',
+    4: 'rgba(245,158,11,0.5)',
+    5: 'rgba(6,182,212,0.55)'
+};
 export function renderShopItems(shopItems, player) {
     el.shopItemsContainer.innerHTML = shopItems.map((r, idx) => {
-        let btnClass = "bg-yellow-600 hover:bg-yellow-500 text-white active:scale-95 shadow-md border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1";
         let style = RARITY[r.rarity];
 
         let isFusionMaterial = false;
@@ -573,21 +591,21 @@ export function renderShopItems(shopItems, player) {
         let rDesc = r.id.startsWith('cons_') ? i18n.t(`consumables.${r.id}.desc`) : (i18n.t(`relics.${r.id}.desc`) || r.desc);
 
         return `
-        <div class="bg-slate-800 p-3 rounded-xl border border-slate-600 flex flex-col justify-between relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-20 h-20 ${style.bg} blur-2xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
+        <div class="p-3 rounded-xl flex flex-col justify-between relative overflow-hidden" style="background:linear-gradient(160deg,#1c1b1d 0%,#161519 100%); border:1px solid rgba(74,68,85,0.3); border-top:2px solid ${RARITY_TOP_COLOR[r.rarity]}; border-left:3px solid ${RARITY_LEFT_COLOR[r.rarity]};">
+            <div class="absolute top-0 right-0 w-24 h-24 ${style.bg} blur-3xl rounded-full transform translate-x-1/2 -translate-y-1/2 opacity-60"></div>
             <div class="relative z-10">
                 <div class="flex flex-col gap-1 mb-2">
-                    <div class="flex justify-between items-start">
-                        <h3 class="text-base md:text-xl font-black ${style.color}">${rName}</h3>
-                        <div class="flex flex-col items-end gap-1">
-                            <span class="text-[9px] md:text-xs px-1.5 py-0.5 rounded ${style.bg} ${style.color} border ${style.border} font-bold">${i18n.t(`messages.rarity_${r.rarity}`) || style.label}</span>
-                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-sm md:text-base cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('ui.shop_fusion_hint') || '可融合'}</span>` : ''}
+                    <div class="flex justify-between items-start gap-2">
+                        <h3 class="text-base md:text-xl font-black leading-tight ${style.color}">${rName}</h3>
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="text-[9px] md:text-[10px] px-2 py-0.5 rounded-full ${style.bg} ${style.color} border ${style.border} font-bold tracking-wide">${i18n.t(`messages.rarity_${r.rarity}`) || style.label}</span>
+                            ${isFusionMaterial ? `<span onclick="window.showFusionInfo('${fusionResultId}')" class="text-xs cursor-pointer px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-500 font-black shadow-[0_0_8px_rgba(34,211,238,0.4)] animate-pulse hover:bg-cyan-800 hover:scale-105 active:scale-95 transition-all">✨ ${i18n.t('ui.shop_fusion_hint') || '可融合'}</span>` : ''}
                         </div>
                     </div>
                 </div>
-                <p class="text-xs md:text-sm text-slate-300 mb-3 h-10 font-bold">${rDesc}</p>
+                <p class="text-xs md:text-sm text-slate-400 mb-3 min-h-[2.5rem] leading-relaxed">${rDesc}</p>
             </div>
-            <button onclick="window.buyItem(${idx})" class="w-full font-black py-2.5 rounded-lg transition-all relative z-10 text-sm md:text-base ${btnClass}">
+            <button onclick="window.buyItem(${idx})" class="w-full btn-primary font-black py-2.5 rounded-lg relative z-10 text-sm md:text-base">
                 ${i18n.t('messages.shop_select')}
             </button>
         </div>`;
@@ -736,7 +754,7 @@ export function renderHistoryModal(records, metaData) {
     }
     
     el.historyContent.innerHTML = pbHtml + records.map((r, i) => {
-        let resultColor = r.win ? "text-amber-400" : "text-red-400";
+        let resultColor = r.win ? "text-violet-300" : "text-red-400";
         let resultText = r.stageName || (r.win ? "勝利" : "失敗"); // This is saved in DB, so it might be hard to translate retrospectively.
         let dateObj = new Date(r.date);
         let dateStr = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});

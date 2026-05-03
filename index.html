@@ -8,52 +8,50 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="p-1 md:p-4 h-[100dvh] flex flex-col relative overflow-hidden bg-slate-950">
+<body class="p-1 md:p-4 h-[100dvh] flex flex-col relative overflow-hidden">
 
-  <div id="title-screen" class="absolute inset-0 bg-slate-950 z-[60] flex flex-col items-center justify-center p-6 text-center">
-    <div class="mb-4 pop-anim">
-      <h1 class="text-6xl md:text-8xl font-black text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.6)] tracking-tighter" data-i18n="ui.title_main">BIBBIDIBA</h1>
-      <h2 class="text-xl md:text-3xl font-bold text-slate-300 mt-2" data-i18n="ui.title_sub">比比丟八</h2>
-    </div>
-    <p class="text-sm md:text-base text-slate-400 mb-6 max-w-sm px-2 leading-relaxed font-bold" data-i18n="ui.title_desc">
-      擲八顆骰子湊牌型疊加倍率！每回合重骰兩次，在限制回合內打倒敵人獲取遺物強化流派，挑戰連過十關！
-    </p>
-    <div class="flex flex-col gap-4 w-full max-w-xs">
-      <button id="btn-continue" class="hidden bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(37,99,235,0.4)] text-lg" data-i18n="ui.btn_continue">
-        繼續旅程
-      </button>
-      <button id="btn-new-game" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(217,119,6,0.4)] text-lg" data-i18n="ui.btn_new_game">
-        開始新遊戲
-      </button>
-      <button id="btn-souls" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(79,70,229,0.4)] text-lg" data-i18n="ui.btn_souls">
-        👻 靈魂奉獻
-      </button>
-      <button id="btn-collection" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.4)] text-lg" data-i18n="ui.btn_collection">
-        📖 收集冊
-      </button>
-      <button id="btn-history" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(147,51,234,0.4)] text-lg" data-i18n="ui.btn_history">
-        歷史牌局
-      </button>
-      <button id="btn-title-settings" class="bg-slate-600 hover:bg-slate-500 text-white font-black py-4 px-8 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(71,85,105,0.4)] text-lg" data-i18n="ui.btn_settings">
-        ⚙️ 設定
-      </button>
+  <div id="title-screen" class="absolute inset-0 z-[60] flex flex-col items-center justify-center p-6 text-center">
+
+    <div class="mb-5 title-enter">
+      <div class="dice-pips-deco mb-3">⚀ ⚁ ⚂ ⚃ ⚄ ⚅</div>
+      <h1 class="game-logo text-5xl md:text-7xl font-bold text-violet-300 drop-shadow-[0_0_24px_rgba(208,188,255,0.5)] tracking-tight" data-i18n="ui.title_main">BIBBIDIBA</h1>
+      <h2 class="text-sm md:text-base text-violet-300/55 font-bold tracking-[0.35em] mt-2 uppercase" data-i18n="ui.title_sub">比比丟八</h2>
+      <p class="text-xs md:text-sm text-slate-400 mt-4 max-w-xs px-2 leading-relaxed" data-i18n="ui.title_desc">
+        擲八顆骰子湊牌型疊加倍率！每回合重骰兩次，在限制回合內打倒敵人獲取遺物強化流派，挑戰連過十關！
+      </p>
     </div>
 
-    <div class="mt-8 mb-2">
-      <select id="lang-select" class="bg-slate-800 text-slate-300 border border-slate-600 rounded-lg px-3 py-1 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-        <option value="zh-tw">繁體中文</option>
-        <option value="zh-cn">简体中文</option>
-        <option value="en">English</option>
-        <option value="ja">日本語</option>
-      </select>
-    </div>
+    <div class="flex flex-col gap-3 w-full max-w-xs">
+      <button id="btn-continue" class="hidden btn-primary py-4 px-8 rounded-xl text-lg" data-i18n="ui.btn_continue">繼續旅程</button>
+      <button id="btn-new-game" class="btn-primary py-4 px-8 rounded-xl text-lg" data-i18n="ui.btn_new_game">開始新遊戲</button>
 
-    <div class="absolute bottom-4 flex flex-col items-center text-slate-500 text-[10px] md:text-xs font-bold">
-      <div data-i18n="ui.version">[2.0版]</div>
-      <div class="mt-1 flex gap-2">
-        <span data-i18n="ui.author_info">作者:雷爪獅 | Youtube:雷爪獅遊戲頻道 | threads:@leijoalan</span>
+      <div class="title-divider">⚄</div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btn-souls" class="btn-secondary py-3 px-4 rounded-xl text-sm" data-i18n="ui.btn_souls">👻 靈魂奉獻</button>
+        <button id="btn-collection" class="btn-secondary py-3 px-4 rounded-xl text-sm" data-i18n="ui.btn_collection">📖 收集冊</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btn-history" class="btn-secondary py-2.5 px-4 rounded-xl text-sm" data-i18n="ui.btn_history">歷史牌局</button>
+        <button id="btn-title-settings" class="btn-secondary py-2.5 px-4 rounded-xl text-sm" data-i18n="ui.btn_settings">⚙️ 設定</button>
       </div>
     </div>
+
+    <div class="absolute bottom-4 flex flex-col items-center gap-2">
+      <div class="flex items-center gap-3">
+        <select id="lang-select" class="bg-slate-900/80 text-slate-500 border border-slate-800 rounded-lg px-3 py-1 font-bold text-xs focus:outline-none focus:ring-1 focus:ring-violet-700/50">
+          <option value="zh-tw">繁體中文</option>
+          <option value="zh-cn">简体中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
+      </div>
+      <div class="flex flex-col items-center text-slate-700 text-[10px] font-bold">
+        <div data-i18n="ui.version">[2.0版]</div>
+        <div class="mt-0.5"><span data-i18n="ui.author_info">作者:雷爪獅 | Youtube:雷爪獅遊戲頻道 | threads:@leijoalan</span></div>
+      </div>
+    </div>
+
   </div>
 
   <div id="hit-flash" class="fixed inset-0 pointer-events-none z-40 hidden"></div>
@@ -61,13 +59,13 @@
   <header class="flex justify-between items-end mb-1 border-b border-slate-700 pb-1 shrink-0 px-1">
     <div class="flex items-end gap-2">
       <div>
-        <h1 class="text-lg md:text-2xl font-black text-amber-400 flex items-center gap-1 tracking-tight">BIBBIDIBA</h1>
+        <h1 class="game-logo text-lg md:text-2xl font-black text-violet-300 flex items-center gap-1 tracking-tight">BIBBIDIBA</h1>
         <div class="text-[10px] md:text-sm text-slate-400 font-bold" id="stage-info" data-i18n="ui.stage" data-i18n-args="1-1">關卡 1-1</div>
       </div>
     </div>
     <div class="flex gap-2.5 md:gap-4 text-right items-center">
-      <button id="btn-header-settings" class="bg-slate-700 hover:bg-slate-600 text-white text-xs md:text-sm font-black py-2 px-3 rounded-lg shadow-md active:scale-95 flex items-center border border-slate-500" data-i18n="ui.btn_settings">⚙️ 設定</button>
-      <button id="btn-back-to-title" class="bg-slate-700 hover:bg-slate-600 text-white text-xs md:text-sm font-black py-2 px-3 rounded-lg shadow-md active:scale-95 flex items-center border border-slate-500" data-i18n="ui.btn_back_to_title">🏠 回標題</button>
+      <button id="btn-header-settings" class="btn-secondary text-xs py-1.5 px-2.5 rounded-lg flex items-center" data-i18n="ui.btn_settings">⚙️ 設定</button>
+      <button id="btn-back-to-title" class="btn-secondary text-xs py-1.5 px-2.5 rounded-lg flex items-center" data-i18n="ui.btn_back_to_title">🏠 回標題</button>
       <button id="btn-rules"></button>
       <div>
         <div class="text-[9px] md:text-xs text-slate-400 uppercase leading-none font-bold" data-i18n="ui.hp">HP</div>
@@ -79,7 +77,7 @@
   <div id="rules-modal" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2">
     <div class="bg-slate-800 border-2 border-slate-600 rounded-xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-2 md:p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900 shrink-0">
-        <h2 class="text-base md:text-xl font-black text-amber-400 flex items-center gap-2" data-i18n="ui.rules_title">📖 全牌型倍率表</h2>
+        <h2 class="text-base md:text-xl font-black text-violet-300 flex items-center gap-2" data-i18n="ui.rules_title">📖 全牌型倍率表</h2>
         <button id="btn-close-rules" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
       </div>
       <div class="p-2 md:p-3 overflow-y-auto flex-grow text-xs md:text-sm" id="rules-content"></div>
@@ -90,7 +88,7 @@
     
     <div id="battle-area" class="flex-1 flex flex-col gap-1 overflow-y-auto">
       
-      <div class="bg-slate-800 p-1.5 md:p-3 rounded-lg border border-slate-700 shrink-0 relative shadow-md">
+      <div class="card-enemy bg-slate-800/90 p-1.5 md:p-3 rounded-lg border border-slate-700/60 shrink-0 relative shadow-md">
         <div class="flex justify-between items-center mb-1">
           <h2 class="text-sm md:text-lg font-bold text-red-300 flex items-center gap-1" id="enemy-name">⚔️ 史萊姆</h2>
           <span class="text-[9px] md:text-xs bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-bold" id="turns-left" data-i18n="ui.turns_left" data-i18n-args="3">剩餘 3 回合</span>
@@ -102,16 +100,15 @@
         <div id="damage-container" class="absolute inset-0 pointer-events-none flex items-center justify-center z-10 overflow-visible"></div>
       </div>
 
-      <div id="final-damage-preview" class="bg-gradient-to-br from-red-950 to-slate-900 border border-red-700 p-1.5 rounded-lg text-center shadow-md relative overflow-hidden shrink-0 min-h-[50px] flex flex-col justify-center">
-          <div class="absolute inset-0 bg-red-500/5 animate-pulse"></div>
-          <div class="text-[9px] md:text-xs text-red-300 mb-0.5 relative z-10 font-bold" data-i18n="ui.damage_preview">預估造成傷害</div>
-          <div class="text-3xl md:text-5xl font-black text-white relative z-10 drop-shadow-md leading-none" id="final-score-value">0</div>
+      <div id="final-damage-preview" class="rounded-lg shrink-0 relative overflow-hidden">
+          <div class="text-[8px] md:text-[10px] font-semibold tracking-[0.2em] uppercase text-slate-600 leading-none mb-1" data-i18n="ui.damage_preview">DAMAGE</div>
+          <div class="text-5xl md:text-7xl font-black text-white leading-none" id="final-score-value">0</div>
       </div>
 
-      <div class="bg-slate-800 p-1.5 md:p-3 rounded-lg border border-slate-700 shrink-0 shadow-md flex flex-col relative flex-grow lg:flex-grow-0">
+      <div class="card-board bg-slate-800/90 p-1.5 md:p-3 rounded-lg border border-slate-700/60 shrink-0 shadow-md flex flex-col relative flex-grow lg:flex-grow-0">
         <div class="flex justify-between items-center mb-1 px-1">
           <h2 class="text-sm md:text-lg font-bold text-slate-200" data-i18n="ui.board">盤面</h2>
-          <span id="rolls-left-badge" class="bg-slate-700 px-1.5 py-0.5 rounded text-[9px] md:text-xs font-bold text-amber-300" data-i18n="ui.rolls_left" data-i18n-args="2">剩餘重骰：2</span>
+          <span id="rolls-left-badge" class="bg-slate-800 px-1.5 py-0.5 rounded text-[9px] md:text-xs font-bold text-violet-300" data-i18n="ui.rolls_left" data-i18n-args="2">剩餘重骰：2</span>
         </div>
         <div class="flex flex-row gap-1 items-stretch justify-between h-full">
           <div id="dice-container" class="grid grid-cols-4 gap-x-1 gap-y-1 flex-grow px-1 py-1 items-center justify-items-center"></div>
@@ -122,7 +119,7 @@
       <div id="inventory-container-old" class="hidden"></div>
     </div>
 
-    <div id="score-area" class="w-full lg:w-80 bg-slate-800 p-1.5 md:p-3 rounded-lg border border-slate-700 flex flex-col shrink-0 shadow-md relative z-20">
+    <div id="score-area" class="card-score w-full lg:w-80 bg-slate-800/90 p-1.5 md:p-3 rounded-lg border border-slate-700/60 flex flex-col shrink-0 shadow-md relative z-20">
       <div id="score-display"></div>
       
       <div id="owned-relics-area" class="mt-1 border-t border-slate-700 pt-1 flex-grow overflow-hidden">
@@ -131,11 +128,11 @@
       </div>
     </div>
 
-    <div id="shop-overlay" class="absolute inset-0 bg-slate-900 z-50 hidden flex-col p-4 overflow-y-auto">
-      <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
-        <h1 class="text-xl md:text-3xl font-black text-yellow-400 tracking-tight" data-i18n="ui.shop_title">💰 芝芝商店</h1>
+    <div id="shop-overlay" class="absolute inset-0 z-50 hidden flex-col p-4 overflow-y-auto">
+      <div class="flex justify-between items-center mb-3 border-b border-[#2a2a2c] pb-2">
+        <h1 class="text-xl md:text-3xl font-black text-amber-400 tracking-tight" data-i18n="ui.shop_title">💰 芝芝商店</h1>
       </div>
-      <p class="text-xs text-slate-300 mb-3 font-bold" data-i18n="ui.shop_desc">選擇獲取一件遺物來強化流派，或進入下一關。</p>
+      <p class="text-xs text-slate-500 mb-3 font-bold" data-i18n="ui.shop_desc">選擇獲取一件遺物來強化流派，或進入下一關。</p>
       <div id="shop-items" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4"></div>
       <div class="flex flex-col sm:flex-row gap-2 mt-auto">
         <button id="shop-reroll-btn" class="w-full sm:w-auto flex-1 text-white font-bold py-2.5 rounded-lg active:scale-95 text-sm border-b-4" data-i18n="ui.btn_reroll">刷新商店</button>
@@ -143,17 +140,16 @@
       </div>
     </div>
 
-    <div id="end-overlay" class="absolute inset-0 bg-red-950/95 z-50 hidden flex-col items-center justify-center p-4 text-center">
-      <h1 id="end-title" class="text-5xl md:text-7xl font-black text-red-500 mb-3 pop-anim" data-i18n="ui.game_over">GAME OVER</h1>
-      <p id="end-desc" class="text-sm md:text-xl text-slate-300 mb-4 font-bold" data-i18n="ui.game_over_desc">你未能擊敗敵人，旅程到此為止。</p>
-      <div id="end-stats" class="flex flex-col gap-2 mb-6 text-sm md:text-base text-slate-300"></div>
-      <button id="btn-restart" class="bg-white hover:bg-slate-200 text-slate-900 font-black py-3 px-8 rounded-full transition-transform hover:scale-105 active:scale-95 text-base shadow-xl mb-4" data-i18n="ui.btn_restart">回到標題畫面</button>
-      <button id="btn-infinite" class="hidden bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-8 rounded-full transition-transform hover:scale-105 active:scale-95 text-base shadow-xl mb-4" data-i18n="ui.btn_infinite">進入無限塔</button>
-      
-      <div class="flex flex-col items-center text-slate-500 text-[10px] md:text-xs font-bold mt-2">
-        <div class="flex gap-2">
-          <span data-i18n="ui.author_info">作者:雷爪獅 | Youtube:雷爪獅遊戲頻道 | threads:@leijoalan</span>
-        </div>
+    <div id="end-overlay" class="absolute inset-0 z-50 hidden flex-col items-center justify-center p-4 text-center">
+      <h1 id="end-title" class="end-logo shock-enter text-5xl md:text-7xl font-black text-red-400 mb-2 drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]" data-i18n="ui.game_over">GAME OVER</h1>
+      <p id="end-desc" class="text-sm md:text-lg text-slate-400 mb-5 font-bold" data-i18n="ui.game_over_desc">你未能擊敗敵人，旅程到此為止。</p>
+      <div id="end-stats" class="flex flex-col gap-2 mb-6 text-sm md:text-base text-slate-400"></div>
+      <div class="flex flex-col gap-3 w-full max-w-xs">
+        <button id="btn-restart" class="btn-primary py-3 px-8 rounded-xl text-base" data-i18n="ui.btn_restart">回到標題畫面</button>
+        <button id="btn-infinite" class="hidden btn-secondary py-3 px-8 rounded-xl text-base" data-i18n="ui.btn_infinite">進入無限塔</button>
+      </div>
+      <div class="flex flex-col items-center text-slate-500 text-[11px] font-bold mt-6">
+        <span data-i18n="ui.author_info">作者:雷爪獅 | Youtube:雷爪獅遊戲頻道 | threads:@leijoalan</span>
       </div>
     </div>
   </main>
@@ -199,7 +195,7 @@
           <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
         </div>
         <div class="flex flex-col gap-2">
-          <select id="settings-lang-select" class="bg-slate-900 text-slate-300 border border-slate-600 rounded-lg px-3 py-2 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+          <select id="settings-lang-select" class="bg-slate-900 text-slate-300 border border-slate-600 rounded-lg px-3 py-2 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-violet-500">
             <option value="zh-tw">繁體中文</option>
             <option value="zh-cn">简体中文</option>
             <option value="en">English</option>
