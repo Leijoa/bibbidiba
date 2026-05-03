@@ -14,7 +14,10 @@ export const FUSION_RECIPES = {
     'fusion_pillar': { mat1: 'b4', mat2: 'b5' },
     'fusion_nebula': { mat1: 'b3', mat2: 'small' },
     'fusion_samsara': { mat1: 'b6', mat2: 'sixsmooth' },
-    'fusion_fortune': { mat1: 'mid', mat2: 'fivebless' }
+    'fusion_fortune': { mat1: 'mid', mat2: 'fivebless' },
+    'fusion_death_sequence': { mat1: 'arithmetic', mat2: 'fourdeath' },
+    'fusion_blood_crusade': { mat1: 'doubleedge', mat2: 'luckyseven' },
+    'fusion_scale_apex': { mat1: 'order', mat2: 'extremist' }
 };
 
 export const RELIC_DB = [
@@ -63,6 +66,9 @@ export const RELIC_DB = [
     { id: 'fusion_nebula', name: '【微縮星雲】', desc: '1, 2, 3 的倍率隨「目前無標籤骰子數」成長（每有一顆散牌，倍率 +1.0x）。', price: 0, rarity: 5 },
     { id: 'fusion_samsara', name: '【六道輪迴】', desc: '散牌點數基礎為 20。盤面上每多一顆 6，此數值隨關卡層數(E)額外增加（E x 2）。', price: 0, rarity: 5 },
     { id: 'fusion_fortune', name: '【五福中天】', desc: '4, 5 的倍率隨「5 的出現次數」累計成長。每出現過一次 5，倍率 +0.05x。', price: 0, rarity: 5 },
+    { id: 'fusion_death_sequence', name: '【等差死神】', desc: '每多一種數字，點數總和隨關卡層數成長。', price: 0, rarity: 5 },
+    { id: 'fusion_blood_crusade', name: '【血色聖戰】', desc: '2 的點數為 30。且每失去 1 點 HP，所有骰子基礎點數永久 +10。', price: 0, rarity: 5 },
+    { id: 'fusion_scale_apex', name: '【天秤之極】', desc: '絕對秩序門檻降至 6。倍率隨「已損生命值」成長。', price: 0, rarity: 5 },
 
 ];
 

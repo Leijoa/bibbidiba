@@ -171,6 +171,9 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
             if (v === 2) baseVal = 20;
             if (v === 3) baseVal = 0;
         }
+        if (playerRelics.includes('fusion_blood_crusade') && v === 2) {
+            baseVal = 30;
+        }
 
         let hookResult = null;
         activeShackles.forEach(sh => {
@@ -231,6 +234,22 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         let extra = counts[7] * 77;
         totalBase += extra;
         globalNotes.push(`${getRelicName('luckyseven', '【幸運七】')} +${extra} 基礎點數`);
+    }
+
+    if (playerRelics.includes('fusion_death_sequence')) {
+        let uniqueCount = freqs.length;
+        let bonus = uniqueCount * 5 * E;
+        totalBase += bonus;
+        globalNotes.push(`${getRelicName('fusion_death_sequence', '【等差死神】')} +${bonus} 基礎點數`);
+    }
+
+    if (playerRelics.includes('fusion_blood_crusade')) {
+        let lostHp = maxHp - playerHp;
+        if (lostHp > 0) {
+            let bonus = lostHp * 10 * workingDice.length;
+            totalBase += bonus;
+            globalNotes.push(`${getRelicName('fusion_blood_crusade', '【血色聖戰】')} HP損失加成: +${bonus} 基礎點數`);
+        }
     }
 
     function getFreqVals(req1, req2 = 0) {
@@ -449,7 +468,7 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
 
     let oddCount = counts[1] + counts[3] + counts[5] + counts[7];
     let evenCount = counts[2] + counts[4] + counts[6] + counts[8];
-    let orderReq = playerRelics.includes('order') ? 7 : 8;
+    let orderReq = playerRelics.includes('fusion_scale_apex') ? 6 : (playerRelics.includes('order') ? 7 : 8);
 
     let orderUsed = [];
     if (oddCount >= orderReq) {
@@ -608,6 +627,15 @@ export function calculateEngineScore(dice, playerRelics, rollsLeft, playerHp = 3
         let amt = isExploited ? 1.25 : 1.5;
         tagD.multi *= amt;
         globalNotes.push(`${getRelicName('extremist', '【極端份子】')} D區 x${amt.toFixed(2)}`);
+    }
+
+    if (playerRelics.includes('fusion_scale_apex')) {
+        globalNotes.push(`${getRelicName('fusion_scale_apex', '【天秤之極】')} 發動: 絕對秩序只要六顆即可發動。`);
+        if (tagD.name === '絕對秩序') {
+            let scaleAmt = playerHp === 1 ? 2.0 : (playerHp === 2 ? 1.75 : 1.5);
+            tagD.multi *= scaleAmt;
+            globalNotes.push(`${getRelicName('fusion_scale_apex', '【天秤之極】')} 絕對秩序倍率 x${scaleAmt.toFixed(2)}`);
+        }
     }
 
     if (playerRelics.includes('rebel') && activeShackles.length > 0) {
