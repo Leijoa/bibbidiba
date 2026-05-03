@@ -192,8 +192,8 @@ header {
 }
 
 #final-score-value.score-hot {
-    color: #c4b5fd;
-    text-shadow: 0 0 30px rgba(196, 181, 253, 0.55);
+    color: #fbbf24;
+    text-shadow: 0 0 28px rgba(251, 191, 36, 0.65), 0 0 8px rgba(251, 191, 36, 0.4);
     transition: color 0.3s, text-shadow 0.3s;
 }
 #final-score-value.score-normal {
